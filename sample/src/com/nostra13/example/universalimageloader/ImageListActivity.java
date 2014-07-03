@@ -17,11 +17,19 @@ package com.nostra13.example.universalimageloader;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.format.DateUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import android.widget.AdapterView.OnItemClickListener;
+
+import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
+import com.handmark.pulltorefresh.library.PullToRefreshListView;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.OnLastItemVisibleListener;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener2;
 import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
@@ -29,9 +37,16 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -40,15 +55,23 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 
 	DisplayImageOptions options;
 
-	String[] imageUrls;
+	ItemAdapter mItemAdapter;
+	List<String> imageUrls;
+	List<String> imageLabels;
+	int currentPage;
 
+	private PullToRefreshListView mPullRefreshListView;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ac_image_list);
 
 		Bundle bundle = getIntent().getExtras();
-		imageUrls = bundle.getStringArray(Extra.IMAGES);
+		
+		imageUrls = new ArrayList<String>();
+		imageLabels = new ArrayList<String>();
+		currentPage = 1;
 
 		options = new DisplayImageOptions.Builder()
 			.showImageOnLoading(R.drawable.ic_stub)
@@ -60,8 +83,48 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 			.displayer(new RoundedBitmapDisplayer(20))
 			.build();
 
+		mPullRefreshListView = (PullToRefreshListView) findViewById(R.id.list);
+		mPullRefreshListView.setMode(Mode.BOTH);
+		
+		// Set a listener to be invoked when the list should be refreshed.
+		mPullRefreshListView.setOnRefreshListener(new OnRefreshListener2<ListView>() {
+			@Override
+			public void onPullDownToRefresh(
+					PullToRefreshBase<ListView> refreshView) {
+				String label = DateUtils.formatDateTime(getApplicationContext(), System.currentTimeMillis(),
+						DateUtils.FORMAT_SHOW_TIME | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_ALL);
+
+				// Update the LastUpdatedLabel
+				refreshView.getLoadingLayoutProxy().setLastUpdatedLabel(label);
+
+				// Do work to refresh the list here.
+				new GetDataTask().execute(1, true);
+			}
+
+			@Override
+			public void onPullUpToRefresh(
+					PullToRefreshBase<ListView> refreshView) {
+				// Do work to refresh the list here.
+				new GetDataTask().execute(++currentPage, false);
+			}
+		});
+
+//		// Add an end-of-list listener
+//		mPullRefreshListView.setOnLastItemVisibleListener(new OnLastItemVisibleListener() {
+//
+//			@Override
+//			public void onLastItemVisible() {
+//				Toast.makeText(ImageListActivity.this, "End of List!", Toast.LENGTH_SHORT).show();
+//				// Do work to refresh the list here.
+//				new GetDataTask().execute(++currentPage, false);
+//			}
+//		});
+
+		listView = mPullRefreshListView.getRefreshableView();
+		
 		listView = (ListView) findViewById(android.R.id.list);
-		((ListView) listView).setAdapter(new ItemAdapter());
+		mItemAdapter = new ItemAdapter();
+		((ListView) listView).setAdapter(mItemAdapter);
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -70,6 +133,49 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 		});
 	}
 
+	private class GetDataTask extends AsyncTask<Object, Void, Void> {
+
+		@Override
+		protected Void doInBackground(Object... params) {
+			// Simulates a background job.
+			Document doc = null;
+			int pageNo = (Integer) params[0];
+			boolean clear = (Boolean) params[1];
+			
+			try {
+				doc = Jsoup.connect("http://www.moko.cc/channels/post/28/" + pageNo + ".html").get();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if (doc != null) {
+				Elements elems = doc.select("div.cover img[src2]");
+				if (elems.size() > 0) {
+					if (clear) {
+						imageUrls.clear();
+						imageLabels.clear();
+					}
+					
+					for (Element elem : elems) {
+						imageUrls.add(elem.attr("src2"));
+						imageLabels.add(elem.attr("alt"));
+					}
+				}
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			mItemAdapter.notifyDataSetChanged();
+
+			// Call onRefreshComplete when the list has been refreshed.
+			mPullRefreshListView.onRefreshComplete();
+
+			super.onPostExecute(result);
+		}
+	}
+	
 	@Override
 	public void onBackPressed() {
 		AnimateFirstDisplayListener.displayedImages.clear();
@@ -78,7 +184,7 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 
 	private void startImagePagerActivity(int position) {
 		Intent intent = new Intent(this, ImagePagerActivity.class);
-		intent.putExtra(Extra.IMAGES, imageUrls);
+		intent.putExtra(Extra.IMAGES, imageUrls.toArray());
 		intent.putExtra(Extra.IMAGE_POSITION, position);
 		startActivity(intent);
 	}
@@ -94,7 +200,7 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 
 		@Override
 		public int getCount() {
-			return imageUrls.length;
+			return imageUrls.size();
 		}
 
 		@Override
@@ -121,9 +227,9 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 				holder = (ViewHolder) view.getTag();
 			}
 
-			holder.text.setText("Item " + (position + 1));
+			holder.text.setText(imageLabels.get(position));
 
-			imageLoader.displayImage(imageUrls[position], holder.image, options, animateFirstListener);
+			imageLoader.displayImage(imageUrls.get(position), holder.image, options, animateFirstListener);
 
 			return view;
 		}
