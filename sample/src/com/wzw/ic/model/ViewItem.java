@@ -1,6 +1,6 @@
 package com.wzw.ic.model;
 
-public class ViewItem {
+public class ViewItem extends BaseModel {
 	private String label;
 	private String nodeUrl;
 	private String imageUrl;

@@ -21,6 +21,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jsoup.nodes.Document;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,6 +32,10 @@ import android.view.View;
 
 import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.universalimageloader.utils.L;
+import com.wzw.ic.controller.BaseController;
+import com.wzw.ic.controller.moko.MokoController;
+import com.wzw.ic.model.ViewItem;
+import com.wzw.ic.model.ViewNode;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -35,7 +43,7 @@ import com.nostra13.universalimageloader.utils.L;
 public class HomeActivity extends BaseActivity {
 
 	private static final String TEST_FILE_NAME = "Universal Image Loader @#&=+-_.,!()~'%20.png";
-
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -47,10 +55,43 @@ public class HomeActivity extends BaseActivity {
 		}
 	}
 
+	static class RootNode extends ViewNode {
+
+		public RootNode(String sourceUrl) {
+			super(sourceUrl);
+			this.viewItems = new ArrayList<ViewItem>();
+		}
+
+		@Override
+		public void reload() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void loadOneMorePage() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public boolean supportPaging() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		protected List<ViewItem> extractViewItemsFromPage(Document page) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	}
+	
 	public void onImageListClick(View view) {
-		Intent intent = new Intent(this, ImageListActivity.class);
-		intent.putExtra(Extra.IMAGES, IMAGES);
-		startActivity(intent);
+		BaseController rootController = new MokoController();
+		ViewNode rootNode = new RootNode("/");
+		rootNode.getViewItems().add(new ViewItem("moko", "http://www.moko.cc/", ""));
+		rootController.startItemView(this, rootNode, 0);
 	}
 
 	public void onImageGridClick(View view) {

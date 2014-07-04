@@ -15,9 +15,10 @@
  *******************************************************************************/
 package com.nostra13.example.universalimageloader;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.format.DateUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -26,20 +27,32 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+
+import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshGridView;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener2;
 import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
+import com.wzw.ic.controller.BaseController;
+import com.wzw.ic.model.ViewItem;
+import com.wzw.ic.model.ViewNode;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
 public class ImageGridActivity extends AbsListViewBaseActivity {
 
-	String[] imageUrls;
-
 	DisplayImageOptions options;
+	ImageAdapter mItemAdapter;
+	
+	ViewNode model;
+	BaseController controller;
+
+	private PullToRefreshGridView mPullRefreshGridView;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -47,7 +60,8 @@ public class ImageGridActivity extends AbsListViewBaseActivity {
 		setContentView(R.layout.ac_image_grid);
 
 		Bundle bundle = getIntent().getExtras();
-		imageUrls = bundle.getStringArray(Extra.IMAGES);
+		model = (ViewNode) bundle.getSerializable(Extra.IMAGES);
+		controller = (BaseController) bundle.getSerializable(Extra.CONTROLLER);
 
 		options = new DisplayImageOptions.Builder()
 			.showImageOnLoading(R.drawable.ic_stub)
@@ -59,23 +73,77 @@ public class ImageGridActivity extends AbsListViewBaseActivity {
 			.bitmapConfig(Bitmap.Config.RGB_565)
 			.build();
 
-		listView = (GridView) findViewById(R.id.gridview);
-		((GridView) listView).setAdapter(new ImageAdapter());
+		mPullRefreshGridView = (PullToRefreshGridView) findViewById(R.id.gridview);
+		mPullRefreshGridView.setMode(model.supportPaging() ? Mode.BOTH : Mode.PULL_FROM_START);
+		
+		// Set a listener to be invoked when the list should be refreshed.
+		mPullRefreshGridView.setOnRefreshListener(new OnRefreshListener2<GridView>() {
+			@Override
+			public void onPullDownToRefresh(
+					PullToRefreshBase<GridView> refreshView) {
+				String label = DateUtils.formatDateTime(getApplicationContext(), System.currentTimeMillis(),
+						DateUtils.FORMAT_SHOW_TIME | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_ALL);
+
+				// Update the LastUpdatedLabel
+				refreshView.getLoadingLayoutProxy().setLastUpdatedLabel(label);
+
+				// Do work to refresh the list here.
+				new GetDataTask().execute(true);
+			}
+
+			@Override
+			public void onPullUpToRefresh(
+					PullToRefreshBase<GridView> refreshView) {
+				// Do work to refresh the list here.
+				new GetDataTask().execute(false);
+			}
+		});
+		
+		listView = (GridView) mPullRefreshGridView.getRefreshableView();
+		mItemAdapter = new ImageAdapter();
+		((GridView) listView).setAdapter(mItemAdapter);
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				startImagePagerActivity(position);
+				controller.startItemView(ImageGridActivity.this, model, position);
 			}
 		});
 	}
 
-	private void startImagePagerActivity(int position) {
-		Intent intent = new Intent(this, ImagePagerActivity.class);
-		intent.putExtra(Extra.IMAGES, imageUrls);
-		intent.putExtra(Extra.IMAGE_POSITION, position);
-		startActivity(intent);
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if (hasFocus) {
+			mPullRefreshGridView.setRefreshing();
+			new GetDataTask().execute(true);
+		}
 	}
+	
+	private class GetDataTask extends AsyncTask<Object, Void, Void> {
 
+		@Override
+		protected Void doInBackground(Object... params) {
+			// Simulates a background job.
+			boolean reload = (Boolean) params[0];
+			if (reload) {
+				model.reload();
+			} else {
+				model.loadOneMorePage();
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			mItemAdapter.notifyDataSetChanged();
+
+			// Call onRefreshComplete when the list has been refreshed.
+			mPullRefreshGridView.onRefreshComplete();
+
+			super.onPostExecute(result);
+		}
+	}
+	
 	static class ViewHolder {
 		ImageView imageView;
 		ProgressBar progressBar;
@@ -84,7 +152,7 @@ public class ImageGridActivity extends AbsListViewBaseActivity {
 	public class ImageAdapter extends BaseAdapter {
 		@Override
 		public int getCount() {
-			return imageUrls.length;
+			return null == model.getViewItems() ? 0 : model.getViewItems().size();
 		}
 
 		@Override
@@ -112,7 +180,9 @@ public class ImageGridActivity extends AbsListViewBaseActivity {
 				holder = (ViewHolder) view.getTag();
 			}
 
-			imageLoader.displayImage(imageUrls[position], holder.imageView, options, new SimpleImageLoadingListener() {
+			ViewItem viewItem = model.getViewItems().get(position);
+			
+			imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, options, new SimpleImageLoadingListener() {
 										 @Override
 										 public void onLoadingStarted(String imageUri, View view) {
 											 holder.progressBar.setProgress(0);

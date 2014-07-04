@@ -36,18 +36,13 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
+import com.wzw.ic.controller.BaseController;
+import com.wzw.ic.model.ViewItem;
+import com.wzw.ic.model.ViewNode;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -57,9 +52,9 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 	DisplayImageOptions options;
 
 	ItemAdapter mItemAdapter;
-	List<String> imageUrls;
-	List<String> imageLabels;
-	int currentPage;
+
+	ViewNode model;
+	BaseController controller;
 
 	private PullToRefreshListView mPullRefreshListView;
 	
@@ -69,10 +64,8 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 		setContentView(R.layout.ac_image_list);
 
 		Bundle bundle = getIntent().getExtras();
-		
-		imageUrls = new ArrayList<String>();
-		imageLabels = new ArrayList<String>();
-		currentPage = 1;
+		model = (ViewNode) bundle.getSerializable(Extra.IMAGES);
+		controller = (BaseController) bundle.getSerializable(Extra.CONTROLLER);
 
 		options = new DisplayImageOptions.Builder()
 			.showImageOnLoading(R.drawable.ic_stub)
@@ -85,7 +78,7 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 			.build();
 
 		mPullRefreshListView = (PullToRefreshListView) findViewById(R.id.list);
-		mPullRefreshListView.setMode(Mode.BOTH);
+		mPullRefreshListView.setMode(model.supportPaging() ? Mode.BOTH : Mode.PULL_FROM_START);
 		
 		// Set a listener to be invoked when the list should be refreshed.
 		mPullRefreshListView.setOnRefreshListener(new OnRefreshListener2<ListView>() {
@@ -99,14 +92,14 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 				refreshView.getLoadingLayoutProxy().setLastUpdatedLabel(label);
 
 				// Do work to refresh the list here.
-				new GetDataTask().execute(1, true);
+				new GetDataTask().execute(true);
 			}
 
 			@Override
 			public void onPullUpToRefresh(
 					PullToRefreshBase<ListView> refreshView) {
 				// Do work to refresh the list here.
-				new GetDataTask().execute(++currentPage, false);
+				new GetDataTask().execute(false);
 			}
 		});
 
@@ -129,39 +122,30 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				startImagePagerActivity(position);
+				controller.startItemView(ImageListActivity.this, model, position);
 			}
 		});
 	}
 
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if (hasFocus) {
+			mPullRefreshListView.setRefreshing();
+			new GetDataTask().execute(true);
+		}
+	}
+	
 	private class GetDataTask extends AsyncTask<Object, Void, Void> {
 
 		@Override
 		protected Void doInBackground(Object... params) {
 			// Simulates a background job.
-			Document doc = null;
-			int pageNo = (Integer) params[0];
-			boolean clear = (Boolean) params[1];
-			
-			try {
-				doc = Jsoup.connect("http://www.moko.cc/channels/post/28/" + pageNo + ".html").get();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if (doc != null) {
-				Elements elems = doc.select("div.cover img[src2]");
-				if (elems.size() > 0) {
-					if (clear) {
-						imageUrls.clear();
-						imageLabels.clear();
-					}
-					
-					for (Element elem : elems) {
-						imageUrls.add(elem.attr("src2"));
-						imageLabels.add(elem.attr("alt"));
-					}
-				}
+			boolean reload = (Boolean) params[0];
+			if (reload) {
+				model.reload();
+			} else {
+				model.loadOneMorePage();
 			}
 			return null;
 		}
@@ -183,13 +167,6 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 		super.onBackPressed();
 	}
 
-	private void startImagePagerActivity(int position) {
-		Intent intent = new Intent(this, ImagePagerActivity.class);
-		intent.putExtra(Extra.IMAGES, imageUrls.toArray(new String[imageUrls.size()]));
-		intent.putExtra(Extra.IMAGE_POSITION, position);
-		startActivity(intent);
-	}
-
 	private static class ViewHolder {
 		TextView text;
 		ImageView image;
@@ -201,7 +178,7 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 
 		@Override
 		public int getCount() {
-			return imageUrls.size();
+			return null == model.getViewItems() ? 0 : model.getViewItems().size();
 		}
 
 		@Override
@@ -228,9 +205,11 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 				holder = (ViewHolder) view.getTag();
 			}
 
-			holder.text.setText(imageLabels.get(position));
+			ViewItem viewItem = model.getViewItems().get(position);
+			
+			holder.text.setText(viewItem.getLabel());
 
-			imageLoader.displayImage(imageUrls.get(position), holder.image, options, animateFirstListener);
+			imageLoader.displayImage(viewItem.getImageUrl(), holder.image, options, animateFirstListener);
 
 			return view;
 		}

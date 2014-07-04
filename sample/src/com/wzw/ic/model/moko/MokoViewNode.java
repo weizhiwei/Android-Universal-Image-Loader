@@ -1,12 +1,20 @@
 package com.wzw.ic.model.moko;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import android.app.Activity;
+import android.content.Intent;
+
+import com.nostra13.example.universalimageloader.ImageGridActivity;
+import com.nostra13.example.universalimageloader.ImageListActivity;
+import com.nostra13.example.universalimageloader.ImagePagerActivity;
+import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.wzw.ic.model.ViewItem;
 import com.wzw.ic.model.ViewNode;
 
@@ -14,7 +22,7 @@ public abstract class MokoViewNode extends ViewNode {
 
 	protected int pageNo;
 	protected boolean supportPaging;
-	protected String selector;
+	protected static String URL_PREFIX = "http://www.moko.cc";
 	
 	public MokoViewNode(String sourceUrl) {
 		super(sourceUrl);
@@ -36,16 +44,13 @@ public abstract class MokoViewNode extends ViewNode {
 			e.printStackTrace();
 		}
 		if (doc != null) {
-			Elements elems = doc.select(selector);
-			if (elems.size() > 0) {
+			List<ViewItem> pageViewItems = extractViewItemsFromPage(doc);
+			if (null != pageViewItems && pageViewItems.size() > 0) {
 				pageNo = newPageNo;
 				if (reload) {
 					viewItems.clear();
 				}
-				
-				for (Element elem : elems) {
-					viewItems.add(getViewItem(elem));
-				}
+				viewItems.addAll(pageViewItems);
 			}
 		}
 	}

@@ -35,6 +35,9 @@ import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
+import com.wzw.ic.controller.BaseController;
+import com.wzw.ic.model.ViewItem;
+import com.wzw.ic.model.ViewNode;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -45,6 +48,9 @@ public class ImagePagerActivity extends BaseActivity {
 
 	DisplayImageOptions options;
 
+	ViewNode model;
+	BaseController controller;
+	
 	ViewPager pager;
 
 	@Override
@@ -54,7 +60,9 @@ public class ImagePagerActivity extends BaseActivity {
 
 		Bundle bundle = getIntent().getExtras();
 		assert bundle != null;
-		String[] imageUrls = bundle.getStringArray(Extra.IMAGES);
+
+		model = (ViewNode) bundle.getSerializable(Extra.IMAGES);
+		controller = (BaseController) bundle.getSerializable(Extra.CONTROLLER);
 		int pagerPosition = bundle.getInt(Extra.IMAGE_POSITION, 0);
 
 		if (savedInstanceState != null) {
@@ -74,7 +82,7 @@ public class ImagePagerActivity extends BaseActivity {
 
 		pager = (ViewPager) findViewById(R.id.pager);
 		pager.setOffscreenPageLimit(3);
-		pager.setAdapter(new ImagePagerAdapter(imageUrls));
+		pager.setAdapter(new ImagePagerAdapter());
 		pager.setCurrentItem(pagerPosition);
 	}
 
@@ -84,12 +92,10 @@ public class ImagePagerActivity extends BaseActivity {
 	}
 
 	private class ImagePagerAdapter extends PagerAdapter {
-
-		private String[] images;
+		
 		private LayoutInflater inflater;
 
-		ImagePagerAdapter(String[] images) {
-			this.images = images;
+		ImagePagerAdapter() {
 			inflater = getLayoutInflater();
 		}
 
@@ -100,7 +106,7 @@ public class ImagePagerActivity extends BaseActivity {
 
 		@Override
 		public int getCount() {
-			return images.length;
+			return null == model.getViewItems() ? 0 : model.getViewItems().size();
 		}
 
 		@Override
@@ -118,7 +124,9 @@ public class ImagePagerActivity extends BaseActivity {
 			ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
 			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
 
-			imageLoader.displayImage(images[position], imageView, options, new SimpleImageLoadingListener() {
+			ViewItem viewItem = model.getViewItems().get(position);
+			
+			imageLoader.displayImage(viewItem.getImageUrl(), imageView, options, new SimpleImageLoadingListener() {
 				@Override
 				public void onLoadingStarted(String imageUri, View view) {
 					spinner.setVisibility(View.VISIBLE);
