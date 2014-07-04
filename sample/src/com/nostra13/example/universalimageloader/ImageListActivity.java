@@ -39,6 +39,7 @@ import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -184,7 +185,7 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 
 	private void startImagePagerActivity(int position) {
 		Intent intent = new Intent(this, ImagePagerActivity.class);
-		intent.putExtra(Extra.IMAGES, imageUrls.toArray());
+		intent.putExtra(Extra.IMAGES, imageUrls.toArray(new String[imageUrls.size()]));
 		intent.putExtra(Extra.IMAGE_POSITION, position);
 		startActivity(intent);
 	}

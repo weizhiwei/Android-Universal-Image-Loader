@@ -15,6 +15,8 @@
  *******************************************************************************/
 package com.nostra13.example.universalimageloader;
 
+import ru.truba.touchgallery.GalleryWidget.GalleryViewPager;
+import ru.truba.touchgallery.TouchView.TouchImageView;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -31,8 +33,8 @@ import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -71,6 +73,7 @@ public class ImagePagerActivity extends BaseActivity {
 			.build();
 
 		pager = (ViewPager) findViewById(R.id.pager);
+		pager.setOffscreenPageLimit(3);
 		pager.setAdapter(new ImagePagerAdapter(imageUrls));
 		pager.setCurrentItem(pagerPosition);
 	}
@@ -100,6 +103,14 @@ public class ImagePagerActivity extends BaseActivity {
 			return images.length;
 		}
 
+		@Override
+	    public void setPrimaryItem(ViewGroup container, int position, Object object) {
+	        super.setPrimaryItem(container, position, object);
+	        GalleryViewPager galleryContainer = ((GalleryViewPager)container);
+	        View imageLayout = (View) object;
+	        galleryContainer.mCurrentView = (TouchImageView) imageLayout.findViewById(R.id.image);
+	    }
+		
 		@Override
 		public Object instantiateItem(ViewGroup view, int position) {
 			View imageLayout = inflater.inflate(R.layout.item_pager_image, view, false);
