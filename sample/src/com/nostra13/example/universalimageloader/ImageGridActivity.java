@@ -113,7 +113,7 @@ public class ImageGridActivity extends AbsListViewBaseActivity {
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);
-		if (hasFocus) {
+		if (hasFocus && mItemAdapter.getCount() == 0) {
 			mPullRefreshGridView.setRefreshing();
 			new GetDataTask().execute(true);
 		}

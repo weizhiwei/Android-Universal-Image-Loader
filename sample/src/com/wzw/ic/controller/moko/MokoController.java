@@ -3,11 +3,10 @@ package com.wzw.ic.controller.moko;
 import android.app.Activity;
 import android.content.Intent;
 
-import com.nostra13.example.universalimageloader.AbsListViewBaseActivity;
+import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.example.universalimageloader.ImageGridActivity;
 import com.nostra13.example.universalimageloader.ImageListActivity;
 import com.nostra13.example.universalimageloader.ImagePagerActivity;
-import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.wzw.ic.controller.BaseController;
 import com.wzw.ic.model.ViewItem;
 import com.wzw.ic.model.ViewNode;

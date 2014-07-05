@@ -57,9 +57,8 @@ public class HomeActivity extends BaseActivity {
 
 	static class RootNode extends ViewNode {
 
-		public RootNode(String sourceUrl) {
-			super(sourceUrl);
-			this.viewItems = new ArrayList<ViewItem>();
+		public RootNode() {
+			super("/");
 		}
 
 		@Override
@@ -89,7 +88,7 @@ public class HomeActivity extends BaseActivity {
 	
 	public void onImageListClick(View view) {
 		BaseController rootController = new MokoController();
-		ViewNode rootNode = new RootNode("/");
+		ViewNode rootNode = new RootNode();
 		rootNode.getViewItems().add(new ViewItem("moko", "http://www.moko.cc/", ""));
 		rootController.startItemView(this, rootNode, 0);
 	}
