@@ -24,7 +24,8 @@ public class MokoViewNodeRoot extends MokoViewNode {
 			viewItems = new ArrayList<ViewItem>();
 			for (int i = 0; i < aElems.size(); ++i) {
 				Element a = aElems.get(i);
-				viewItems.add(new ViewItem(a.ownText(), URL_PREFIX + a.attr("href"), ""));
+				String url = URL_PREFIX + a.attr("href").replace("/1.", "/%d.");
+				viewItems.add(new ViewItem(a.ownText(), url, ""));
 			}
 		}
 		return viewItems;

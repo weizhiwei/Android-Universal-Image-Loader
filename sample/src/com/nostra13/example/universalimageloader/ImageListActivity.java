@@ -122,7 +122,7 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				controller.startItemView(ImageListActivity.this, model, position);
+				controller.startItemView(ImageListActivity.this, model, position - 1); // TODO: confirm?
 			}
 		});
 	}

@@ -22,7 +22,7 @@ public class MokoController extends BaseController {
 		ViewNode newNode = null;
 		
 		String nodeUrl = node.getSourceUrl();
-		ViewItem viewItem = node.getViewItems().get(position); //TODO?
+		ViewItem viewItem = node.getViewItems().get(position);
 		String itemUrl = viewItem.getNodeUrl();
 		if (nodeUrl.equals("/")) {
 			intent = new Intent(parentActivity, ImageListActivity.class);
