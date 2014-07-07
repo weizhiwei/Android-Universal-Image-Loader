@@ -25,11 +25,11 @@ public class MokoController extends BaseController {
 		ViewItem viewItem = node.getViewItems().get(position);
 		String itemUrl = viewItem.getNodeUrl();
 		if (nodeUrl.equals("/")) {
-			intent = new Intent(parentActivity, ImageListActivity.class);
+			intent = new Intent(parentActivity, ImageGridActivity.class);
 			newNode = new MokoViewNodeRoot(itemUrl);
 			
 		} else if (nodeUrl.equals("http://www.moko.cc/")) {
-			intent = new Intent(parentActivity, ImageListActivity.class);
+			intent = new Intent(parentActivity, ImageGridActivity.class);
 			newNode = new MokoViewNodeChannel(itemUrl);
 			
 		} else if (nodeUrl.contains("channels")) {

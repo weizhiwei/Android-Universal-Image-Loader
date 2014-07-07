@@ -89,7 +89,7 @@ public class HomeActivity extends BaseActivity {
 	public void onImageListClick(View view) {
 		BaseController rootController = new MokoController();
 		ViewNode rootNode = new RootNode();
-		rootNode.getViewItems().add(new ViewItem("moko", "http://www.moko.cc/", ""));
+		rootNode.getViewItems().add(new ViewItem("moko", "http://www.moko.cc/", "", 0));
 		rootController.startItemView(this, rootNode, 0);
 	}
 

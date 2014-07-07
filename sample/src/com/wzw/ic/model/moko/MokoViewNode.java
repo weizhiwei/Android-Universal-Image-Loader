@@ -4,19 +4,12 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
-import android.app.Activity;
-import android.content.Intent;
+import android.text.TextUtils;
 
-import com.nostra13.example.universalimageloader.ImageGridActivity;
-import com.nostra13.example.universalimageloader.ImageListActivity;
-import com.nostra13.example.universalimageloader.ImagePagerActivity;
-import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.wzw.ic.model.ViewItem;
 import com.wzw.ic.model.ViewNode;
 
@@ -39,7 +32,7 @@ public abstract class MokoViewNode extends ViewNode {
 	}
 
 	private String getLoginKey() {
-		if (null == loginKey) {
+		if (TextUtils.isEmpty(loginKey)) {
 			// login
 			Response resp = null;
 			try {
@@ -66,7 +59,7 @@ public abstract class MokoViewNode extends ViewNode {
 		try {
 			doc = Jsoup
 					.connect(String.format(sourceUrl, newPageNo))
-					.cookie(LOGIN_KEY_COOKIE, getLoginKey())
+					.cookie(LOGIN_KEY_COOKIE, null == getLoginKey() ? "" : getLoginKey())
 					.get();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

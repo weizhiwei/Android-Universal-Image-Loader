@@ -16,8 +16,10 @@
 package com.nostra13.example.universalimageloader;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +29,7 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshGridView;
@@ -147,6 +150,7 @@ public class ImageGridActivity extends AbsListViewBaseActivity {
 	static class ViewHolder {
 		ImageView imageView;
 		ProgressBar progressBar;
+		TextView text;
 	}
 
 	public class ImageAdapter extends BaseAdapter {
@@ -175,14 +179,15 @@ public class ImageGridActivity extends AbsListViewBaseActivity {
 				assert view != null;
 				holder.imageView = (ImageView) view.findViewById(R.id.image);
 				holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
+				holder.text = (TextView) view.findViewById(R.id.text);
 				view.setTag(holder);
 			} else {
 				holder = (ViewHolder) view.getTag();
 			}
 
 			ViewItem viewItem = model.getViewItems().get(position);
-			
-			imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, options, new SimpleImageLoadingListener() {
+			if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+				imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, options, new SimpleImageLoadingListener() {
 										 @Override
 										 public void onLoadingStarted(String imageUri, View view) {
 											 holder.progressBar.setProgress(0);
@@ -206,8 +211,20 @@ public class ImageGridActivity extends AbsListViewBaseActivity {
 											 holder.progressBar.setProgress(Math.round(100.0f * current / total));
 										 }
 									 }
-			);
+				);
+			} else {
+				holder.imageView.setBackgroundColor(viewItem.getColor());
+				holder.progressBar.setVisibility(View.GONE);
+			}
 
+			if (viewItem.isShowingLabelInGrid()) {
+				holder.text.setVisibility(View.VISIBLE);
+				holder.text.setText(viewItem.getLabel());
+				holder.text.setTextColor(Color.WHITE);
+			} else {
+				holder.text.setVisibility(View.GONE);
+			}
+			
 			return view;
 		}
 	}

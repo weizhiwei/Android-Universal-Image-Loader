@@ -15,10 +15,13 @@
  *******************************************************************************/
 package com.nostra13.example.universalimageloader;
 
+import android.R.color;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -209,7 +212,11 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 			
 			holder.text.setText(viewItem.getLabel());
 
-			imageLoader.displayImage(viewItem.getImageUrl(), holder.image, options, animateFirstListener);
+			if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+				imageLoader.displayImage(viewItem.getImageUrl(), holder.image, options, animateFirstListener);
+			} else {
+				holder.image.setBackgroundColor(viewItem.getColor());
+			}
 
 			return view;
 		}
