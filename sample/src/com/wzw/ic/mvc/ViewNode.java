@@ -1,8 +1,9 @@
-package com.wzw.ic.model;
+package com.wzw.ic.mvc;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.http.MethodNotSupportedException;
 import org.jsoup.nodes.Document;
 
 import android.app.Activity;
@@ -24,8 +25,9 @@ public abstract class ViewNode extends BaseModel {
 		return viewItems;
 	}
 	
+	public abstract boolean supportReloading();
 	public abstract void reload();
-	public abstract void loadOneMorePage();
 	public abstract boolean supportPaging();
+	public abstract void loadOneMorePage();
 	protected abstract List<ViewItem> extractViewItemsFromPage(Document page);
 }

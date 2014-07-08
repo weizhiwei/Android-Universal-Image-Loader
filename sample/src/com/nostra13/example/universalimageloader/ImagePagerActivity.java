@@ -35,9 +35,9 @@ import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
-import com.wzw.ic.controller.BaseController;
-import com.wzw.ic.model.ViewItem;
-import com.wzw.ic.model.ViewNode;
+import com.wzw.ic.mvc.BaseController;
+import com.wzw.ic.mvc.ViewItem;
+import com.wzw.ic.mvc.ViewNode;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -47,9 +47,6 @@ public class ImagePagerActivity extends BaseActivity {
 	private static final String STATE_POSITION = "STATE_POSITION";
 
 	DisplayImageOptions options;
-
-	ViewNode model;
-	BaseController controller;
 	
 	ViewPager pager;
 
@@ -58,11 +55,10 @@ public class ImagePagerActivity extends BaseActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ac_image_pager);
 
+		setModelControllerFromIntent();
+		
 		Bundle bundle = getIntent().getExtras();
 		assert bundle != null;
-
-		model = (ViewNode) bundle.getSerializable(Extra.IMAGES);
-		controller = (BaseController) bundle.getSerializable(Extra.CONTROLLER);
 		int pagerPosition = bundle.getInt(Extra.IMAGE_POSITION, 0);
 
 		if (savedInstanceState != null) {

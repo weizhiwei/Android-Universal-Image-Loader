@@ -1,4 +1,4 @@
-package com.wzw.ic.model;
+package com.wzw.ic.mvc;
 
 public class ViewItem extends BaseModel {
 	private String label;

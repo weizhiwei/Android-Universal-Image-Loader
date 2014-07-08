@@ -1,4 +1,4 @@
-package com.wzw.ic.model.moko;
+package com.wzw.ic.mvc.moko;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,7 @@ import org.jsoup.select.Elements;
 
 import android.graphics.Color;
 
-import com.wzw.ic.model.ViewItem;
+import com.wzw.ic.mvc.ViewItem;
 
 public class MokoViewNodeRoot extends MokoViewNode {
 	

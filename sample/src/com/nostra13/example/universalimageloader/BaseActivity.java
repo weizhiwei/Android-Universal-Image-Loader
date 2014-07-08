@@ -16,10 +16,16 @@
 package com.nostra13.example.universalimageloader;
 
 import android.app.Activity;
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.wzw.ic.mvc.BaseController;
+import com.wzw.ic.mvc.ViewNode;
+import com.wzw.ic.mvc.root.RootController;
+import com.wzw.ic.mvc.root.RootViewNode;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -27,7 +33,21 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 public abstract class BaseActivity extends Activity {
 
 	protected ImageLoader imageLoader = ImageLoader.getInstance();
-
+	protected ViewNode model;
+	protected BaseController controller;
+	
+	protected void setModelControllerFromIntent() {
+		Bundle bundle = getIntent().getExtras();
+		if (null != bundle) {
+			model = (ViewNode) bundle.getSerializable(Extra.MODEL);
+			controller = (BaseController) bundle.getSerializable(Extra.CONTROLLER);
+		}
+		if (null == model || null == controller) {
+			model = new RootViewNode();
+			controller = new RootController();
+		}
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main_menu, menu);

@@ -15,37 +15,34 @@
  *******************************************************************************/
 package com.nostra13.example.universalimageloader;
 
-import android.R.color;
-import android.content.Intent;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
-import com.handmark.pulltorefresh.library.PullToRefreshListView;
-import com.handmark.pulltorefresh.library.PullToRefreshBase.OnLastItemVisibleListener;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener2;
-import com.nostra13.example.universalimageloader.Constants.Extra;
+import com.handmark.pulltorefresh.library.PullToRefreshListView;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
-import com.wzw.ic.controller.BaseController;
-import com.wzw.ic.model.ViewItem;
-import com.wzw.ic.model.ViewNode;
-
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
+import com.wzw.ic.mvc.ViewItem;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -53,12 +50,7 @@ import java.util.List;
 public class ImageListActivity extends AbsListViewBaseActivity {
 
 	DisplayImageOptions options;
-
 	ItemAdapter mItemAdapter;
-
-	ViewNode model;
-	BaseController controller;
-
 	private PullToRefreshListView mPullRefreshListView;
 	
 	@Override
@@ -66,10 +58,8 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ac_image_list);
 
-		Bundle bundle = getIntent().getExtras();
-		model = (ViewNode) bundle.getSerializable(Extra.IMAGES);
-		controller = (BaseController) bundle.getSerializable(Extra.CONTROLLER);
-
+		setModelControllerFromIntent();
+		
 		options = new DisplayImageOptions.Builder()
 			.showImageOnLoading(R.drawable.ic_stub)
 			.showImageForEmptyUri(R.drawable.ic_empty)
@@ -81,7 +71,15 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 			.build();
 
 		mPullRefreshListView = (PullToRefreshListView) findViewById(R.id.list);
-		mPullRefreshListView.setMode(model.supportPaging() ? Mode.BOTH : Mode.PULL_FROM_START);
+		if (model.supportReloading()) {
+			if (model.supportPaging()) {
+				mPullRefreshListView.setMode(Mode.BOTH);
+			} else {
+				mPullRefreshListView.setMode(Mode.PULL_FROM_START);				
+			}
+		} else {
+			mPullRefreshListView.setMode(Mode.DISABLED);
+		}
 		
 		// Set a listener to be invoked when the list should be refreshed.
 		mPullRefreshListView.setOnRefreshListener(new OnRefreshListener2<ListView>() {

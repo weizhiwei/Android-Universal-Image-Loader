@@ -35,14 +35,13 @@ import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshGridView;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener2;
-import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
-import com.wzw.ic.controller.BaseController;
-import com.wzw.ic.model.ViewItem;
-import com.wzw.ic.model.ViewNode;
+import com.wzw.ic.mvc.BaseController;
+import com.wzw.ic.mvc.ViewItem;
+import com.wzw.ic.mvc.ViewNode;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -51,10 +50,6 @@ public class ImageGridActivity extends AbsListViewBaseActivity {
 
 	DisplayImageOptions options;
 	ImageAdapter mItemAdapter;
-	
-	ViewNode model;
-	BaseController controller;
-
 	private PullToRefreshGridView mPullRefreshGridView;
 
 	@Override
@@ -62,9 +57,7 @@ public class ImageGridActivity extends AbsListViewBaseActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ac_image_grid);
 
-		Bundle bundle = getIntent().getExtras();
-		model = (ViewNode) bundle.getSerializable(Extra.IMAGES);
-		controller = (BaseController) bundle.getSerializable(Extra.CONTROLLER);
+		setModelControllerFromIntent();
 
 		options = new DisplayImageOptions.Builder()
 			.showImageOnLoading(R.drawable.ic_stub)
@@ -77,7 +70,15 @@ public class ImageGridActivity extends AbsListViewBaseActivity {
 			.build();
 
 		mPullRefreshGridView = (PullToRefreshGridView) findViewById(R.id.gridview);
-		mPullRefreshGridView.setMode(model.supportPaging() ? Mode.BOTH : Mode.PULL_FROM_START);
+		if (model.supportReloading()) {
+			if (model.supportPaging()) {
+				mPullRefreshGridView.setMode(Mode.BOTH);
+			} else {
+				mPullRefreshGridView.setMode(Mode.PULL_FROM_START);				
+			}
+		} else {
+			mPullRefreshGridView.setMode(Mode.DISABLED);
+		}
 		
 		// Set a listener to be invoked when the list should be refreshed.
 		mPullRefreshGridView.setOnRefreshListener(new OnRefreshListener2<GridView>() {

@@ -1,4 +1,4 @@
-package com.wzw.ic.model.moko;
+package com.wzw.ic.mvc.moko;
 
 import java.io.IOException;
 import java.util.List;
@@ -10,8 +10,8 @@ import org.jsoup.nodes.Document;
 
 import android.text.TextUtils;
 
-import com.wzw.ic.model.ViewItem;
-import com.wzw.ic.model.ViewNode;
+import com.wzw.ic.mvc.ViewItem;
+import com.wzw.ic.mvc.ViewNode;
 
 public abstract class MokoViewNode extends ViewNode {
 
@@ -26,6 +26,11 @@ public abstract class MokoViewNode extends ViewNode {
 		super(sourceUrl);
 	}
 
+	@Override
+	public boolean supportReloading() {
+		return true;
+	}
+	
 	@Override
 	public void reload()  {
 		doLoad(true);
