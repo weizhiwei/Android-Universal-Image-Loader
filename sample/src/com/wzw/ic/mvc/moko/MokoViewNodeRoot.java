@@ -13,8 +13,8 @@ import com.wzw.ic.mvc.ViewItem;
 
 public class MokoViewNodeRoot extends MokoViewNode {
 	
-	public MokoViewNodeRoot(String sourceUrl) {
-		super(sourceUrl);
+	public MokoViewNodeRoot() {
+		super("http://www.moko.cc/");
 		supportPaging = false;
 	}
 

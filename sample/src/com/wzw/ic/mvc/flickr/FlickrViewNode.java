@@ -1,14 +1,11 @@
-package com.wzw.ic.mvc.root;
+package com.wzw.ic.mvc.flickr;
 
-import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 
-public class RootViewNode extends ViewNode {
-
-	public RootViewNode() {
-		super("/");
-		viewItems.add(new ViewItem("MOKO!美空", "moko", "http://www.vitbbs.cn/uploads/allimg/c101125/12ZEK63410-14106.gif", 0));
-		viewItems.add(new ViewItem("Flickr", "flickr", "http://www.masstech.org/sites/mtc/files/images/Flickr-Icon.jpg", 0));
+public abstract class FlickrViewNode extends ViewNode {
+	
+	public FlickrViewNode(String sourceUrl) {
+		super(sourceUrl);
 	}
 
 	@Override

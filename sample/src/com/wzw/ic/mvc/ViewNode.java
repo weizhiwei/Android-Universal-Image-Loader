@@ -29,5 +29,4 @@ public abstract class ViewNode extends BaseModel {
 	public abstract void reload();
 	public abstract boolean supportPaging();
 	public abstract void loadOneMorePage();
-	protected abstract List<ViewItem> extractViewItemsFromPage(Document page);
 }

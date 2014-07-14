@@ -5,9 +5,12 @@ import android.content.Intent;
 
 import com.nostra13.example.universalimageloader.ImageGridActivity;
 import com.nostra13.example.universalimageloader.Constants.Extra;
+import com.nostra13.example.universalimageloader.ImageListActivity;
 import com.wzw.ic.mvc.BaseController;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
+import com.wzw.ic.mvc.flickr.FlickrController;
+import com.wzw.ic.mvc.flickr.FlickrViewNodeRoot;
 import com.wzw.ic.mvc.moko.MokoController;
 import com.wzw.ic.mvc.moko.MokoViewNodeRoot;
 
@@ -24,10 +27,14 @@ public class RootController extends BaseController {
 		String itemUrl = viewItem.getNodeUrl();
 		if (nodeUrl.equals("/")) {
 			
-			if (itemUrl.contains("moko")) {
+			if (itemUrl.equals("moko")) {
 				intent = new Intent(parentActivity, ImageGridActivity.class);
-				newNode = new MokoViewNodeRoot(itemUrl);
+				newNode = new MokoViewNodeRoot();
 				newController = new MokoController();
+			} else if (itemUrl.equals("flickr")) {
+				intent = new Intent(parentActivity, ImageListActivity.class);
+				newNode = new FlickrViewNodeRoot();
+				newController = new FlickrController();
 			}
 		}
 		

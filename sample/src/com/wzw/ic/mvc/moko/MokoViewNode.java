@@ -91,4 +91,6 @@ public abstract class MokoViewNode extends ViewNode {
 	public boolean supportPaging() {
 		return supportPaging;
 	}
+
+	protected abstract List<ViewItem> extractViewItemsFromPage(Document page);
 }
