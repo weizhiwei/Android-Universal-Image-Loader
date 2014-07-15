@@ -29,8 +29,7 @@ public class FlickrViewNodeCommons extends FlickrViewNode {
 	}
 
 	private void doLoad(boolean reload) {
-		String apiKey = "6076b3fca0851330568d880610c70267";
-		Flickr f = new Flickr(apiKey);
+		Flickr f = new Flickr(FlickrController.FLICKR_API_KEY);
 		CommonsInterface commonsInterface = f.getCommonsInterface();
 		List<Institution> institutions = null;
 		try {

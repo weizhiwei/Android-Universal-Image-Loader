@@ -13,11 +13,11 @@ import com.googlecode.flickrjandroid.photosets.Photosets;
 import com.googlecode.flickrjandroid.photosets.PhotosetsInterface;
 import com.wzw.ic.mvc.ViewItem;
 
-public class FlickrViewNodePeople extends FlickrViewNode {
+public class FlickrViewNodePeoplePhotosets extends FlickrViewNode {
 
 	protected int pageNo;
 	
-	public FlickrViewNodePeople(String sourceUrl) {
+	public FlickrViewNodePeoplePhotosets(String sourceUrl) {
 		super(sourceUrl);
 	}
 
@@ -34,8 +34,7 @@ public class FlickrViewNodePeople extends FlickrViewNode {
 	private void doLoad(boolean reload) {
 		int newPageNo = reload ? 1 : pageNo + 1;
 		
-		String apiKey = "6076b3fca0851330568d880610c70267";
-		Flickr f = new Flickr(apiKey);
+		Flickr f = new Flickr(FlickrController.FLICKR_API_KEY);
 		PhotosetsInterface photosetsInterface = f.getPhotosetsInterface();
 		Photosets photosets = null;
 		try {

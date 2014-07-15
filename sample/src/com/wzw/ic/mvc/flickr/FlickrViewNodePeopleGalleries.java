@@ -6,16 +6,15 @@ import org.json.JSONException;
 
 import com.googlecode.flickrjandroid.Flickr;
 import com.googlecode.flickrjandroid.FlickrException;
-import com.googlecode.flickrjandroid.photos.Photo;
-import com.googlecode.flickrjandroid.photos.PhotoList;
-import com.googlecode.flickrjandroid.photosets.Photoset;
-import com.googlecode.flickrjandroid.photosets.PhotosetsInterface;
+import com.googlecode.flickrjandroid.SearchResultList;
+import com.googlecode.flickrjandroid.galleries.GalleriesInterface;
+import com.googlecode.flickrjandroid.galleries.Gallery;
 import com.wzw.ic.mvc.ViewItem;
 
-public class FlickrViewNodePhotoset extends FlickrViewNode {
+public class FlickrViewNodePeopleGalleries extends FlickrViewNode {
 	protected int pageNo;
 	
-	public FlickrViewNodePhotoset(String sourceUrl) {
+	public FlickrViewNodePeopleGalleries(String sourceUrl) {
 		super(sourceUrl);
 	}
 
@@ -28,15 +27,15 @@ public class FlickrViewNodePhotoset extends FlickrViewNode {
 	public void reload() {
 		doLoad(true);
 	}
-
+	
 	private void doLoad(boolean reload) {
 		int newPageNo = reload ? 1 : pageNo + 1;
 		
 		Flickr f = new Flickr(FlickrController.FLICKR_API_KEY);
-		PhotosetsInterface photosetsInterface = f.getPhotosetsInterface();
-		Photoset photoset = null;
+		GalleriesInterface galleriesInterface = f.getGalleriesInterface();
+		SearchResultList<Gallery> galleries = null;
 		try {
-			photoset = photosetsInterface.getPhotos(sourceUrl, 30, newPageNo);
+			galleries = galleriesInterface.getList(sourceUrl, 30, newPageNo);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -48,16 +47,13 @@ public class FlickrViewNodePhotoset extends FlickrViewNode {
 			e.printStackTrace();
 		}
 		
-		if (null != photoset &&
-			null != photoset.getPhotoList() &&
-			photoset.getPhotoList().size() > 0) {
-			
-			PhotoList photoList = photoset.getPhotoList();
+		if (null != galleries &&
+			galleries.size() > 0) {
 			
 			// hit the end
 			if (!reload &&
-				photoList.getPages() <= pageNo) {
-				pageNo = photoList.getPages();
+				galleries.getPages() <= pageNo) {
+				pageNo = galleries.getPages();
 				return;
 			}
 			
@@ -65,8 +61,9 @@ public class FlickrViewNodePhotoset extends FlickrViewNode {
 			if (reload) {
 				viewItems.clear();
 			}
-			for (Photo photo: photoList) {
-				ViewItem viewItem = new ViewItem(photo.getTitle(), "", photo.getLargeUrl(), 0);
+			
+			for (Gallery gallery: galleries) {
+				ViewItem viewItem = new ViewItem(gallery.getTitle(), String.format("https://www.flickr.com/photos/flickr/galleries/%s/", gallery.getGalleryId()), gallery.getPrimaryPhoto().getLargeSquareUrl(), 0);
 				viewItems.add(viewItem);
 			}
 		}

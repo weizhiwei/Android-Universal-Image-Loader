@@ -1,47 +1,54 @@
 package com.wzw.ic.mvc.flickr;
 
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 import org.json.JSONException;
 
 import com.googlecode.flickrjandroid.Flickr;
 import com.googlecode.flickrjandroid.FlickrException;
-import com.googlecode.flickrjandroid.interestingness.InterestingnessInterface;
+import com.googlecode.flickrjandroid.galleries.GalleriesInterface;
 import com.googlecode.flickrjandroid.photos.Photo;
 import com.googlecode.flickrjandroid.photos.PhotoList;
 import com.wzw.ic.mvc.ViewItem;
 
-public class FlickrViewNodeInterestingness extends FlickrViewNode {
-
+public class FlickrViewNodeGallery extends FlickrViewNode {
 	protected int pageNo;
 	
+	public FlickrViewNodeGallery(String sourceUrl) {
+		super(sourceUrl);
+	}
+
+	@Override
+	public boolean supportReloading() {
+		return true;
+	}
+
+	@Override
+	public void reload() {
+		doLoad(true);
+	}
+
 	private void doLoad(boolean reload) {
 		int newPageNo = reload ? 1 : pageNo + 1;
 		
 		Flickr f = new Flickr(FlickrController.FLICKR_API_KEY);
-		InterestingnessInterface interestingnessInterface = f.getInterestingnessInterface();
+		GalleriesInterface galleriesInterface = f.getGalleriesInterface();
 		PhotoList photoList = null;
 		try {
-			photoList = interestingnessInterface.getList((String)null, null, 30, newPageNo);
-		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
+			photoList = galleriesInterface.getPhotos(sourceUrl, null, 30, newPageNo);
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (FlickrException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if (null != photoList && photoList.size() > 0) {
+		
+		if (null != photoList &&
+			photoList.size() > 0) {
 			
 			// hit the end
 			if (!reload &&
@@ -61,20 +68,6 @@ public class FlickrViewNodeInterestingness extends FlickrViewNode {
 		}
 	}
 	
-	public FlickrViewNodeInterestingness() {
-		super("interestingness");
-	}
-
-	@Override
-	public boolean supportReloading() {
-		return true;
-	}
-
-	@Override
-	public void reload() {
-		doLoad(true);
-	}
-
 	@Override
 	public boolean supportPaging() {
 		return true;
