@@ -1,10 +1,17 @@
 package com.wzw.ic.mvc.fotopedia;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.googlecode.flickrjandroid.Flickr;
 import com.googlecode.flickrjandroid.FlickrException;
@@ -15,54 +22,65 @@ import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.flickr.FlickrController;
 
 public class FotoViewNodeMagazine extends FotoViewNode {
+	
+	public FotoViewNodeMagazine() {
+		super("magazine");
+	}
+
 	protected int pageNo;
 	
 	private void doLoad(boolean reload) {
-		int newPageNo = reload ? 1 : pageNo + 1;
+		int newPageNo = reload ? 0 : pageNo + 1;
+		final int PER_PAGE = 30;
 		
-		Flickr f = new Flickr(FlickrController.FLICKR_API_KEY);
-		InterestingnessInterface interestingnessInterface = f.getInterestingnessInterface();
-		PhotoList photoList = null;
+		JSONObject jsonObj = null;
 		try {
-			photoList = interestingnessInterface.getList((String)null, null, 30, newPageNo);
-		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (FlickrException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (null != photoList && photoList.size() > 0) {
+			URL url = new URL(
+				String.format("http://www.fotopedia.com/homePageCellItems.json?source=editorial&client_application_id=com-fotopedia-reporter&category=travels&dataSourceStateId=53c7c517e4b0fe80eeeb756b:53c7e6a5e4b0fedf860aa38f&offset=%d&limit=%d", newPageNo*PER_PAGE, PER_PAGE)
+			);
+	        URLConnection yc = url.openConnection();
+	        BufferedReader in = new BufferedReader(new InputStreamReader(
+	                                    yc.getInputStream()));
+	        String inputLine;
+	        StringBuffer sb = new StringBuffer();
+	        while ((inputLine = in.readLine()) != null) {
+	            sb.append(inputLine);
+	        }
+	        in.close();
 			
-			// hit the end
-			if (!reload &&
-				photoList.getPages() <= pageNo) {
-				pageNo = photoList.getPages();
-				return;
-			}
+	        jsonObj = new JSONObject(sb.toString());
+		} catch (Exception e) {
 			
-			pageNo = newPageNo;
-			if (reload) {
-				viewItems.clear();
-			}
-			for (Photo photo: photoList) {
-				ViewItem viewItem = new ViewItem(photo.getTitle(), "", photo.getLargeUrl(), 0);
-				viewItems.add(viewItem);
+		}
+		if (null != jsonObj) {
+	        JSONArray items = jsonObj.optJSONArray("items");
+			if (null != items && items.length() > 0) {			
+				pageNo = newPageNo;
+				if (reload) {
+					viewItems.clear();
+				}
+				for (int i = 0; i < items.length(); ++i) {
+					JSONObject item = items.optJSONObject(i);
+					if (null != item) {
+						String title = item.optString("title");
+						String nodeUrl = item.optString("staticWebURL");
+						JSONObject cover = item.optJSONObject("cover");
+						String image = null;
+						if (null != cover) {
+							String picId = cover.optString("picture_id");
+							String format = cover.optString("format");
+							if (null != picId && null != format) {
+								image = "http://images.cdn.fotopedia.com/" + picId + "-max_480." + format;
+							}
+						}
+						if (null != nodeUrl && null != image) {
+							ViewItem viewItem = new ViewItem(title, nodeUrl, image, 0);
+							viewItems.add(viewItem);
+						}
+					}
+				}
 			}
 		}
-	}
-	
-	public FlickrViewNodeInterestingness() {
-		super("interestingness");
 	}
 
 	@Override

@@ -3,13 +3,15 @@ package com.wzw.ic.mvc.root;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.flickr.FlickrController;
+import com.wzw.ic.mvc.fotopedia.FotoController;
 
 public class RootViewNode extends ViewNode {
 
 	public RootViewNode() {
 		super("/");
-		viewItems.add(new ViewItem("MOKO!美空", "moko", "http://www.vitbbs.cn/uploads/allimg/c101125/12ZEK63410-14106.gif", 0));
+		viewItems.add(new ViewItem("MOKO!", "moko", "http://www.vitbbs.cn/uploads/allimg/c101125/12ZEK63410-14106.gif", 0));
 		viewItems.add(new ViewItem("Flickr", "flickr", FlickrController.FLICKR_ICON, 0));
+		viewItems.add(new ViewItem("Fotopedia", "fotopedia", FotoController.FOTO_ICON, 0));
 	}
 
 	@Override

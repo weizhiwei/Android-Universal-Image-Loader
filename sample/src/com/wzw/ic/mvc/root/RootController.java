@@ -11,6 +11,8 @@ import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.flickr.FlickrController;
 import com.wzw.ic.mvc.flickr.FlickrViewNodeRoot;
+import com.wzw.ic.mvc.fotopedia.FotoController;
+import com.wzw.ic.mvc.fotopedia.FotoViewNodeRoot;
 import com.wzw.ic.mvc.moko.MokoController;
 import com.wzw.ic.mvc.moko.MokoViewNodeRoot;
 
@@ -35,6 +37,10 @@ public class RootController extends BaseController {
 				intent = new Intent(parentActivity, ImageListActivity.class);
 				newNode = new FlickrViewNodeRoot();
 				newController = new FlickrController();
+			} else if (itemUrl.equals("fotopedia")) {
+				intent = new Intent(parentActivity, ImageListActivity.class);
+				newNode = new FotoViewNodeRoot();
+				newController = new FotoController();
 			}
 		}
 		

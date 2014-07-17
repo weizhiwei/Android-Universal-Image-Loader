@@ -5,8 +5,8 @@ import com.wzw.ic.mvc.flickr.FlickrController;
 
 public class FotoViewNodeRoot extends FotoViewNode {
 
-	public FotoViewNodeRoot(String sourceUrl) {
+	public FotoViewNodeRoot() {
 		super("http://www.fotopedia.com");
-		viewItems.add(new ViewItem("Magazine", "magazine", FlickrController.FLICKR_ICON, 0));
+		viewItems.add(new ViewItem("Magazine", "magazine", FotoController.FOTO_ICON, 0));
 	}
 }
