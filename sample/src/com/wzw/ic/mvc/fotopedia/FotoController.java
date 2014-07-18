@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.Intent;
 
 import com.nostra13.example.universalimageloader.Constants.Extra;
+import com.nostra13.example.universalimageloader.ImageGridActivity;
 import com.nostra13.example.universalimageloader.ImageListActivity;
+import com.nostra13.example.universalimageloader.ImagePagerActivity;
 import com.wzw.ic.mvc.BaseController;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
@@ -25,6 +27,17 @@ public class FotoController extends BaseController {
 		if (itemUrl.equals("magazine")) {
 			intent = new Intent(parentActivity, ImageListActivity.class);
 			newNode = new FotoViewNodeMagazine();
+		}
+		
+		// story
+		if (itemUrl.contains("/stories/")) {
+			intent = new Intent(parentActivity, ImageGridActivity.class);
+			newNode = new FotoViewNodeStory(itemUrl);
+		}
+		if (node instanceof FotoViewNodeStory) {
+			intent = new Intent(parentActivity, ImagePagerActivity.class);
+			newNode = node;
+			intent.putExtra(Extra.IMAGE_POSITION, index);
 		}
 		
 		intent.putExtra(Extra.MODEL, newNode);

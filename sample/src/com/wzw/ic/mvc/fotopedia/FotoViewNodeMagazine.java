@@ -74,7 +74,7 @@ public class FotoViewNodeMagazine extends FotoViewNode {
 							}
 						}
 						if (null != nodeUrl && null != image) {
-							ViewItem viewItem = new ViewItem(title, nodeUrl, image, 0);
+							ViewItem viewItem = new ViewItem(title, "http://www.fotopedia.com" + nodeUrl, image, 0);
 							viewItems.add(viewItem);
 						}
 					}
