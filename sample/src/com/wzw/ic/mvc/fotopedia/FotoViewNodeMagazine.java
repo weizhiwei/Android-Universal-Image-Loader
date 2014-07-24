@@ -28,15 +28,18 @@ public class FotoViewNodeMagazine extends FotoViewNode {
 	}
 
 	protected int pageNo;
+	protected String dataSourceStateId;
 	
 	private void doLoad(boolean reload) {
 		int newPageNo = reload ? 0 : pageNo + 1;
 		final int PER_PAGE = 30;
+		String newDataSourceStateId = reload ? null : dataSourceStateId;
 		
 		JSONObject jsonObj = null;
 		try {
 			URL url = new URL(
-				String.format("http://www.fotopedia.com/homePageCellItems.json?source=editorial&client_application_id=com-fotopedia-reporter&category=travels&dataSourceStateId=53c7c517e4b0fe80eeeb756b:53c7e6a5e4b0fedf860aa38f&offset=%d&limit=%d", newPageNo*PER_PAGE, PER_PAGE)
+				String.format("http://www.fotopedia.com/homePageCellItems.json?source=editorial&offset=%d&limit=%d%s",
+						newPageNo*PER_PAGE, PER_PAGE, newDataSourceStateId == null ? "" : "&dataSourceStateId=" + newDataSourceStateId)
 			);
 	        URLConnection yc = url.openConnection();
 	        BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -56,6 +59,7 @@ public class FotoViewNodeMagazine extends FotoViewNode {
 	        JSONArray items = jsonObj.optJSONArray("items");
 			if (null != items && items.length() > 0) {			
 				pageNo = newPageNo;
+				dataSourceStateId = jsonObj.optString("dataSourceStateId");
 				if (reload) {
 					viewItems.clear();
 				}

@@ -3,8 +3,8 @@ package com.wzw.ic.mvc.root;
 import android.app.Activity;
 import android.content.Intent;
 
-import com.nostra13.example.universalimageloader.ImageGridActivity;
 import com.nostra13.example.universalimageloader.Constants.Extra;
+import com.nostra13.example.universalimageloader.ImageGridActivity;
 import com.nostra13.example.universalimageloader.ImageListActivity;
 import com.wzw.ic.mvc.BaseController;
 import com.wzw.ic.mvc.ViewItem;
@@ -15,6 +15,8 @@ import com.wzw.ic.mvc.fotopedia.FotoController;
 import com.wzw.ic.mvc.fotopedia.FotoViewNodeRoot;
 import com.wzw.ic.mvc.moko.MokoController;
 import com.wzw.ic.mvc.moko.MokoViewNodeRoot;
+import com.wzw.ic.mvc.nationalgeographic.NGController;
+import com.wzw.ic.mvc.nationalgeographic.NGViewNodeRoot;
 
 public class RootController extends BaseController {
 
@@ -41,6 +43,10 @@ public class RootController extends BaseController {
 				intent = new Intent(parentActivity, ImageListActivity.class);
 				newNode = new FotoViewNodeRoot();
 				newController = new FotoController();
+			} else if (itemUrl.equals("nationalgeographic")) {
+				intent = new Intent(parentActivity, ImageListActivity.class);
+				newNode = new NGViewNodeRoot();
+				newController = new NGController();
 			}
 		}
 		

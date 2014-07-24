@@ -4,6 +4,7 @@ import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.flickr.FlickrController;
 import com.wzw.ic.mvc.fotopedia.FotoController;
+import com.wzw.ic.mvc.nationalgeographic.NGController;
 
 public class RootViewNode extends ViewNode {
 
@@ -12,6 +13,7 @@ public class RootViewNode extends ViewNode {
 		viewItems.add(new ViewItem("MOKO!", "moko", "http://www.vitbbs.cn/uploads/allimg/c101125/12ZEK63410-14106.gif", 0));
 		viewItems.add(new ViewItem("Flickr", "flickr", FlickrController.FLICKR_ICON, 0));
 		viewItems.add(new ViewItem("Fotopedia", "fotopedia", FotoController.FOTO_ICON, 0));
+		viewItems.add(new ViewItem("National Geographic", "nationalgeographic", NGController.NG_ICON, 0));
 	}
 
 	@Override
