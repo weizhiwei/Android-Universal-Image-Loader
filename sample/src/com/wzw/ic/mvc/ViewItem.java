@@ -6,6 +6,7 @@ public class ViewItem extends BaseModel {
 	private String imageUrl;
 	private int color;
 	private boolean showingLabelInGrid;
+	private String story;
 	
 	public ViewItem(String label, String nodeUrl, String imageUrl, int color) {
 		this.setLabel(label);
@@ -54,6 +55,12 @@ public class ViewItem extends BaseModel {
 	public void setShowingLabelInGrid(boolean showingLabelInGrid) {
 		this.showingLabelInGrid = showingLabelInGrid;
 	}
-	
-	
+
+	public String getStory() {
+		return story;
+	}
+
+	public void setStory(String story) {
+		this.story = story;
+	}
 }

@@ -30,6 +30,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nostra13.example.universalimageloader.Constants.Extra;
@@ -136,9 +137,11 @@ public class ImagePagerActivity extends BaseActivity {
 			assert imageLayout != null;
 			ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
 			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
+			final TextView textView = (TextView) imageLayout.findViewById(R.id.story);
 
 			ViewItem viewItem = model.getViewItems().get(position);
 			
+			textView.setText(viewItem.getLabel() + "\n\n" + viewItem.getStory());
 			imageLoader.displayImage(viewItem.getImageUrl(), imageView, options, new SimpleImageLoadingListener() {
 				@Override
 				public void onLoadingStarted(String imageUri, View view) {

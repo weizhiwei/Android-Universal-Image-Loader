@@ -24,7 +24,10 @@ public class NGViewNodePhotoOfTheDay extends NGViewNode {
 			viewItems = new ArrayList<ViewItem>();
 			for (int i = 0; i < imgElems.size(); ++i) {
 				Element img = imgElems.get(i);
-				viewItems.add(new ViewItem("", "", "http:" + img.attr("src").replace("100x75", "990x742").replace("/overrides/", "/cache/"), 0));
+				ViewItem viewItem = new ViewItem("", "", "http:" + img.attr("src").replace("100x75", "990x742").replace("/overrides/", "/cache/"), 0);
+				viewItem.setLabel(img.attr("alt"));
+				viewItem.setStory(img.attr("alt"));
+				viewItems.add(viewItem);
 			}
 		}
 		return viewItems;
