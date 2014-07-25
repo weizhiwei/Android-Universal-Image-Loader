@@ -12,6 +12,8 @@ import com.wzw.ic.mvc.ViewNode;
 
 public class MokoController extends BaseController {
 	
+	public static String MOKO_ICON = "http://www.vitbbs.cn/uploads/allimg/c101125/12ZEK63410-14106.gif";
+	
 	@Override
 	public void startItemView(Activity parentActivity, ViewNode node, int position) {
 		Intent intent = null;
@@ -36,6 +38,8 @@ public class MokoController extends BaseController {
 		
 		intent.putExtra(Extra.MODEL, newNode);
 		intent.putExtra(Extra.CONTROLLER, this);
+		intent.putExtra(Extra.VIEW_ITEM, viewItem);
+
 		parentActivity.startActivity(intent);
 	}
 	

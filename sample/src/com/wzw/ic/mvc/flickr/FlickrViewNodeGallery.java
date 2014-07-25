@@ -35,7 +35,7 @@ public class FlickrViewNodeGallery extends FlickrViewNode {
 		GalleriesInterface galleriesInterface = f.getGalleriesInterface();
 		PhotoList photoList = null;
 		try {
-			photoList = galleriesInterface.getPhotos(sourceUrl, null, 30, newPageNo);
+			photoList = galleriesInterface.getPhotos(sourceUrl, FlickrController.EXTRAS, 30, newPageNo);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -63,6 +63,7 @@ public class FlickrViewNodeGallery extends FlickrViewNode {
 			}
 			for (Photo photo: photoList) {
 				ViewItem viewItem = new ViewItem(photo.getTitle(), "", photo.getLargeUrl(), 0);
+				viewItem.setStory(photo.getDescription());
 				viewItems.add(viewItem);
 			}
 		}

@@ -11,6 +11,7 @@ import com.googlecode.flickrjandroid.photos.PhotoList;
 import com.googlecode.flickrjandroid.photosets.Photoset;
 import com.googlecode.flickrjandroid.photosets.PhotosetsInterface;
 import com.wzw.ic.mvc.ViewItem;
+import com.wzw.ic.mvc.fotopedia.FotoController;
 
 public class FlickrViewNodePhotoset extends FlickrViewNode {
 	protected int pageNo;
@@ -36,7 +37,7 @@ public class FlickrViewNodePhotoset extends FlickrViewNode {
 		PhotosetsInterface photosetsInterface = f.getPhotosetsInterface();
 		Photoset photoset = null;
 		try {
-			photoset = photosetsInterface.getPhotos(sourceUrl, 30, newPageNo);
+			photoset = photosetsInterface.getPhotos(sourceUrl, FlickrController.EXTRAS, Flickr.PRIVACY_LEVEL_NO_FILTER, 30, newPageNo);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -67,6 +68,7 @@ public class FlickrViewNodePhotoset extends FlickrViewNode {
 			}
 			for (Photo photo: photoList) {
 				ViewItem viewItem = new ViewItem(photo.getTitle(), "", photo.getLargeUrl(), 0);
+				viewItem.setStory(photo.getDescription());
 				viewItems.add(viewItem);
 			}
 		}

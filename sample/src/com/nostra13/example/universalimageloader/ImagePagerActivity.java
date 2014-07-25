@@ -24,8 +24,11 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.text.Html;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -58,20 +61,6 @@ public class ImagePagerActivity extends BaseActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ac_image_pager);
-
-		if (Build.VERSION.SDK_INT < 16) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        } else {
-        	View decorView = getWindow().getDecorView();
-        	// Hide the status bar.
-        	int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-        	decorView.setSystemUiVisibility(uiOptions);
-        	// Remember that you should never show the action bar if the
-        	// status bar is hidden, so hide that too if necessary.
-        	ActionBar actionBar = getActionBar();
-        	actionBar.hide();
-        }
 		
 		setModelControllerFromIntent();
 		
@@ -99,7 +88,7 @@ public class ImagePagerActivity extends BaseActivity {
 		pager.setAdapter(new ImagePagerAdapter());
 		pager.setCurrentItem(pagerPosition);
 	}
-
+	
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putInt(STATE_POSITION, pager.getCurrentItem());
@@ -141,7 +130,32 @@ public class ImagePagerActivity extends BaseActivity {
 
 			ViewItem viewItem = model.getViewItems().get(position);
 			
-			textView.setText(viewItem.getLabel() + "\n\n" + viewItem.getStory());
+			String story = "";
+			if (!TextUtils.isEmpty(viewItem.getLabel())) {
+				story += "<b>" + viewItem.getLabel() + "</b>";
+			}
+			if (!TextUtils.isEmpty(viewItem.getStory())) {
+				if (!TextUtils.isEmpty(story)) {
+					story += "<br/><br/>";
+				}
+				story += viewItem.getStory();
+			}
+			if (!TextUtils.isEmpty(story)) {
+				textView.setText(Html.fromHtml(story));
+			}
+			
+			imageView.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					if (View.VISIBLE != textView.getVisibility() && !TextUtils.isEmpty(textView.getText())) {
+						textView.setVisibility(View.VISIBLE);
+					} else {
+						textView.setVisibility(View.GONE);
+					}
+					toggleFullscreen();
+				}
+			});
+			
 			imageLoader.displayImage(viewItem.getImageUrl(), imageView, options, new SimpleImageLoadingListener() {
 				@Override
 				public void onLoadingStarted(String imageUri, View view) {

@@ -119,7 +119,6 @@ public class ImageGridActivity extends AbsListViewBaseActivity {
 		super.onWindowFocusChanged(hasFocus);
 		if (hasFocus && mItemAdapter.getCount() == 0) {
 			mPullRefreshGridView.setRefreshing();
-			new GetDataTask().execute(true);
 		}
 	}
 	
@@ -187,7 +186,7 @@ public class ImageGridActivity extends AbsListViewBaseActivity {
 			}
 
 			ViewItem viewItem = model.getViewItems().get(position);
-			if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+			if (!TextUtils.isEmpty(viewItem.getImageUrl()) && !viewItem.isUsingColorOverImage()) {
 				imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, options, new SimpleImageLoadingListener() {
 										 @Override
 										 public void onLoadingStarted(String imageUri, View view) {

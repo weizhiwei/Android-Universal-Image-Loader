@@ -29,29 +29,29 @@ public class RootController extends BaseController {
 		String nodeUrl = node.getSourceUrl();
 		ViewItem viewItem = node.getViewItems().get(index);
 		String itemUrl = viewItem.getNodeUrl();
-		if (nodeUrl.equals("/")) {
-			
-			if (itemUrl.equals("moko")) {
-				intent = new Intent(parentActivity, ImageGridActivity.class);
-				newNode = new MokoViewNodeRoot();
-				newController = new MokoController();
-			} else if (itemUrl.equals("flickr")) {
-				intent = new Intent(parentActivity, ImageListActivity.class);
-				newNode = new FlickrViewNodeRoot();
-				newController = new FlickrController();
-			} else if (itemUrl.equals("fotopedia")) {
-				intent = new Intent(parentActivity, ImageListActivity.class);
-				newNode = new FotoViewNodeRoot();
-				newController = new FotoController();
-			} else if (itemUrl.equals("nationalgeographic")) {
-				intent = new Intent(parentActivity, ImageListActivity.class);
-				newNode = new NGViewNodeRoot();
-				newController = new NGController();
-			}
+
+		if (itemUrl.equals("moko")) {
+			intent = new Intent(parentActivity, ImageGridActivity.class);
+			newNode = new MokoViewNodeRoot();
+			newController = new MokoController();
+		} else if (itemUrl.equals("flickr")) {
+			intent = new Intent(parentActivity, ImageListActivity.class);
+			newNode = new FlickrViewNodeRoot();
+			newController = new FlickrController();
+		} else if (itemUrl.equals("fotopedia")) {
+			intent = new Intent(parentActivity, ImageListActivity.class);
+			newNode = new FotoViewNodeRoot();
+			newController = new FotoController();
+		} else if (itemUrl.equals("nationalgeographic")) {
+			intent = new Intent(parentActivity, ImageListActivity.class);
+			newNode = new NGViewNodeRoot();
+			newController = new NGController();
 		}
 		
 		intent.putExtra(Extra.MODEL, newNode);
 		intent.putExtra(Extra.CONTROLLER, newController);
+		intent.putExtra(Extra.VIEW_ITEM, viewItem);
+		
 		parentActivity.startActivity(intent);
 	}
 }

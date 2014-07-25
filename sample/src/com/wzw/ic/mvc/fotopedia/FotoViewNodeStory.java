@@ -9,6 +9,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import android.text.TextUtils;
+
 import com.wzw.ic.mvc.ViewItem;
 
 public class FotoViewNodeStory extends FotoViewNode {
@@ -34,12 +36,28 @@ public class FotoViewNodeStory extends FotoViewNode {
 		}
 		if (doc != null) {
 			List<ViewItem> pageViewItems = null;
-			Elements imgElems = doc.select("figure div.PCImageView");
-			if (null != imgElems && imgElems.size() > 0) {
+			Elements figureElems = doc.select("figure");
+			if (null != figureElems && figureElems.size() > 0) {
 				pageViewItems = new ArrayList<ViewItem>();
-				for (int i = 0; i < imgElems.size(); ++i) {
-					Element img = imgElems.get(i);
-					pageViewItems.add(new ViewItem("", "", img.attr("about"), 0));
+				for (int i = 0; i < figureElems.size(); ++i) {
+					Element figure = figureElems.get(i);
+					Elements imgElems = figure.select(".PCImageView");
+					String imgUrl = null;
+					if (null != imgElems && imgElems.size() > 0) {
+						imgUrl = imgElems.get(0).attr("about");
+					}
+					if (!TextUtils.isEmpty(imgUrl)) {
+						ViewItem viewItem = new ViewItem("", "", imgUrl, 0);
+						Elements titleElems = figure.select(".cover-title, .regular-title");
+						if (null != titleElems && titleElems.size() > 0) {
+							viewItem.setLabel(titleElems.get(0).ownText());
+						}
+						Elements descElems = figure.select(".slide-text");
+						if (null != descElems && descElems.size() > 0) {
+							viewItem.setStory(descElems.get(0).ownText());
+						}
+						pageViewItems.add(viewItem);
+					}
 				}
 			}
 			

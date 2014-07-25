@@ -24,7 +24,7 @@ public class FlickrViewNodeInterestingness extends FlickrViewNode {
 		InterestingnessInterface interestingnessInterface = f.getInterestingnessInterface();
 		PhotoList photoList = null;
 		try {
-			photoList = interestingnessInterface.getList((String)null, null, 30, newPageNo);
+			photoList = interestingnessInterface.getList((String)null, FlickrController.EXTRAS, 30, newPageNo);
 		} catch (InvalidKeyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -56,6 +56,7 @@ public class FlickrViewNodeInterestingness extends FlickrViewNode {
 			}
 			for (Photo photo: photoList) {
 				ViewItem viewItem = new ViewItem(photo.getTitle(), "", photo.getLargeUrl(), 0);
+				viewItem.setStory(photo.getDescription());
 				viewItems.add(viewItem);
 			}
 		}

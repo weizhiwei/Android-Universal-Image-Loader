@@ -6,6 +6,7 @@ public class ViewItem extends BaseModel {
 	private String imageUrl;
 	private int color;
 	private boolean showingLabelInGrid;
+	private boolean usingColorOverImage;
 	private String story;
 	
 	public ViewItem(String label, String nodeUrl, String imageUrl, int color) {
@@ -14,6 +15,7 @@ public class ViewItem extends BaseModel {
 		this.setImageUrl(imageUrl);
 		this.setColor(color);
 		this.setShowingLabelInGrid(false);
+		this.setUsingColorOverImage(false);
 	}
 
 	public String getLabel() {
@@ -62,5 +64,13 @@ public class ViewItem extends BaseModel {
 
 	public void setStory(String story) {
 		this.story = story;
+	}
+
+	public boolean isUsingColorOverImage() {
+		return usingColorOverImage;
+	}
+
+	public void setUsingColorOverImage(boolean usingColorOverImage) {
+		this.usingColorOverImage = usingColorOverImage;
 	}
 }

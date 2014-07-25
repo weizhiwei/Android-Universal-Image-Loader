@@ -1,8 +1,13 @@
 package com.wzw.ic.mvc.flickr;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import android.app.Activity;
 import android.content.Intent;
 
+import com.googlecode.flickrjandroid.photos.Extras;
 import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.example.universalimageloader.ImageGridActivity;
 import com.nostra13.example.universalimageloader.ImageListActivity;
@@ -15,6 +20,9 @@ public class FlickrController extends BaseController {
 	
 	public static String FLICKR_ICON = "https://farm4.staticflickr.com/3741/buddyicons/66956608@N06_r.jpg";
 	static String FLICKR_API_KEY = "6076b3fca0851330568d880610c70267";
+	static final Set<String> EXTRAS = new HashSet<String>(Arrays.asList(
+		Extras.DESCRIPTION
+	));
 	
 	@Override
 	public void startItemView(Activity parentActivity, ViewNode node, int index) {
@@ -83,6 +91,8 @@ public class FlickrController extends BaseController {
 		
 		intent.putExtra(Extra.MODEL, newNode);
 		intent.putExtra(Extra.CONTROLLER, this);
+		intent.putExtra(Extra.VIEW_ITEM, viewItem);
+
 		parentActivity.startActivity(intent);
 	}
 

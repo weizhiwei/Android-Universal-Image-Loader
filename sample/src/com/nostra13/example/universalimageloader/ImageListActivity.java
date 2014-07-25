@@ -133,7 +133,6 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 		super.onWindowFocusChanged(hasFocus);
 		if (hasFocus && mItemAdapter.getCount() == 0) {
 			mPullRefreshListView.setRefreshing();
-			new GetDataTask().execute(true);
 		}
 	}
 	
@@ -210,7 +209,7 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 			
 			holder.text.setText(viewItem.getLabel());
 
-			if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+			if (!TextUtils.isEmpty(viewItem.getImageUrl()) && !viewItem.isUsingColorOverImage()) {
 				imageLoader.displayImage(viewItem.getImageUrl(), holder.image, options, animateFirstListener);
 			} else {
 				holder.image.setBackgroundColor(viewItem.getColor());

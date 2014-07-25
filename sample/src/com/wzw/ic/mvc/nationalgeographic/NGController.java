@@ -12,7 +12,7 @@ import com.wzw.ic.mvc.ViewNode;
 
 public class NGController extends BaseController {
 	
-	public static String NG_ICON = "http://images.cdn.fotopedia.com/fotopedia-af3MHAL54rw-original.png";
+	public static String NG_ICON = "http://a266.phobos.apple.com/us/r1000/087/Purple2/v4/6d/20/4b/6d204b68-468b-22c8-a831-8d26535edbbb/mzl.keeyqfwh.png";
 	
 	@Override
 	public void startItemView(Activity parentActivity, ViewNode node, int position) {
@@ -35,6 +35,8 @@ public class NGController extends BaseController {
 		
 		intent.putExtra(Extra.MODEL, newNode);
 		intent.putExtra(Extra.CONTROLLER, this);
+		intent.putExtra(Extra.VIEW_ITEM, viewItem);
+
 		parentActivity.startActivity(intent);
 	}
 	

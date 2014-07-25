@@ -42,6 +42,8 @@ public class FotoController extends BaseController {
 		
 		intent.putExtra(Extra.MODEL, newNode);
 		intent.putExtra(Extra.CONTROLLER, this);
+		intent.putExtra(Extra.VIEW_ITEM, viewItem);
+
 		parentActivity.startActivity(intent);
 	}
 }

@@ -37,7 +37,8 @@ public class MokoViewNodeRoot extends MokoViewNode {
 						color = Color.parseColor("#" + colorString);
 					}
 				}
-				ViewItem viewItem = new ViewItem(a.ownText(), url, "", color);
+				ViewItem viewItem = new ViewItem(a.ownText(), url, MokoController.MOKO_ICON, color);
+				viewItem.setUsingColorOverImage(true);
 				viewItem.setShowingLabelInGrid(true);
 				viewItems.add(viewItem);
 			}

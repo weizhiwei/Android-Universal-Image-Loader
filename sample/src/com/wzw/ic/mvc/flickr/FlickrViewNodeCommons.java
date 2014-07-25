@@ -1,21 +1,23 @@
 package com.wzw.ic.mvc.flickr;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONException;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
-import com.googlecode.flickrjandroid.Flickr;
-import com.googlecode.flickrjandroid.FlickrException;
-import com.googlecode.flickrjandroid.commons.CommonsInterface;
-import com.googlecode.flickrjandroid.commons.Institution;
+import android.text.TextUtils;
+
 import com.wzw.ic.mvc.ViewItem;
 
 public class FlickrViewNodeCommons extends FlickrViewNode {
 	protected int pageNo;
 	
 	public FlickrViewNodeCommons() {
-		super("commons");
+		super("https://www.flickr.com/commons");
 	}
 
 	@Override
@@ -29,29 +31,40 @@ public class FlickrViewNodeCommons extends FlickrViewNode {
 	}
 
 	private void doLoad(boolean reload) {
-		Flickr f = new Flickr(FlickrController.FLICKR_API_KEY);
-		CommonsInterface commonsInterface = f.getCommonsInterface();
-		List<Institution> institutions = null;
+		Document doc = null;
 		try {
-			institutions = commonsInterface.getInstitutions();
-		} catch (FlickrException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			doc = Jsoup
+					.connect(sourceUrl)
+					.get();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		
-		if (null != institutions &&
-			institutions.size() > 0) {
+		if (doc != null) {
+			List<ViewItem> pageViewItems = null;
+			Elements instElems = doc.select("#tc_institutions_list a");
+			if (null != instElems && instElems.size() > 0) {
+				pageViewItems = new ArrayList<ViewItem>();
+				for (int i = 0; i < instElems.size(); ++i) {
+					Element inst = instElems.get(i);
+					Elements imgElems = inst.select("img");
+					String imgUrl = null;
+					if (null != imgElems && imgElems.size() > 0) {
+						imgUrl = imgElems.get(0).attr("src");
+					}
+					if (!TextUtils.isEmpty(imgUrl)) {
+						String id = imgUrl.substring(
+								imgUrl.indexOf("/buddyicons/") + 12,
+								imgUrl.indexOf(".jpg"));
+						ViewItem viewItem = new ViewItem(inst.attr("title"), String.format("https://www.flickr.com/people/%s/", id), imgUrl, 0);
+						pageViewItems.add(viewItem);
+					}
+				}
+			}
 			
-			viewItems.clear();
-			for (Institution institution: institutions) {
-				ViewItem viewItem = new ViewItem(institution.getName(), String.format("https://www.flickr.com/people/%s/", institution.getId()), "", 0);
-				viewItems.add(viewItem);
+			if (null != pageViewItems && pageViewItems.size() > 0) {
+				viewItems.clear();
+				viewItems.addAll(pageViewItems);
 			}
 		}
 	}
