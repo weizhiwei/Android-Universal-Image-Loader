@@ -15,6 +15,7 @@
  *******************************************************************************/
 package com.nostra13.example.universalimageloader;
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -46,47 +47,49 @@ public abstract class BaseActivity extends Activity {
 	protected ViewNode model;
 	protected BaseController controller;
 	
-	public void toggleFullscreen() {
-		if (Build.VERSION.SDK_INT < 16) {
-			int fs = WindowManager.LayoutParams.FLAG_FULLSCREEN;
-			if ((getWindow().getAttributes().flags & fs) == 0) {
-				getWindow().setFlags(fs, fs);
-			} else {
-				getWindow().clearFlags(fs);
-			}
-		} else {
-        	View decorView = getWindow().getDecorView();
-			ActionBar actionBar = getActionBar();
-			if (actionBar.isShowing()) {
-	        	// Hide the status bar.
-	        	int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-	        	decorView.setSystemUiVisibility(uiOptions);
-	        	// Remember that you should never show the action bar if the
-	        	// status bar is hidden, so hide that too if necessary.
-	        	actionBar.hide();
-	        } else {
-			    // Show the status bar.
-			    int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
-			    decorView.setSystemUiVisibility(uiOptions);
-			    // Remember that you should never show the action bar if the
-			    // status bar is hidden, so hide that too if necessary.
-			    actionBar.show();
-	        }
-		}
+	@SuppressLint("NewApi")
+	public boolean isFullscreen() {
+		return (getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
 	}
 	
-	protected void setModelControllerFromIntent() {
-		Bundle bundle = getIntent().getExtras();
-		ViewItem viewItem = null;
-		if (null != bundle) {
-			model = (ViewNode) bundle.getSerializable(Extra.MODEL);
-			controller = (BaseController) bundle.getSerializable(Extra.CONTROLLER);
-			viewItem = (ViewItem) bundle.getSerializable(Extra.VIEW_ITEM);
+	@SuppressLint("NewApi")
+	public void setFullscreen(boolean fullscreen) {
+		if (fullscreen) {
+			getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
+			
+		} else {
+			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//			getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
 		}
-		if (null == model || null == controller) {
-			model = new RootViewNode();
-			controller = new RootController();
+		
+		if (Build.VERSION.SDK_INT >= 16) {
+			View decorView = getWindow().getDecorView();
+			if (fullscreen) {
+	        	// Hide the status bar.
+	        	int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+	        	decorView.setSystemUiVisibility(uiOptions);
+	        } else {
+			    int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+			    decorView.setSystemUiVisibility(uiOptions);
+	        }
 		}
+		
+		if (Build.VERSION.SDK_INT >= 11) {
+			ActionBar actionBar = getActionBar();
+			if (fullscreen) {
+	        	actionBar.hide();
+	        } else {
+			    actionBar.show();
+	        }
+	    }
+	}
+	
+	public void toggleFullscreen() {
+		setFullscreen(!isFullscreen());
+	}
+	
+	protected void setTitleIconFromViewItem(ViewItem viewItem) {
 		if (null != viewItem) {
 			setTitle(viewItem.getLabel());
 			if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
@@ -119,6 +122,21 @@ public abstract class BaseActivity extends Activity {
 				});
 			}
 		}
+	}
+	
+	protected void setModelControllerFromIntent() {
+		Bundle bundle = getIntent().getExtras();
+		ViewItem viewItem = null;
+		if (null != bundle) {
+			model = (ViewNode) bundle.getSerializable(Extra.MODEL);
+			controller = (BaseController) bundle.getSerializable(Extra.CONTROLLER);
+			viewItem = (ViewItem) bundle.getSerializable(Extra.VIEW_ITEM);
+		}
+		if (null == model || null == controller) {
+			model = new RootViewNode();
+			controller = new RootController();
+		}
+		setTitleIconFromViewItem(viewItem);
 	}
 	
 	@Override

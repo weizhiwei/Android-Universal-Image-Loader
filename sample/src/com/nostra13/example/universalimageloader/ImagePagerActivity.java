@@ -87,6 +87,8 @@ public class ImagePagerActivity extends BaseActivity {
 		pager.setOffscreenPageLimit(3);
 		pager.setAdapter(new ImagePagerAdapter());
 		pager.setCurrentItem(pagerPosition);
+		
+		setFullscreen(true);
 	}
 	
 	@Override
@@ -118,6 +120,14 @@ public class ImagePagerActivity extends BaseActivity {
 	        GalleryViewPager galleryContainer = ((GalleryViewPager)container);
 	        View imageLayout = (View) object;
 	        galleryContainer.mCurrentView = (TouchImageView) imageLayout.findViewById(R.id.image);
+	        
+	        if (!isFullscreen()) {
+	        	setTitleIconFromViewItem(model.getViewItems().get(position));
+	        	final TextView textView = (TextView) imageLayout.findViewById(R.id.story);
+	        	if (!TextUtils.isEmpty(textView.getText())) {
+					textView.setVisibility(View.VISIBLE);
+				}
+	        }
 	    }
 		
 		@Override
@@ -136,7 +146,7 @@ public class ImagePagerActivity extends BaseActivity {
 			}
 			if (!TextUtils.isEmpty(viewItem.getStory())) {
 				if (!TextUtils.isEmpty(story)) {
-					story += "<br/><br/>";
+					story += "<br/>";
 				}
 				story += viewItem.getStory();
 			}
