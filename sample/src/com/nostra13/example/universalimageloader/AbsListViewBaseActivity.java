@@ -15,6 +15,12 @@
  *******************************************************************************/
 package com.nostra13.example.universalimageloader;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -88,4 +94,25 @@ public class AbsListViewBaseActivity extends BaseActivity {
 				return super.onOptionsItemSelected(item);
 		}
 	}
+	
+	private void enableWallpaperService(boolean enabled) {
+		enableWallpaperAlarms(this, enabled);
+		
+		ComponentName receiver = new ComponentName(this, BootReceiver.class);
+		PackageManager pm = getPackageManager();
+		pm.setComponentEnabledSetting(receiver,
+		        enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+		        PackageManager.DONT_KILL_APP);
+	}
+	
+	public static void enableWallpaperAlarms(Context context, boolean enabled) {
+		AlarmManager alarmMgr = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+		Intent intent = new Intent(context, WallpaperAlarmReceiver.class);
+		PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+		if (enabled) {
+			alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, 0, 15*1000, alarmIntent);
+		} else {
+			alarmMgr.cancel(alarmIntent);
+		}
+	}	
 }
