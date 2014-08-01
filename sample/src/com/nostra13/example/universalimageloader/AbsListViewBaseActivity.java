@@ -88,7 +88,8 @@ public class AbsListViewBaseActivity extends BaseActivity {
 			case R.id.item_pause_on_fling:
 				pauseOnFling = !pauseOnFling;
 				item.setChecked(pauseOnFling);
-				applyScrollListener();
+//				applyScrollListener();
+				enableWallpaperService(pauseOnFling);
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
@@ -110,7 +111,7 @@ public class AbsListViewBaseActivity extends BaseActivity {
 		Intent intent = new Intent(context, WallpaperAlarmReceiver.class);
 		PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
 		if (enabled) {
-			alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, 0, 15*1000, alarmIntent);
+			alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, 0, 5*1000, alarmIntent);
 		} else {
 			alarmMgr.cancel(alarmIntent);
 		}

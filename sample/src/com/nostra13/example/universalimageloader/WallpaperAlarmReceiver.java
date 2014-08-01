@@ -1,5 +1,8 @@
 package com.nostra13.example.universalimageloader;
 
+import java.io.IOException;
+import java.util.Random;
+
 import com.nostra13.universalimageloader.cache.disc.DiskCache;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -16,10 +19,18 @@ import android.widget.ImageView;
 public class WallpaperAlarmReceiver extends BroadcastReceiver {
 
 	@Override
-	public void onReceive(Context context, Intent intent) {
-		WallpaperManager wallpaperMgr = WallpaperManager.getInstance(context);
+	public void onReceive(final Context context, Intent intent) {
 		ImageLoader imageLoader = ImageLoader.getInstance();
-		imageLoader.loadImage(imageLoader.get, new ImageLoadingListener() {
+		
+		Object[] images = imageLoader.getMemoryCache().keys().toArray();
+		
+		if (images.length == 0) {
+			return;
+		}
+		
+		String randomImage = (String)images[(new Random()).nextInt(images.length)];
+		randomImage = randomImage.substring(0, randomImage.lastIndexOf("_"));
+		imageLoader.loadImage(randomImage, new ImageLoadingListener() {
 			
 			@Override
 			public void onLoadingStarted(String imageUri, View view) {
@@ -36,8 +47,13 @@ public class WallpaperAlarmReceiver extends BroadcastReceiver {
 			
 			@Override
 			public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-				ImageView logo = (ImageView) findViewById(android.R.id.home);
-				logo.setImageBitmap(loadedImage);
+				WallpaperManager wallpaperMgr = WallpaperManager.getInstance(context);
+				try {
+					wallpaperMgr.setBitmap(loadedImage);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			
 			@Override
@@ -46,7 +62,5 @@ public class WallpaperAlarmReceiver extends BroadcastReceiver {
 				
 			}
 		});
-		DiskCache diskCache = imageLoader.getDiskCache();
-		wallpaperMgr.setBitmap(diskCache.get(diskCache.));
 	}
 }
