@@ -3,18 +3,19 @@ package com.nostra13.example.universalimageloader;
 import java.io.IOException;
 import java.util.Random;
 
-import com.nostra13.universalimageloader.cache.disc.DiskCache;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
-
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.Canvas;
+import android.view.Display;
 import android.view.View;
-import android.widget.ImageView;
+
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
 public class WallpaperAlarmReceiver extends BroadcastReceiver {
 
@@ -49,7 +50,21 @@ public class WallpaperAlarmReceiver extends BroadcastReceiver {
 			public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
 				WallpaperManager wallpaperMgr = WallpaperManager.getInstance(context);
 				try {
-					wallpaperMgr.setBitmap(loadedImage);
+					Bitmap wallpaper = null;
+					
+					Display display = getWindowManager().getDefaultDisplay(); bmp = Bitmap.createScaledBitmap(bmp, display.getWidth(), display.getHeight(), false);
+					
+					int desiredWidth = wallpaperMgr.getDesiredMinimumWidth();
+					int desiredHeight = wallpaperMgr.getDesiredMinimumHeight();
+					if (desiredWidth > 0 && desiredHeight > 0) {
+						wallpaper = Bitmap.createBitmap(desiredWidth, desiredHeight, Config.ARGB_8888);
+						Canvas canvas = new Canvas(wallpaper);
+						
+						canvas.drawBitmap(loadedImage, 0, (desiredHeight - loadedImage.getHeight())/2, null);
+					} else {
+						wallpaper = loadedImage;
+					}
+					wallpaperMgr.setBitmap(wallpaper);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
