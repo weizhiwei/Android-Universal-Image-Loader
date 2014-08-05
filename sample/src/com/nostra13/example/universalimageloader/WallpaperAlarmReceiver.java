@@ -10,8 +10,9 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
-import android.view.Display;
+import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.WindowManager;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -48,22 +49,41 @@ public class WallpaperAlarmReceiver extends BroadcastReceiver {
 			
 			@Override
 			public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-				WallpaperManager wallpaperMgr = WallpaperManager.getInstance(context);
+				if (null == loadedImage) {
+					return;
+				}
+								
+				int imageWidth = loadedImage.getWidth();
+				int imageHeight = loadedImage.getHeight();
+				
+				DisplayMetrics metrics = new DisplayMetrics();
+				((WindowManager)context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(metrics);
+		        int screenWidth = metrics.widthPixels;
+		        int screenHeight = metrics.heightPixels;		        
+		        
+		        if (screenWidth*imageHeight > imageWidth*screenHeight) {
+		        	loadedImage = Bitmap.createScaledBitmap(loadedImage, screenHeight*imageWidth/imageHeight, screenHeight, false);
+		        } else {
+		        	loadedImage = Bitmap.createScaledBitmap(loadedImage, screenWidth, screenWidth*imageHeight/imageWidth, false);			        	
+		        }
+		        
+		        WallpaperManager wallpaperMgr = WallpaperManager.getInstance(context);
+				Bitmap wallpaper = null;
+				
+				// For compatibility
+				wallpaperMgr.suggestDesiredDimensions(screenWidth, screenHeight);
+				
+				int desiredWidth = wallpaperMgr.getDesiredMinimumWidth();
+				int desiredHeight = wallpaperMgr.getDesiredMinimumHeight();
+				if (desiredWidth > 0 && desiredHeight > 0) {
+					wallpaper = Bitmap.createBitmap(desiredWidth, desiredHeight, Config.ARGB_8888);
+					Canvas canvas = new Canvas(wallpaper);
+					canvas.drawBitmap(loadedImage, (desiredWidth - loadedImage.getWidth())/2, (desiredHeight - loadedImage.getHeight())/2, null);
+				} else {
+					wallpaper = loadedImage;
+				}
+
 				try {
-					Bitmap wallpaper = null;
-					
-					Display display = getWindowManager().getDefaultDisplay(); bmp = Bitmap.createScaledBitmap(bmp, display.getWidth(), display.getHeight(), false);
-					
-					int desiredWidth = wallpaperMgr.getDesiredMinimumWidth();
-					int desiredHeight = wallpaperMgr.getDesiredMinimumHeight();
-					if (desiredWidth > 0 && desiredHeight > 0) {
-						wallpaper = Bitmap.createBitmap(desiredWidth, desiredHeight, Config.ARGB_8888);
-						Canvas canvas = new Canvas(wallpaper);
-						
-						canvas.drawBitmap(loadedImage, 0, (desiredHeight - loadedImage.getHeight())/2, null);
-					} else {
-						wallpaper = loadedImage;
-					}
 					wallpaperMgr.setBitmap(wallpaper);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
