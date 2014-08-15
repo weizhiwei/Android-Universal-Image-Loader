@@ -42,6 +42,7 @@ public class UILApplication extends Application {
 		super.onCreate();
 
 		initImageLoader(getApplicationContext());
+		IcDatabase.getInstance().open(getApplicationContext());
 	}
 
 	public static void initImageLoader(Context context) {

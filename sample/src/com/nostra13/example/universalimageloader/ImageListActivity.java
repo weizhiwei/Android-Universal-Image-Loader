@@ -132,7 +132,7 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 	public void onWindowFocusChanged(boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);
 		if (hasFocus && mItemAdapter.getCount() == 0) {
-			mPullRefreshListView.setRefreshing(true);
+//			mPullRefreshListView.setRefreshing(true);
 		}
 	}
 	

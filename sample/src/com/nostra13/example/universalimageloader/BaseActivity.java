@@ -18,6 +18,7 @@ package com.nostra13.example.universalimageloader;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,6 +28,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.ShareActionProvider;
 
 import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -46,6 +48,7 @@ public abstract class BaseActivity extends Activity {
 	protected ImageLoader imageLoader = ImageLoader.getInstance();
 	protected ViewNode model;
 	protected BaseController controller;
+	protected Menu menu;
 	
 	@SuppressLint("NewApi")
 	public boolean isFullscreen() {
@@ -142,6 +145,7 @@ public abstract class BaseActivity extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main_menu, menu);
+		this.menu = menu;
 		return true;
 	}
 

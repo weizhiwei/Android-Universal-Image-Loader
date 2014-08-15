@@ -111,7 +111,7 @@ public class AbsListViewBaseActivity extends BaseActivity {
 		Intent intent = new Intent(context, WallpaperAlarmReceiver.class);
 		PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
 		if (enabled) {
-			alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, 0, 5*1000, alarmIntent);
+			alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, 0, 60*1000, alarmIntent);
 		} else {
 			alarmMgr.cancel(alarmIntent);
 		}

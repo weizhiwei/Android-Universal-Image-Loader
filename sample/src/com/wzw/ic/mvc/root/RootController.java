@@ -13,6 +13,8 @@ import com.wzw.ic.mvc.flickr.FlickrController;
 import com.wzw.ic.mvc.flickr.FlickrViewNodeRoot;
 import com.wzw.ic.mvc.fotopedia.FotoController;
 import com.wzw.ic.mvc.fotopedia.FotoViewNodeRoot;
+import com.wzw.ic.mvc.hearts.HeartsController;
+import com.wzw.ic.mvc.hearts.HeartsViewNodeRoot;
 import com.wzw.ic.mvc.moko.MokoController;
 import com.wzw.ic.mvc.moko.MokoViewNodeRoot;
 import com.wzw.ic.mvc.nationalgeographic.NGController;
@@ -30,7 +32,11 @@ public class RootController extends BaseController {
 		ViewItem viewItem = node.getViewItems().get(index);
 		String itemUrl = viewItem.getNodeUrl();
 
-		if (itemUrl.equals("moko")) {
+		if (itemUrl.equals("hearts")) {
+			intent = new Intent(parentActivity, ImageGridActivity.class);
+			newNode = new HeartsViewNodeRoot();
+			newController = new HeartsController();
+		} else if (itemUrl.equals("moko")) {
 			intent = new Intent(parentActivity, ImageGridActivity.class);
 			newNode = new MokoViewNodeRoot();
 			newController = new MokoController();

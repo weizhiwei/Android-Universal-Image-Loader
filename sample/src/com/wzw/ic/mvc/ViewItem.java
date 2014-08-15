@@ -8,6 +8,7 @@ public class ViewItem extends BaseModel {
 	private boolean showingLabelInGrid;
 	private boolean usingColorOverImage;
 	private String story;
+	private boolean heartsOn;
 	
 	public ViewItem(String label, String nodeUrl, String imageUrl, int color) {
 		this.setLabel(label);
@@ -16,6 +17,7 @@ public class ViewItem extends BaseModel {
 		this.setColor(color);
 		this.setShowingLabelInGrid(false);
 		this.setUsingColorOverImage(false);
+		this.setHeartsOn(false);
 	}
 
 	public String getLabel() {
@@ -72,5 +74,13 @@ public class ViewItem extends BaseModel {
 
 	public void setUsingColorOverImage(boolean usingColorOverImage) {
 		this.usingColorOverImage = usingColorOverImage;
+	}
+
+	public boolean isHeartsOn() {
+		return heartsOn;
+	}
+
+	public void setHeartsOn(boolean heartsOn) {
+		this.heartsOn = heartsOn;
 	}
 }

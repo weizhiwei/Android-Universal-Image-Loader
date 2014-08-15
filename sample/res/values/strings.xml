@@ -15,5 +15,8 @@
     <string name="button_image_gallery">Gallery</string>
     <!-- Content descriptions -->
     <string name="descr_image">Image</string>
-
+    
+    <string name="menu_item_hearts_on">like</string>
+    <string name="menu_item_hearts_off">don\'t like</string>
+    <string name="share">share</string>
 </resources>

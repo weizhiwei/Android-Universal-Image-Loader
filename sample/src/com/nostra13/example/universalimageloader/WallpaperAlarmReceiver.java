@@ -1,6 +1,7 @@
 package com.nostra13.example.universalimageloader;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Random;
 
 import android.app.WallpaperManager;
@@ -17,22 +18,21 @@ import android.view.WindowManager;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
+import com.wzw.ic.mvc.ViewItem;
 
 public class WallpaperAlarmReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(final Context context, Intent intent) {
-		ImageLoader imageLoader = ImageLoader.getInstance();
 		
-		Object[] images = imageLoader.getMemoryCache().keys().toArray();
+		List<ViewItem> pageViewItems = IcDatabase.getInstance().fetchAllViewItemsInHearts(0, 100);
 		
-		if (images.length == 0) {
+		if (null == pageViewItems || pageViewItems.size() == 0) {
 			return;
 		}
 		
-		String randomImage = (String)images[(new Random()).nextInt(images.length)];
-		randomImage = randomImage.substring(0, randomImage.lastIndexOf("_"));
-		imageLoader.loadImage(randomImage, new ImageLoadingListener() {
+		String randomImage = pageViewItems.get((new Random()).nextInt(pageViewItems.size())).getImageUrl();
+		ImageLoader.getInstance().loadImage(randomImage, new ImageLoadingListener() {
 			
 			@Override
 			public void onLoadingStarted(String imageUri, View view) {

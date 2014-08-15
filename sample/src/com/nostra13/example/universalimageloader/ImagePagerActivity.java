@@ -18,7 +18,9 @@ package com.nostra13.example.universalimageloader;
 import ru.truba.touchgallery.GalleryWidget.GalleryViewPager;
 import ru.truba.touchgallery.TouchView.TouchImageView;
 import android.app.ActionBar;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -27,12 +29,15 @@ import android.support.v4.view.ViewPager;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.ShareActionProvider;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -96,6 +101,68 @@ public class ImagePagerActivity extends BaseActivity {
 		outState.putInt(STATE_POSITION, pager.getCurrentItem());
 	}
 
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		MenuItem heartsItem = menu.findItem(R.id.item_hearts_toggle);
+		heartsItem.setVisible(true);
+		
+		MenuItem shareItem = menu.findItem(R.id.action_share);
+		shareItem.setVisible(true);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.item_hearts_toggle:
+				ViewItem viewItem = model.getViewItems().get(pager.getCurrentItem());
+				viewItem.setHeartsOn(!viewItem.isHeartsOn());
+				if (viewItem.isHeartsOn()) {
+					IcDatabase.getInstance().addViewItemToHearts(viewItem);
+				} else {
+					IcDatabase.getInstance().removeViewItemFromHearts(viewItem);
+				}
+	        	setMenu();
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
+		}
+	}
+	
+	private void setMenu() {
+		if (null == menu)
+			return;
+		
+		ViewItem viewItem = model.getViewItems().get(pager.getCurrentItem());
+		
+		MenuItem heartsItem = menu.findItem(R.id.item_hearts_toggle);
+		if (viewItem.isHeartsOn()) {
+    		heartsItem.setTitle(R.string.menu_item_hearts_on);
+    		heartsItem.setIcon(R.drawable.ic_hearts_on);
+		} else {
+    		heartsItem.setTitle(R.string.menu_item_hearts_off);
+    		heartsItem.setIcon(R.drawable.ic_hearts_off);
+		}
+		
+		MenuItem shareItem = menu.findItem(R.id.action_share);
+    	ShareActionProvider shareActionProvider = (ShareActionProvider)shareItem.getActionProvider();
+	    Intent intent = new Intent(Intent.ACTION_SEND);
+	    intent.setType("image/*");
+	    intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imageLoader.getDiskCache().get(viewItem.getImageUrl()))); // TODO null check
+	    shareActionProvider.setShareIntent(intent);
+	    
+	    /*
+	     * ArrayList<Uri> imageUris = new ArrayList<Uri>();
+imageUris.add(imageUri1); // Add your image URIs here
+imageUris.add(imageUri2);
+
+Intent shareIntent = new Intent();
+shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, imageUris);
+shareIntent.setType("image/*");
+	     */
+	}
+	
 	private class ImagePagerAdapter extends PagerAdapter {
 		
 		private LayoutInflater inflater;
@@ -121,12 +188,16 @@ public class ImagePagerActivity extends BaseActivity {
 	        View imageLayout = (View) object;
 	        galleryContainer.mCurrentView = (TouchImageView) imageLayout.findViewById(R.id.image);
 	        
+	        ViewItem item = model.getViewItems().get(position);
+        	
 	        if (!isFullscreen()) {
-	        	setTitleIconFromViewItem(model.getViewItems().get(position));
+	        	setTitleIconFromViewItem(item);
+	        	setMenu();
+	        	
 	        	final TextView textView = (TextView) imageLayout.findViewById(R.id.story);
 	        	if (!TextUtils.isEmpty(textView.getText())) {
 					textView.setVisibility(View.VISIBLE);
-				}
+	        	}
 	        }
 	    }
 		
@@ -139,7 +210,8 @@ public class ImagePagerActivity extends BaseActivity {
 			final TextView textView = (TextView) imageLayout.findViewById(R.id.story);
 
 			ViewItem viewItem = model.getViewItems().get(position);
-			
+			viewItem.setHeartsOn(IcDatabase.getInstance().isViewItemInHearts(viewItem));
+	        
 			String story = "";
 			if (!TextUtils.isEmpty(viewItem.getLabel())) {
 				story += "<b>" + viewItem.getLabel() + "</b>";
@@ -163,6 +235,7 @@ public class ImagePagerActivity extends BaseActivity {
 						textView.setVisibility(View.GONE);
 					}
 					toggleFullscreen();
+		        	setMenu();
 				}
 			});
 			

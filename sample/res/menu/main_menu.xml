@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <item android:id="@+id/item_hearts_toggle"
+          android:icon="@drawable/ic_hearts_off"
+          android:title="@string/menu_item_hearts_off"
+          android:showAsAction="ifRoom"
+          android:visible="false"/>
+    <item android:id="@+id/action_share"
+          android:title="@string/share"
+          android:showAsAction="ifRoom"
+          android:actionProviderClass="android.widget.ShareActionProvider"
+          android:visible="false"/>
     <item
         android:id="@+id/item_clear_memory_cache"
         android:title="@string/menu_item_clear_memory_cache"/>
