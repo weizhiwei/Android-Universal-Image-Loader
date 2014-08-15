@@ -25,14 +25,19 @@ public class WallpaperAlarmReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(final Context context, Intent intent) {
 		
-		List<ViewItem> pageViewItems = IcDatabase.getInstance().fetchAllViewItemsInHearts(0, 100);
+		int heartCount = IcDatabase.getInstance().getViewItemsInHeartsCount();
+		if (heartCount <= 0) {
+			return;
+		}
+		
+		List<ViewItem> pageViewItems = IcDatabase.getInstance().fetchAllViewItemsInHearts(
+				(new Random()).nextInt(heartCount), 1);
 		
 		if (null == pageViewItems || pageViewItems.size() == 0) {
 			return;
 		}
 		
-		String randomImage = pageViewItems.get((new Random()).nextInt(pageViewItems.size())).getImageUrl();
-		ImageLoader.getInstance().loadImage(randomImage, new ImageLoadingListener() {
+		ImageLoader.getInstance().loadImage(pageViewItems.get(0).getImageUrl(), new ImageLoadingListener() {
 			
 			@Override
 			public void onLoadingStarted(String imageUri, View view) {

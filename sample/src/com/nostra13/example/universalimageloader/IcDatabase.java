@@ -80,6 +80,16 @@ public class IcDatabase {
 		return isIn;
     }
 
+    public int getViewItemsInHeartsCount() {
+    	Cursor cursor = mDb.query("hearts", null, null, null, null, null, null);
+    	if (cursor != null) {
+    		int count = cursor.getCount();
+    		cursor.close();
+    		return count;
+    	}
+    	return -1;
+    }
+    
     public List<ViewItem> fetchAllViewItemsInHearts(int offset, int limit) {
     	List<ViewItem> pageViewItems = null;
 		
