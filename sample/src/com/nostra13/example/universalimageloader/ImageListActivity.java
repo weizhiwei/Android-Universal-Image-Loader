@@ -70,7 +70,7 @@ public class ImageListActivity extends AbsListViewBaseActivity {
 			.displayer(new RoundedBitmapDisplayer(20))
 			.build();
 
-		mPullRefreshListView = (PullToRefreshListView) findViewById(R.id.list);
+		mPullRefreshListView = (PullToRefreshListView) findViewById(R.id.ic_listview);
 		if (model.supportReloading()) {
 			if (model.supportPaging()) {
 				mPullRefreshListView.setMode(Mode.BOTH);

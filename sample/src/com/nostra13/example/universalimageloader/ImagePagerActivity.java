@@ -88,7 +88,7 @@ public class ImagePagerActivity extends BaseActivity {
 			.displayer(new FadeInBitmapDisplayer(300))
 			.build();
 
-		pager = (ViewPager) findViewById(R.id.pager);
+		pager = (ViewPager) findViewById(R.id.ic_pagerview);
 		pager.setOffscreenPageLimit(3);
 		pager.setAdapter(new ImagePagerAdapter());
 		pager.setCurrentItem(pagerPosition);
@@ -108,7 +108,7 @@ public class ImagePagerActivity extends BaseActivity {
 		
 		MenuItem shareItem = menu.findItem(R.id.action_share);
 		shareItem.setVisible(true);
-		return true;
+		return super.onPrepareOptionsMenu(menu);
 	}
 
 	@Override
@@ -137,10 +137,10 @@ public class ImagePagerActivity extends BaseActivity {
 		
 		MenuItem heartsItem = menu.findItem(R.id.item_hearts_toggle);
 		if (viewItem.isHeartsOn()) {
-    		heartsItem.setTitle(R.string.menu_item_hearts_on);
+    		heartsItem.setTitle(R.string.hearts_on);
     		heartsItem.setIcon(R.drawable.ic_hearts_on);
 		} else {
-    		heartsItem.setTitle(R.string.menu_item_hearts_off);
+    		heartsItem.setTitle(R.string.hearts_off);
     		heartsItem.setIcon(R.drawable.ic_hearts_off);
 		}
 		

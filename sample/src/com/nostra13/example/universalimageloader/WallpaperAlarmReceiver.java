@@ -4,10 +4,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
@@ -21,7 +25,18 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.wzw.ic.mvc.ViewItem;
 
 public class WallpaperAlarmReceiver extends BroadcastReceiver {
-
+	
+	public static void enableWallpaperAlarms(Context context, boolean enabled) {
+		AlarmManager alarmMgr = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+		Intent intent = new Intent(context, WallpaperAlarmReceiver.class);
+		PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+		if (enabled) {
+			alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, 0, 60*1000, alarmIntent);
+		} else {
+			alarmMgr.cancel(alarmIntent);
+		}
+	}
+	
 	@Override
 	public void onReceive(final Context context, Intent intent) {
 		

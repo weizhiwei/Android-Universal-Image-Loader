@@ -18,7 +18,8 @@ package com.nostra13.example.universalimageloader;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
-import android.content.Intent;
+import android.content.ComponentName;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,7 +29,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.ShareActionProvider;
 
 import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -37,6 +37,7 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.wzw.ic.mvc.BaseController;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
+import com.wzw.ic.mvc.ViewNodeAction;
 import com.wzw.ic.mvc.root.RootController;
 import com.wzw.ic.mvc.root.RootViewNode;
 
@@ -49,6 +50,7 @@ public abstract class BaseActivity extends Activity {
 	protected ViewNode model;
 	protected BaseController controller;
 	protected Menu menu;
+	private boolean wallpaperServiceEnabled = false;
 	
 	@SuppressLint("NewApi")
 	public boolean isFullscreen() {
@@ -145,21 +147,44 @@ public abstract class BaseActivity extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main_menu, menu);
+		if (null != model && null != model.getActions()) {
+			for (ViewNodeAction action: model.getActions()) {
+				MenuItem item = menu.add(Menu.NONE, action.getId(), Menu.FIRST, action.getTitle());
+				item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+			}
+		}
 		this.menu = menu;
-		return true;
+		return super.onCreateOptionsMenu(menu);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case R.id.item_clear_memory_cache:
-				imageLoader.clearMemoryCache();
-				return true;
-			case R.id.item_clear_disc_cache:
-				imageLoader.clearDiscCache();
+			case R.id.item_wallpaper_toggle:
+				wallpaperServiceEnabled = !wallpaperServiceEnabled;
+				item.setChecked(wallpaperServiceEnabled);
+				enableWallpaperService(wallpaperServiceEnabled);
 				return true;
 			default:
+				if (null != model && null != model.getActions()) {
+					for (ViewNodeAction action: model.getActions()) {
+						if (action.getId() == item.getItemId()) {
+							controller.startAction(this, model, action);
+							return true;
+						}
+					}
+				}
 				return false;
 		}
+	}
+	
+	private void enableWallpaperService(boolean enabled) {
+		WallpaperAlarmReceiver.enableWallpaperAlarms(this, enabled);
+		
+		ComponentName receiver = new ComponentName(this, BootReceiver.class);
+		PackageManager pm = getPackageManager();
+		pm.setComponentEnabledSetting(receiver,
+		        enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+		        PackageManager.DONT_KILL_APP);
 	}
 }

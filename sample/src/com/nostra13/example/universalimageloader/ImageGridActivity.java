@@ -69,7 +69,7 @@ public class ImageGridActivity extends AbsListViewBaseActivity {
 			.bitmapConfig(Bitmap.Config.RGB_565)
 			.build();
 
-		mPullRefreshGridView = (PullToRefreshGridView) findViewById(R.id.gridview);
+		mPullRefreshGridView = (PullToRefreshGridView) findViewById(R.id.ic_gridview);
 		if (model.supportReloading()) {
 			if (model.supportPaging()) {
 				mPullRefreshGridView.setMode(Mode.BOTH);

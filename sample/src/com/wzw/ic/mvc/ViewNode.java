@@ -3,14 +3,10 @@ package com.wzw.ic.mvc;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.MethodNotSupportedException;
-import org.jsoup.nodes.Document;
-
-import android.app.Activity;
-
 public abstract class ViewNode extends BaseModel {
 	protected String sourceUrl;
 	protected List<ViewItem> viewItems;
+	protected List<ViewNodeAction> actions;
 	
 	public ViewNode(String sourceUrl) {
 		this.sourceUrl = sourceUrl;
@@ -23,6 +19,10 @@ public abstract class ViewNode extends BaseModel {
 	
 	public List<ViewItem> getViewItems() {
 		return viewItems;
+	}
+	
+	public List<ViewNodeAction> getActions() {
+		return actions;
 	}
 	
 	public abstract boolean supportReloading();
