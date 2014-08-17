@@ -21,6 +21,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -42,6 +44,7 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 import com.wzw.ic.mvc.BaseController;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
+import com.wzw.ic.mvc.ViewNodeAction;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -143,6 +146,13 @@ public class ImageGridActivity extends AbsListViewBaseActivity {
 			// Call onRefreshComplete when the list has been refreshed.
 			mPullRefreshGridView.onRefreshComplete();
 
+			if (null != model && null != model.getActions()) {
+				for (ViewNodeAction action: model.getActions()) {
+					MenuItem item = menu.findItem(action.getId());
+					item.setTitle(action.getTitle());
+					item.setVisible(action.isVisible());
+				}
+			}
 			super.onPostExecute(result);
 		}
 	}

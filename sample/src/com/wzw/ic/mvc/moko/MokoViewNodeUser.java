@@ -18,7 +18,7 @@ public class MokoViewNodeUser extends MokoViewNode {
 	@Override
 	protected List<ViewItem> extractViewItemsFromPage(Document page) {
 		List<ViewItem> viewItems = null;
-		Elements imgElems = page.select("div.coverbox img");
+		Elements imgElems = page.select("div.coverbox img.cover");
 		Elements aElems = page.select("div.coverbox a.coverBg");
 		if (null != imgElems && imgElems.size() > 0 &&
 			null != aElems && aElems.size() > 0 &&

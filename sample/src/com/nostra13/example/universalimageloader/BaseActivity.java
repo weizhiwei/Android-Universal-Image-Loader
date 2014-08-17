@@ -151,6 +151,7 @@ public abstract class BaseActivity extends Activity {
 			for (ViewNodeAction action: model.getActions()) {
 				MenuItem item = menu.add(Menu.NONE, action.getId(), Menu.FIRST, action.getTitle());
 				item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+				item.setVisible(action.isVisible());
 			}
 		}
 		this.menu = menu;

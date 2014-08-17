@@ -3,10 +3,12 @@ package com.wzw.ic.mvc;
 public class ViewNodeAction extends BaseModel {
 	private String title;
 	private int id;
+	private boolean visible;
 	
 	public ViewNodeAction(int id, String title) {
 		this.id = id;
 		this.title = title;
+		this.visible = false;
 	}
 	
 	public String getTitle() {
@@ -22,5 +24,13 @@ public class ViewNodeAction extends BaseModel {
 	
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public boolean isVisible() {
+		return visible;
+	}
+
+	public void setVisible(boolean visible) {
+		this.visible = visible;
 	}
 }

@@ -21,7 +21,7 @@ public class MokoViewNodePost extends MokoViewNode {
 	public MokoViewNodePost(String sourceUrl) {
 		super(sourceUrl);
 		supportPaging = false;
-		actions = Arrays.asList(new ViewNodeAction(R.id.action_moko_see_user, "user"));
+		actions = Arrays.asList(new ViewNodeAction(R.id.action_moko_see_user, "by user"));
 	}
 
 	@Override
@@ -38,6 +38,9 @@ public class MokoViewNodePost extends MokoViewNode {
 						i = is.get(0);
 					}
 					userViewItem = new ViewItem(e.text(), String.format("http://www.moko.cc/post/%s/new/", userId) + "%d.html", null == i ? "" : i.attr("src"), 0);
+					ViewNodeAction seeUserAction = actions.get(0);
+					seeUserAction.setTitle("by " + userViewItem.getLabel());
+					seeUserAction.setVisible(true);
 				}
 			}
 		}
