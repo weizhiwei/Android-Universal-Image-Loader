@@ -11,7 +11,7 @@ import com.wzw.ic.mvc.ViewNode;
 
 public class HeartsController extends BaseController {
 	
-	public static String HEARTS_ICON = "https://c2.staticflickr.com/4/3885/14718528717_b63097c9f4_n.jpg";
+	public static String HEARTS_ICON = "https://farm6.staticflickr.com/5562/14944448425_f371d552b8_o.png";
 	
 	@Override
 	public void startItemView(Activity parentActivity, ViewNode node, int position) {
