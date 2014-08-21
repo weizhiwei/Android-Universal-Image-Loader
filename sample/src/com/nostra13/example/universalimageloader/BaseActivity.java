@@ -52,6 +52,16 @@ public abstract class BaseActivity extends Activity {
 	protected Menu menu;
 	private boolean wallpaperServiceEnabled = false;
 	
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		if (Build.VERSION.SDK_INT >= 11) {
+			ActionBar actionBar = getActionBar();
+			actionBar.setDisplayHomeAsUpEnabled(true);
+		}
+	}
+	
 	@SuppressLint("NewApi")
 	public boolean isFullscreen() {
 		return (getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
