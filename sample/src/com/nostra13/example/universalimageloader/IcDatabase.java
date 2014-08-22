@@ -102,7 +102,7 @@ public class IcDatabase {
 				String nodeUrl = cursor.getString(cursor.getColumnIndex("nodeUrl"));
 				String imageUrl = cursor.getString(cursor.getColumnIndex("imageUrl"));
 				String story = cursor.getString(cursor.getColumnIndex("story"));
-				ViewItem item = new ViewItem(label, nodeUrl, imageUrl, 0);
+				ViewItem item = new ViewItem(label, nodeUrl, imageUrl, 0, null);
 				item.setStory(story);
 				pageViewItems.add(item);
 				cursor.moveToNext();

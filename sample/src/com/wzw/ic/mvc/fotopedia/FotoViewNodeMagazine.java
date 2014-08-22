@@ -1,25 +1,14 @@
 package com.wzw.ic.mvc.fotopedia;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.googlecode.flickrjandroid.Flickr;
-import com.googlecode.flickrjandroid.FlickrException;
-import com.googlecode.flickrjandroid.interestingness.InterestingnessInterface;
-import com.googlecode.flickrjandroid.photos.Photo;
-import com.googlecode.flickrjandroid.photos.PhotoList;
 import com.wzw.ic.mvc.ViewItem;
-import com.wzw.ic.mvc.flickr.FlickrController;
 
 public class FotoViewNodeMagazine extends FotoViewNode {
 	
@@ -78,7 +67,12 @@ public class FotoViewNodeMagazine extends FotoViewNode {
 							}
 						}
 						if (null != nodeUrl && null != image) {
-							ViewItem viewItem = new ViewItem(title, "http://www.fotopedia.com" + nodeUrl, image, 0);
+							ViewItem viewItem = new ViewItem(
+									title,
+									"http://www.fotopedia.com" + nodeUrl,
+									image,
+									ViewItem.VIEW_TYPE_LIST,
+									new FotoViewNodeStory("http://www.fotopedia.com" + nodeUrl));
 							viewItems.add(viewItem);
 						}
 					}

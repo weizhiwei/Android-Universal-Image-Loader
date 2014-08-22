@@ -19,9 +19,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" >
         <activity
-            android:name=".ImageListActivity" />
-        <activity
-            android:name=".ImageGridActivity" />
+            android:name=".ViewItemPagerActivity" />
         <activity
             android:name=".EntryActivity">
         	<intent-filter>

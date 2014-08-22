@@ -2,21 +2,24 @@ package com.wzw.ic.mvc.root;
 
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
-import com.wzw.ic.mvc.flickr.FlickrController;
-import com.wzw.ic.mvc.fotopedia.FotoController;
-import com.wzw.ic.mvc.hearts.HeartsController;
-import com.wzw.ic.mvc.moko.MokoController;
-import com.wzw.ic.mvc.nationalgeographic.NGController;
+import com.wzw.ic.mvc.flickr.FlickrViewNode;
+import com.wzw.ic.mvc.flickr.FlickrViewNodeRoot;
+import com.wzw.ic.mvc.hearts.HeartsViewNode;
+import com.wzw.ic.mvc.hearts.HeartsViewNodeRoot;
+import com.wzw.ic.mvc.moko.MokoViewNode;
+import com.wzw.ic.mvc.moko.MokoViewNodeRoot;
+import com.wzw.ic.mvc.nationalgeographic.NGViewNode;
+import com.wzw.ic.mvc.nationalgeographic.NGViewNodeRoot;
 
 public class RootViewNode extends ViewNode {
 
 	public RootViewNode() {
-		super("/");
-		viewItems.add(new ViewItem("Hearts", "hearts", HeartsController.HEARTS_ICON, 0));
-		viewItems.add(new ViewItem("MOKO!", "moko", MokoController.MOKO_ICON, 0));
-		viewItems.add(new ViewItem("Flickr", "flickr", FlickrController.FLICKR_ICON, 0));
-//		viewItems.add(new ViewItem("Fotopedia", "fotopedia", FotoController.FOTO_ICON, 0));
-		viewItems.add(new ViewItem("National Geographic", "nationalgeographic", NGController.NG_ICON, 0));
+		super("root");
+		viewItems.add(new ViewItem("Hearts", "hearts", HeartsViewNode.HEARTS_ICON, ViewItem.VIEW_TYPE_GRID, new HeartsViewNodeRoot()));
+		viewItems.add(new ViewItem("MOKO!", "moko", MokoViewNode.MOKO_ICON, ViewItem.VIEW_TYPE_GRID, new MokoViewNodeRoot()));
+		viewItems.add(new ViewItem("Flickr", "flickr", FlickrViewNode.FLICKR_ICON, ViewItem.VIEW_TYPE_LIST, new FlickrViewNodeRoot()));
+//		viewItems.add(new ViewItem("Fotopedia", "fotopedia", FotoViewNode.FOTO_ICON, ViewItem.VIEW_TYPE_LIST, new FotoViewNodeRoot()));
+		viewItems.add(new ViewItem("National Geographic", "nationalgeographic", NGViewNode.NG_ICON, ViewItem.VIEW_TYPE_LIST, new NGViewNodeRoot()));
 	}
 
 	@Override

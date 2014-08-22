@@ -28,9 +28,7 @@ public final class Constants {
 	}
 	
 	public static class Extra {
-		public static final String MODEL = "com.nostra13.example.universalimageloader.MODEL";
-		public static final String CONTROLLER = "com.nostra13.example.universalimageloader.CONTROLLER";
 		public static final String VIEW_ITEM = "com.nostra13.example.universalimageloader.VIEW_ITEM";
-		public static final String IMAGE_POSITION = "com.nostra13.example.universalimageloader.IMAGE_POSITION";
+		public static final String PARENT_MODEL = "com.nostra13.example.universalimageloader.PARENT_MODEL";
 	}
 }

@@ -37,7 +37,13 @@ public class MokoViewNodePost extends MokoViewNode {
 					if (null != is && is.size() > 0) {
 						i = is.get(0);
 					}
-					userViewItem = new ViewItem(e.text(), String.format("http://www.moko.cc/post/%s/new/", userId) + "%d.html", null == i ? "" : i.attr("src"), 0);
+					String userUrl = String.format("http://www.moko.cc/post/%s/new/", userId) + "%d.html";
+					userViewItem = new ViewItem(
+							e.text(),
+							userUrl,
+							null == i ? "" : i.attr("src"),
+							ViewItem.VIEW_TYPE_GRID,
+							new MokoViewNodeUser(userUrl));
 					ViewNodeAction seeUserAction = actions.get(0);
 					seeUserAction.setTitle("by " + userViewItem.getLabel());
 					seeUserAction.setVisible(true);
@@ -51,13 +57,14 @@ public class MokoViewNodePost extends MokoViewNode {
 			viewItems = new ArrayList<ViewItem>();
 			for (int i = 0; i < imgElems.size(); ++i) {
 				Element img = imgElems.get(i);
-				viewItems.add(new ViewItem("", "", img.attr("src2"), 0));
+				viewItems.add(new ViewItem("", "", img.attr("src2"), ViewItem.VIEW_TYPE_IMAGE_PAGER, this));
 			}
 		}
 		return viewItems;
 	}
-
-	public ViewItem getUserViewItem() {
+	
+	@Override
+	public Object onAction(ViewNodeAction action) {
 		return userViewItem;
 	}
 }

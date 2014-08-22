@@ -17,13 +17,10 @@ package com.nostra13.example.universalimageloader;
 
 import ru.truba.touchgallery.GalleryWidget.GalleryViewPager;
 import ru.truba.touchgallery.TouchView.TouchImageView;
-import android.app.ActionBar;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.text.Html;
@@ -34,7 +31,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.ShareActionProvider;
@@ -47,9 +43,7 @@ import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
-import com.wzw.ic.mvc.BaseController;
 import com.wzw.ic.mvc.ViewItem;
-import com.wzw.ic.mvc.ViewNode;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -67,15 +61,10 @@ public class ImagePagerActivity extends BaseActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ac_image_pager);
 		
-		setModelControllerFromIntent();
+		setModelFromIntent();
 		
 		Bundle bundle = getIntent().getExtras();
 		assert bundle != null;
-		int pagerPosition = bundle.getInt(Extra.IMAGE_POSITION, 0);
-
-		if (savedInstanceState != null) {
-			pagerPosition = savedInstanceState.getInt(STATE_POSITION);
-		}
 
 		options = new DisplayImageOptions.Builder()
 			.showImageForEmptyUri(R.drawable.ic_empty)
@@ -91,14 +80,9 @@ public class ImagePagerActivity extends BaseActivity {
 		pager = (ViewPager) findViewById(R.id.ic_pagerview);
 		pager.setOffscreenPageLimit(3);
 		pager.setAdapter(new ImagePagerAdapter());
-		pager.setCurrentItem(pagerPosition);
+		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
 		
 		setFullscreen(true);
-	}
-	
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		outState.putInt(STATE_POSITION, pager.getCurrentItem());
 	}
 
 	@Override
@@ -178,7 +162,7 @@ shareIntent.setType("image/*");
 
 		@Override
 		public int getCount() {
-			return null == model.getViewItems() ? 0 : model.getViewItems().size();
+			return null == parentModel.getViewItems() ? 0 : parentModel.getViewItems().size();
 		}
 
 		@Override
@@ -188,10 +172,10 @@ shareIntent.setType("image/*");
 	        View imageLayout = (View) object;
 	        galleryContainer.mCurrentView = (TouchImageView) imageLayout.findViewById(R.id.image);
 	        
-	        ViewItem item = model.getViewItems().get(position);
+	        myViewItem = parentModel.getViewItems().get(position);
         	
 	        if (!isFullscreen()) {
-	        	setTitleIconFromViewItem(item);
+	        	setTitleIconFromViewItem(myViewItem);
 	        	setMenu();
 	        	
 	        	final TextView textView = (TextView) imageLayout.findViewById(R.id.story);
@@ -209,7 +193,7 @@ shareIntent.setType("image/*");
 			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
 			final TextView textView = (TextView) imageLayout.findViewById(R.id.story);
 
-			ViewItem viewItem = model.getViewItems().get(position);
+			ViewItem viewItem = parentModel.getViewItems().get(position);
 			viewItem.setHeartsOn(IcDatabase.getInstance().isViewItemInHearts(viewItem));
 	        
 			String story = "";
@@ -283,15 +267,6 @@ shareIntent.setType("image/*");
 		@Override
 		public boolean isViewFromObject(View view, Object object) {
 			return view.equals(object);
-		}
-
-		@Override
-		public void restoreState(Parcelable state, ClassLoader loader) {
-		}
-
-		@Override
-		public Parcelable saveState() {
-			return null;
 		}
 	}
 }

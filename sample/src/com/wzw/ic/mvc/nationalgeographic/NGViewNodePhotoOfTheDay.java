@@ -32,7 +32,7 @@ public class NGViewNodePhotoOfTheDay extends NGViewNode {
 					imgUrl = imgElems.get(0).attr("src");
 				}
 				if (!TextUtils.isEmpty(imgUrl)) {
-					ViewItem viewItem = new ViewItem("", "", "http:" + imgUrl.replace("100x75", "990x742").replace("/overrides/", "/cache/"), 0);
+					ViewItem viewItem = new ViewItem("", "", "http:" + imgUrl.replace("100x75", "990x742").replace("/overrides/", "/cache/"), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
 					Elements titleElems = elem.select(".photo_info h4");
 					if (null != titleElems && titleElems.size() > 0) {
 						viewItem.setLabel(titleElems.get(0).ownText());

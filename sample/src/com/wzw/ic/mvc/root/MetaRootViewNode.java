@@ -1,13 +1,13 @@
-package com.wzw.ic.mvc.fotopedia;
+package com.wzw.ic.mvc.root;
 
+import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 
-public abstract class FotoViewNode extends ViewNode {
+public class MetaRootViewNode extends ViewNode {
 
-	public static String FOTO_ICON = "http://images.cdn.fotopedia.com/fotopedia-af3MHAL54rw-original.png";
-	
-	public FotoViewNode(String sourceUrl) {
-		super(sourceUrl);
+	public MetaRootViewNode() {
+		super("metaRoot");
+		viewItems.add(new ViewItem("iC", "ic", null, ViewItem.VIEW_TYPE_LIST, new RootViewNode()));
 	}
 
 	@Override

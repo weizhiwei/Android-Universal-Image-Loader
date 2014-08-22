@@ -19,6 +19,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -28,57 +29,61 @@ import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener2;
 import com.handmark.pulltorefresh.library.PullToRefreshGridView;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
+import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
+import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.ViewNodeAction;
 
 public class ViewItemPagerActivity extends BaseActivity {
-
-	public static final int VIEW_TYPE_LIST = 1;
-	public static final int VIEW_TYPE_GRID = 2;
-	
-	DisplayImageOptions options;
+	DisplayImageOptions gridOptions, listOptions;
 	ViewPager pager;
 	
-	ViewNode subModel;
-	BaseAdapter subAdapter;
-	PullToRefreshBase subPullRefreshView;
-	AbsListView subAbsListView;
+	BaseAdapter currentAdapter;
+	PullToRefreshBase currentPullRefreshView;
+	AbsListView currentAbsListView;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.ac_image_pager);
+		setContentView(R.layout.ac_view_item_pager);
 		
-		setModelControllerFromIntent();
+		setModelFromIntent();
 		
 		Bundle bundle = getIntent().getExtras();
 		assert bundle != null;
 
-		options = new DisplayImageOptions.Builder()
+		gridOptions = new DisplayImageOptions.Builder()
+			.showImageOnLoading(R.drawable.ic_stub)
 			.showImageForEmptyUri(R.drawable.ic_empty)
 			.showImageOnFail(R.drawable.ic_error)
-			.resetViewBeforeLoading(true)
+			.cacheInMemory(true)
 			.cacheOnDisk(true)
-			.imageScaleType(ImageScaleType.EXACTLY)
-			.bitmapConfig(Bitmap.Config.RGB_565)
 			.considerExifParams(true)
-			.displayer(new FadeInBitmapDisplayer(300))
+			.bitmapConfig(Bitmap.Config.RGB_565)
 			.build();
 
-		pager = (ViewPager) findViewById(R.id.ic_pagerview);
+		listOptions = new DisplayImageOptions.Builder()
+			.showImageOnLoading(R.drawable.ic_stub)
+			.showImageForEmptyUri(R.drawable.ic_empty)
+			.showImageOnFail(R.drawable.ic_error)
+			.cacheInMemory(true)
+			.cacheOnDisk(true)
+			.considerExifParams(true)
+			.displayer(new RoundedBitmapDisplayer(20))
+			.build();
+		
+		pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
 		pager.setOffscreenPageLimit(3);
 		pager.setAdapter(new ViewItemPagerAdapter());
-		pager.setCurrentItem(pagerPosition);
-		
-		setFullscreen(true);
+		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
 	}	
 	
 	private class ViewItemPagerAdapter extends PagerAdapter {
@@ -93,7 +98,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		@Override
 		public int getCount() {
-			return null == model.getViewItems() ? 0 : model.getViewItems().size();
+			return null == parentModel.getViewItems() ? 0 : parentModel.getViewItems().size();
 		}
 
 		@Override
@@ -101,37 +106,45 @@ public class ViewItemPagerActivity extends BaseActivity {
 	        super.setPrimaryItem(container, position, object);
 	        
 	        View contentView = (View) object;
-	        ViewItem viewItem = model.getViewItems().get(position);
-	        setTitleIconFromViewItem(viewItem);
-	        
-	        switch (viewItem.getViewType()) {
-			case VIEW_TYPE_LIST:
-				subPullRefreshView = (PullToRefreshListView) contentView.findViewById(R.id.ic_listview);
+	        myViewItem = parentModel.getViewItems().get(position);
+	        model = myViewItem.getViewNode();
+	        switch (myViewItem.getViewType()) {
+			case ViewItem.VIEW_TYPE_LIST:
+				currentPullRefreshView = (PullToRefreshListView) contentView.findViewById(R.id.ic_listview);
 				break;
-			case VIEW_TYPE_GRID:
-				subPullRefreshView = (PullToRefreshGridView) contentView.findViewById(R.id.ic_gridview);
+			case ViewItem.VIEW_TYPE_GRID:
+				currentPullRefreshView = (PullToRefreshGridView) contentView.findViewById(R.id.ic_gridview);
 				break;
 			default:
 				break;
 			}
-	        subAdapter = (BaseAdapter) ((AbsListView)subPullRefreshView.getRefreshableView()).getAdapter();
+	        if (null != currentPullRefreshView) {
+	        	currentAbsListView = (AbsListView)currentPullRefreshView.getRefreshableView();
+	        	if (currentAbsListView.getAdapter() instanceof HeaderViewListAdapter) {
+	        		currentAdapter = (BaseAdapter) ((HeaderViewListAdapter) currentAbsListView.getAdapter()).getWrappedAdapter();
+	        	} else {
+	        		currentAdapter = (BaseAdapter) currentAbsListView.getAdapter();
+	        	}
+	        }
+	        
+	        setTitleIconFromViewItem(myViewItem);
 	    }
 		
 		@Override
 		public Object instantiateItem(ViewGroup view, int position) {
-			ViewItem viewItem = model.getViewItems().get(position);
-			ViewNode childModel = null;
+			final ViewItem viewItem = parentModel.getViewItems().get(position);
+			ViewNode childModel = viewItem.getViewNode();
 			
 			View contentView = null;
 			PullToRefreshBase pullRefreshView = null;
 			BaseAdapter itemAdapter = null;
 			switch (viewItem.getViewType()) {
-			case VIEW_TYPE_LIST:
+			case ViewItem.VIEW_TYPE_LIST:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
 				pullRefreshView = (PullToRefreshListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(childModel);
 				break;
-			case VIEW_TYPE_GRID:
+			case ViewItem.VIEW_TYPE_GRID:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
 				pullRefreshView = (PullToRefreshGridView) contentView.findViewById(R.id.ic_gridview);
 				itemAdapter = new GridItemAdapter(childModel);
@@ -184,6 +197,10 @@ public class ViewItemPagerActivity extends BaseActivity {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 					// drill down
+					if (viewItem.getViewType() == ViewItem.VIEW_TYPE_LIST) {
+						position -= 1;
+					}
+					ViewItemPagerActivity.this.startViewItemActivity(model.getViewItems().get(position));
 				}
 			});
 			
@@ -244,7 +261,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 			ViewItem viewItem = model.getViewItems().get(position);
 			if (!TextUtils.isEmpty(viewItem.getImageUrl()) && !viewItem.isUsingColorOverImage()) {
-				imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, options, new SimpleImageLoadingListener() {
+				imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, gridOptions, new SimpleImageLoadingListener() {
 										 @Override
 										 public void onLoadingStarted(String imageUri, View view) {
 											 holder.progressBar.setProgress(0);
@@ -334,7 +351,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			holder.text.setText(viewItem.getLabel());
 
 			if (!TextUtils.isEmpty(viewItem.getImageUrl()) && !viewItem.isUsingColorOverImage()) {
-				imageLoader.displayImage(viewItem.getImageUrl(), holder.image, options, animateFirstListener);
+				imageLoader.displayImage(viewItem.getImageUrl(), holder.image, listOptions, animateFirstListener);
 			} else {
 				holder.image.setBackgroundColor(viewItem.getColor());
 			}
@@ -367,28 +384,44 @@ public class ViewItemPagerActivity extends BaseActivity {
 			// Simulates a background job.
 			boolean reload = (Boolean) params[0];
 			if (reload) {
-				subModel.reload();
+				model.reload();
 			} else {
-				subModel.loadOneMorePage();
+				model.loadOneMorePage();
 			}
 			return null;
 		}
 
 		@Override
 		protected void onPostExecute(Void result) {
-			subAdapter.notifyDataSetChanged();
+			currentAdapter.notifyDataSetChanged();
 			
 			// Call onRefreshComplete when the list has been refreshed.
-			subPullRefreshView.onRefreshComplete();
+			currentPullRefreshView.onRefreshComplete();
 			
-			if (null != subModel && null != subModel.getActions()) {
-				for (ViewNodeAction action: subModel.getActions()) {
+			if (null != model && null != model.getActions()) {
+				for (ViewNodeAction action: model.getActions()) {
 					MenuItem item = menu.findItem(action.getId());
 					item.setTitle(action.getTitle());
 					item.setVisible(action.isVisible());
 				}
 			}
 			super.onPostExecute(result);
+		}
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		if (null != currentAbsListView) {
+			currentAbsListView.setOnScrollListener(new PauseOnScrollListener(imageLoader, false /*pauseOnScroll*/, true /*pauseOnFling*/));
+		}
+	}
+	
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if (hasFocus && currentAdapter.getCount() == 0) {
+//			subPullRefreshView.setRefreshing();
 		}
 	}
 }

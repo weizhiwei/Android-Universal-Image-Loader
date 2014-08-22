@@ -31,11 +31,11 @@ public class FlickrViewNodeGallery extends FlickrViewNode {
 	private void doLoad(boolean reload) {
 		int newPageNo = reload ? 1 : pageNo + 1;
 		
-		Flickr f = new Flickr(FlickrController.FLICKR_API_KEY);
+		Flickr f = new Flickr(FLICKR_API_KEY);
 		GalleriesInterface galleriesInterface = f.getGalleriesInterface();
 		PhotoList photoList = null;
 		try {
-			photoList = galleriesInterface.getPhotos(sourceUrl, FlickrController.EXTRAS, 30, newPageNo);
+			photoList = galleriesInterface.getPhotos(sourceUrl, EXTRAS, 30, newPageNo);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -62,7 +62,7 @@ public class FlickrViewNodeGallery extends FlickrViewNode {
 				viewItems.clear();
 			}
 			for (Photo photo: photoList) {
-				ViewItem viewItem = new ViewItem(photo.getTitle(), "", photo.getLargeUrl(), 0);
+				ViewItem viewItem = new ViewItem(photo.getTitle(), "", photo.getLargeUrl(), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
 				viewItem.setStory(photo.getDescription());
 				viewItems.add(viewItem);
 			}

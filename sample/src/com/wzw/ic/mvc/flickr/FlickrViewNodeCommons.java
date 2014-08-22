@@ -56,7 +56,13 @@ public class FlickrViewNodeCommons extends FlickrViewNode {
 						String id = imgUrl.substring(
 								imgUrl.indexOf("/buddyicons/") + 12,
 								imgUrl.indexOf(".jpg"));
-						ViewItem viewItem = new ViewItem(inst.attr("title"), String.format("https://www.flickr.com/people/%s/", id), imgUrl, 0);
+						
+						ViewItem viewItem = new ViewItem(
+								inst.attr("title"),
+								String.format("https://www.flickr.com/people/%s/", id),
+								imgUrl,
+								ViewItem.VIEW_TYPE_LIST,
+								new FlickrViewNodePeoplePhotosets(id));
 						pageViewItems.add(viewItem);
 					}
 				}

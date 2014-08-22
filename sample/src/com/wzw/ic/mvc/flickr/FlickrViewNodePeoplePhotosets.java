@@ -34,7 +34,7 @@ public class FlickrViewNodePeoplePhotosets extends FlickrViewNode {
 	private void doLoad(boolean reload) {
 		int newPageNo = reload ? 1 : pageNo + 1;
 		
-		Flickr f = new Flickr(FlickrController.FLICKR_API_KEY);
+		Flickr f = new Flickr(FLICKR_API_KEY);
 		PhotosetsInterface photosetsInterface = f.getPhotosetsInterface();
 		Photosets photosets = null;
 		try {
@@ -73,7 +73,12 @@ public class FlickrViewNodePeoplePhotosets extends FlickrViewNode {
 			
 			for (Photoset photoset: photosetsCollection) {
 				photoset.setOwner(owner);
-				ViewItem viewItem = new ViewItem(photoset.getTitle(), photoset.getUrl(), photoset.getPrimaryPhoto().getLargeSquareUrl(), 0);
+				ViewItem viewItem = new ViewItem(
+						photoset.getTitle(),
+						photoset.getUrl(),
+						photoset.getPrimaryPhoto().getLargeSquareUrl(),
+						ViewItem.VIEW_TYPE_GRID,
+						new FlickrViewNodePhotoset(photoset.getId()));
 				viewItems.add(viewItem);
 			}
 		}

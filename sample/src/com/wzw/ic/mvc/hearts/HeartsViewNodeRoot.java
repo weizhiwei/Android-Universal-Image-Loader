@@ -33,6 +33,11 @@ public class HeartsViewNodeRoot extends HeartsViewNode {
 		
 		List<ViewItem> pageViewItems = IcDatabase.getInstance().fetchAllViewItemsInHearts(newPageNo*PER_PAGE, PER_PAGE);
 		if (null != pageViewItems && pageViewItems.size() > 0) {
+			for (ViewItem item: pageViewItems) {
+				item.setViewType(ViewItem.VIEW_TYPE_IMAGE_PAGER);
+				item.setViewNode(this);
+			}
+			
 			pageNo = newPageNo;
 			if (reload) {
 				viewItems.clear();

@@ -3,7 +3,7 @@ package com.wzw.ic.mvc;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class ViewNode extends BaseModel {
+public abstract class ViewNode extends IcObject {
 	protected String sourceUrl;
 	protected List<ViewItem> viewItems;
 	protected List<ViewNodeAction> actions;
@@ -29,4 +29,7 @@ public abstract class ViewNode extends BaseModel {
 	public abstract void reload();
 	public abstract boolean supportPaging();
 	public abstract void loadOneMorePage();
+	public Object onAction(ViewNodeAction action) {
+		return null;
+	}
 }

@@ -11,6 +11,8 @@ import com.wzw.ic.mvc.ViewNode;
 
 public abstract class NGViewNode extends ViewNode {
 
+	public static String NG_ICON = "http://a266.phobos.apple.com/us/r1000/087/Purple2/v4/6d/20/4b/6d204b68-468b-22c8-a831-8d26535edbbb/mzl.keeyqfwh.png";
+	
 	public NGViewNode(String sourceUrl) {
 		super(sourceUrl);
 	}

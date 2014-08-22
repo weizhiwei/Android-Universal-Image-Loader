@@ -10,7 +10,7 @@ public class NGViewNodeRoot extends NGViewNode {
 	public NGViewNodeRoot() {
 		super("http://www.nationalgeographic.com");
 		supportPaging = false;
-		viewItems.add(new ViewItem("Photo of the Day", "photoOfTheDay", NGController.NG_ICON, 0));
+		viewItems.add(new ViewItem("Photo of the Day", "photoOfTheDay", NG_ICON, ViewItem.VIEW_TYPE_GRID, new NGViewNodePhotoOfTheDay()));
 	}
 
 	@Override

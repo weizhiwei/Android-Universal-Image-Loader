@@ -1,6 +1,11 @@
 package com.wzw.ic.mvc;
 
-public class ViewItem extends BaseModel {	
+public class ViewItem extends IcObject {
+	
+	public static final int VIEW_TYPE_LIST = 1;
+	public static final int VIEW_TYPE_GRID = 2;
+	public static final int VIEW_TYPE_IMAGE_PAGER = 3;
+	
 	private String label;
 	private String nodeUrl;
 	private String imageUrl;
@@ -10,8 +15,9 @@ public class ViewItem extends BaseModel {
 	private boolean usingColorOverImage;
 	private String story;
 	private boolean heartsOn;
+	private ViewNode viewNode;
 	
-	public ViewItem(String label, String nodeUrl, String imageUrl, int viewType) {
+	public ViewItem(String label, String nodeUrl, String imageUrl, int viewType, ViewNode viewNode) {
 		this.setLabel(label);
 		this.setNodeUrl(nodeUrl);
 		this.setImageUrl(imageUrl);
@@ -20,6 +26,7 @@ public class ViewItem extends BaseModel {
 		this.setShowingLabelInGrid(false);
 		this.setUsingColorOverImage(false);
 		this.setHeartsOn(false);
+		this.setViewNode(viewNode);
 	}
 
 	public String getLabel() {
@@ -92,5 +99,13 @@ public class ViewItem extends BaseModel {
 
 	public void setViewType(int viewType) {
 		this.viewType = viewType;
+	}
+
+	public ViewNode getViewNode() {
+		return viewNode;
+	}
+
+	public void setViewNode(ViewNode viewNode) {
+		this.viewNode = viewNode;
 	}
 }

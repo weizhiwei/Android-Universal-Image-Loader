@@ -47,7 +47,7 @@ public class FotoViewNodeStory extends FotoViewNode {
 						imgUrl = imgElems.get(0).attr("about");
 					}
 					if (!TextUtils.isEmpty(imgUrl)) {
-						ViewItem viewItem = new ViewItem("", "", imgUrl, 0);
+						ViewItem viewItem = new ViewItem("", "", imgUrl, ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
 						Elements titleElems = figure.select(".cover-title, .regular-title");
 						if (null != titleElems && titleElems.size() > 0) {
 							viewItem.setLabel(titleElems.get(0).ownText());

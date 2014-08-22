@@ -15,6 +15,8 @@ import com.wzw.ic.mvc.ViewNode;
 
 public abstract class MokoViewNode extends ViewNode {
 
+	public static String MOKO_ICON = "http://www.vitbbs.cn/uploads/allimg/c101125/12ZEK63410-14106.gif";
+	
 	protected int pageNo;
 	protected boolean supportPaging;
 	protected static String URL_PREFIX = "http://www.moko.cc";

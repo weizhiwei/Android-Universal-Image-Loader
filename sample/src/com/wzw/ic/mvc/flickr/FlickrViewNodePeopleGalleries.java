@@ -31,7 +31,7 @@ public class FlickrViewNodePeopleGalleries extends FlickrViewNode {
 	private void doLoad(boolean reload) {
 		int newPageNo = reload ? 1 : pageNo + 1;
 		
-		Flickr f = new Flickr(FlickrController.FLICKR_API_KEY);
+		Flickr f = new Flickr(FLICKR_API_KEY);
 		GalleriesInterface galleriesInterface = f.getGalleriesInterface();
 		SearchResultList<Gallery> galleries = null;
 		try {
@@ -63,7 +63,13 @@ public class FlickrViewNodePeopleGalleries extends FlickrViewNode {
 			}
 			
 			for (Gallery gallery: galleries) {
-				ViewItem viewItem = new ViewItem(gallery.getTitle(), String.format("https://www.flickr.com/photos/flickr/galleries/%s/", gallery.getGalleryId()), gallery.getPrimaryPhoto().getLargeSquareUrl(), 0);
+				ViewItem viewItem = new ViewItem(
+						gallery.getTitle(),
+						String.format("https://www.flickr.com/photos/flickr/galleries/%s/",
+								gallery.getGalleryId()),
+								gallery.getPrimaryPhoto().getLargeSquareUrl(),
+								ViewItem.VIEW_TYPE_GRID,
+								new FlickrViewNodeGallery(gallery.getGalleryId()));
 				viewItems.add(viewItem);
 			}
 		}

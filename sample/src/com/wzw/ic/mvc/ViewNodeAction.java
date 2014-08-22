@@ -1,6 +1,6 @@
 package com.wzw.ic.mvc;
 
-public class ViewNodeAction extends BaseModel {
+public class ViewNodeAction extends IcObject {
 	private String title;
 	private int id;
 	private boolean visible;

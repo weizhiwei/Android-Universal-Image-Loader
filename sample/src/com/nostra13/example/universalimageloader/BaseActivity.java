@@ -19,6 +19,7 @@ import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -34,11 +35,10 @@ import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
-import com.wzw.ic.mvc.BaseController;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.ViewNodeAction;
-import com.wzw.ic.mvc.root.RootController;
+import com.wzw.ic.mvc.root.MetaRootViewNode;
 import com.wzw.ic.mvc.root.RootViewNode;
 
 /**
@@ -47,8 +47,9 @@ import com.wzw.ic.mvc.root.RootViewNode;
 public abstract class BaseActivity extends Activity {
 
 	protected ImageLoader imageLoader = ImageLoader.getInstance();
+	protected ViewNode parentModel;
 	protected ViewNode model;
-	protected BaseController controller;
+	protected ViewItem myViewItem;
 	protected Menu menu;
 	private boolean wallpaperServiceEnabled = false;
 	
@@ -139,19 +140,19 @@ public abstract class BaseActivity extends Activity {
 		}
 	}
 	
-	protected void setModelControllerFromIntent() {
+	protected void setModelFromIntent() {
 		Bundle bundle = getIntent().getExtras();
-		ViewItem viewItem = null;
 		if (null != bundle) {
-			model = (ViewNode) bundle.getSerializable(Extra.MODEL);
-			controller = (BaseController) bundle.getSerializable(Extra.CONTROLLER);
-			viewItem = (ViewItem) bundle.getSerializable(Extra.VIEW_ITEM);
+			parentModel = (ViewNode) bundle.getSerializable(Extra.PARENT_MODEL);
+			myViewItem = (ViewItem) bundle.getSerializable(Extra.VIEW_ITEM);
+			model = myViewItem.getViewNode();
 		}
-		if (null == model || null == controller) {
-			model = new RootViewNode();
-			controller = new RootController();
+		if (null == model) {
+			parentModel = new MetaRootViewNode();
+			myViewItem = parentModel.getViewItems().get(0);
+			model = myViewItem.getViewNode();
 		}
-		setTitleIconFromViewItem(viewItem);
+		setTitleIconFromViewItem(myViewItem);
 	}
 	
 	@Override
@@ -180,12 +181,39 @@ public abstract class BaseActivity extends Activity {
 				if (null != model && null != model.getActions()) {
 					for (ViewNodeAction action: model.getActions()) {
 						if (action.getId() == item.getItemId()) {
-							controller.startAction(this, model, action);
+							Object actionResult = model.onAction(action);
+							if (null != actionResult) {
+								if (actionResult instanceof ViewItem) {
+									startViewItemActivity((ViewItem) actionResult);
+								}
+							}
 							return true;
+						} else {
+							// other action results here...
 						}
 					}
 				}
 				return false;
+		}
+	}
+	
+	protected void startViewItemActivity(ViewItem viewItem) {
+		Intent intent = null;
+		switch (viewItem.getViewType()) {
+		case ViewItem.VIEW_TYPE_GRID:
+		case ViewItem.VIEW_TYPE_LIST:
+			intent = new Intent(this, ViewItemPagerActivity.class);
+			break;
+		case ViewItem.VIEW_TYPE_IMAGE_PAGER:
+			intent = new Intent(this, ImagePagerActivity.class);
+			break;
+		default:
+			break;
+		}
+		if (null != intent) {
+			intent.putExtra(Extra.PARENT_MODEL, model);
+			intent.putExtra(Extra.VIEW_ITEM, viewItem);
+			startActivity(intent);
 		}
 	}
 	
