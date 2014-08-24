@@ -1,5 +1,7 @@
 package com.wzw.ic.mvc;
 
+import android.text.TextUtils;
+
 public class ViewItem extends IcObject {
 	
 	public static final int VIEW_TYPE_LIST = 1;
@@ -29,6 +31,16 @@ public class ViewItem extends IcObject {
 		this.setViewNode(viewNode);
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof ViewItem)) {
+			return false;
+		}
+		ViewItem vi = (ViewItem) o;
+		return TextUtils.equals(vi.imageUrl, this.imageUrl) &&
+				TextUtils.equals(vi.nodeUrl, this.nodeUrl);
+	}
+	
 	public String getLabel() {
 		return label;
 	}

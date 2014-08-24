@@ -53,6 +53,7 @@ public abstract class BaseActivity extends Activity {
 	protected Menu menu;
 	private boolean wallpaperServiceEnabled = false;
 	
+	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -162,13 +163,13 @@ public abstract class BaseActivity extends Activity {
 			for (ViewNodeAction action: model.getActions()) {
 				MenuItem item = menu.add(Menu.NONE, action.getId(), Menu.FIRST, action.getTitle());
 				item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-				item.setVisible(action.isVisible());
+//				item.setVisible(action.isVisible());
 			}
 		}
 		this.menu = menu;
 		return super.onCreateOptionsMenu(menu);
 	}
-
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {

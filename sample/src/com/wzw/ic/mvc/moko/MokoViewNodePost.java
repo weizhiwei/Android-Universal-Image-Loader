@@ -21,7 +21,7 @@ public class MokoViewNodePost extends MokoViewNode {
 	public MokoViewNodePost(String sourceUrl) {
 		super(sourceUrl);
 		supportPaging = false;
-		actions = Arrays.asList(new ViewNodeAction(R.id.action_moko_see_user, "by user"));
+		actions = Arrays.asList(new ViewNodeAction(R.id.action_moko_see_user, ""));
 	}
 
 	@Override

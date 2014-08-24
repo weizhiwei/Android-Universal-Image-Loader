@@ -397,12 +397,11 @@ public class ViewItemPagerActivity extends BaseActivity {
 			
 			// Call onRefreshComplete when the list has been refreshed.
 			currentPullRefreshView.onRefreshComplete();
-			
 			if (null != model && null != model.getActions()) {
 				for (ViewNodeAction action: model.getActions()) {
 					MenuItem item = menu.findItem(action.getId());
 					item.setTitle(action.getTitle());
-					item.setVisible(action.isVisible());
+//					item.setVisible(action.isVisible());
 				}
 			}
 			super.onPostExecute(result);
@@ -420,8 +419,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);
-		if (hasFocus && currentAdapter.getCount() == 0) {
+//		if (hasFocus && currentAdapter.getCount() == 0) {
 //			subPullRefreshView.setRefreshing();
-		}
+//		}
 	}
 }
