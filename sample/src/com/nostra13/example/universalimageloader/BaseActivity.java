@@ -145,7 +145,9 @@ public abstract class BaseActivity extends Activity {
 		if (null != bundle) {
 			parentModel = (ViewNode) bundle.getSerializable(Extra.PARENT_MODEL);
 			myViewItem = (ViewItem) bundle.getSerializable(Extra.VIEW_ITEM);
-			model = myViewItem.getViewNode();
+			if (null != parentModel && null != myViewItem) {
+				model = myViewItem.getViewNode();
+			}
 		}
 		if (null == model) {
 			parentModel = new MetaRootViewNode();
