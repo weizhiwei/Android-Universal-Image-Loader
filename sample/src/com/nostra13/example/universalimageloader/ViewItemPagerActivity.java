@@ -10,8 +10,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.text.TextUtils;
-import android.text.format.DateUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,12 +25,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.handmark.pulltorefresh.library.PullToRefreshBase;
-import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
-import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener2;
-import com.handmark.pulltorefresh.library.PullToRefreshGridView;
-import com.handmark.pulltorefresh.library.PullToRefreshListView;
-import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
@@ -47,7 +42,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 	ViewPager pager;
 	
 	BaseAdapter currentAdapter;
-	PullToRefreshBase currentPullRefreshView;
+	SwipeRefreshLayout currentSwipeRefreshLayout;
 	AbsListView currentAbsListView;
 
 	@Override
@@ -81,7 +76,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			.build();
 		
 		pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
-		pager.setOffscreenPageLimit(3);
+		pager.setOffscreenPageLimit(5);
 		pager.setAdapter(new ViewItemPagerAdapter());
 		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
 	}	
@@ -110,16 +105,17 @@ public class ViewItemPagerActivity extends BaseActivity {
 	        model = myViewItem.getViewNode();
 	        switch (myViewItem.getViewType()) {
 			case ViewItem.VIEW_TYPE_LIST:
-				currentPullRefreshView = (PullToRefreshListView) contentView.findViewById(R.id.ic_listview);
+				currentSwipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_listview_swiperefresh);
+				currentAbsListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				break;
 			case ViewItem.VIEW_TYPE_GRID:
-				currentPullRefreshView = (PullToRefreshGridView) contentView.findViewById(R.id.ic_gridview);
+				currentSwipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_gridview_swiperefresh);
+				currentAbsListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
 				break;
 			default:
 				break;
 			}
-	        if (null != currentPullRefreshView) {
-	        	currentAbsListView = (AbsListView)currentPullRefreshView.getRefreshableView();
+	        if (null != currentSwipeRefreshLayout && null != currentAbsListView) {
 	        	if (currentAbsListView.getAdapter() instanceof HeaderViewListAdapter) {
 	        		currentAdapter = (BaseAdapter) ((HeaderViewListAdapter) currentAbsListView.getAdapter()).getWrappedAdapter();
 	        	} else {
@@ -136,17 +132,20 @@ public class ViewItemPagerActivity extends BaseActivity {
 			ViewNode childModel = viewItem.getViewNode();
 			
 			View contentView = null;
-			PullToRefreshBase pullRefreshView = null;
+			SwipeRefreshLayout swipeRefreshLayout = null;
+			AbsListView absListView = null;
 			BaseAdapter itemAdapter = null;
 			switch (viewItem.getViewType()) {
 			case ViewItem.VIEW_TYPE_LIST:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
-				pullRefreshView = (PullToRefreshListView) contentView.findViewById(R.id.ic_listview);
+				swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_listview_swiperefresh);
+				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(childModel);
 				break;
 			case ViewItem.VIEW_TYPE_GRID:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
-				pullRefreshView = (PullToRefreshGridView) contentView.findViewById(R.id.ic_gridview);
+				swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_gridview_swiperefresh);
+				absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
 				itemAdapter = new GridItemAdapter(childModel);
 				break;
 			default:
@@ -154,57 +153,51 @@ public class ViewItemPagerActivity extends BaseActivity {
 			}
 			
 			assert contentView != null;
-			if (null == contentView) {
+			if (null == contentView || null == swipeRefreshLayout || null == absListView) {
 				return null;
 			}
 			
-			if (childModel.supportReloading()) {
-				if (childModel.supportPaging()) {
-					pullRefreshView.setMode(Mode.BOTH);
-				} else {
-					pullRefreshView.setMode(Mode.PULL_FROM_START);				
-				}
-			} else {
-				pullRefreshView.setMode(Mode.DISABLED);
-			}
-			
 			// Set a listener to be invoked when the list should be refreshed.
-			pullRefreshView.setOnRefreshListener(new OnRefreshListener2() {
-				@Override
-				public void onPullDownToRefresh(
-						final PullToRefreshBase refreshView) {
-					final String label = DateUtils.formatDateTime(getApplicationContext(), System.currentTimeMillis(),
-							DateUtils.FORMAT_SHOW_TIME | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_ALL);
-
-					// Update the LastUpdatedLabel
-					refreshView.getLoadingLayoutProxy().setLastUpdatedLabel(label);
-
-					// Do work to refresh the list here.
-					new GetDataTask().execute(true);
-				}
-
-				@Override
-				public void onPullUpToRefresh(
-						final PullToRefreshBase refreshView) {
-					// Do work to refresh the list here.
-					new GetDataTask().execute(false);
-				}
+			swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+				 @Override
+		            public void onRefresh() {
+		                // Your code to refresh the list here.
+		                // Make sure you call swipeContainer.setRefreshing(false) when
+		                // once the network request has completed successfully.
+						new GetDataTask().execute(true);
+		            }
 			});
+			swipeRefreshLayout.setEnabled(childModel.supportReloading());
+			// Configure the refreshing colors
+			swipeRefreshLayout.setColorScheme(android.R.color.holo_blue_bright, 
+	                android.R.color.holo_green_light, 
+	                android.R.color.holo_orange_light, 
+	                android.R.color.holo_red_light);
 			
-			AbsListView absListView = (AbsListView) pullRefreshView.getRefreshableView();
 			absListView.setAdapter(itemAdapter);
 			absListView.setOnItemClickListener(new OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 					// drill down
-					if (viewItem.getViewType() == ViewItem.VIEW_TYPE_LIST) {
-						position -= 1;
-					}
 					ViewItemPagerActivity.this.startViewItemActivity(model.getViewItems().get(position));
 				}
 			});
+			if (childModel.supportPaging()) {
+				absListView.setOnScrollListener(new EndlessScrollListener() {
+				    @Override
+				    public void onLoadMore(int page, int totalItemsCount) {
+				    	new GetDataTask().execute(false);
+				    }
+			    });
+			}
 			
 			view.addView(contentView, 0);
+			
+			if (childModel.supportReloading()) {
+				swipeRefreshLayout.setRefreshing(true);
+				new GetDataTask().execute(true);
+			}
+			
 			return contentView;
 		}
 
@@ -396,7 +389,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			currentAdapter.notifyDataSetChanged();
 			
 			// Call onRefreshComplete when the list has been refreshed.
-			currentPullRefreshView.onRefreshComplete();
+			currentSwipeRefreshLayout.setRefreshing(false);
 			
 			if (null != model && null != model.getActions()) {
 				for (ViewNodeAction action: model.getActions()) {
