@@ -1,9 +1,6 @@
 package com.wzw.ic.mvc.hearts;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import android.database.Cursor;
 
 import com.nostra13.example.universalimageloader.IcDatabase;
 import com.wzw.ic.mvc.ViewItem;

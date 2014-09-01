@@ -15,6 +15,8 @@
  *******************************************************************************/
 package com.nostra13.example.universalimageloader;
 
+import java.util.Arrays;
+
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
@@ -38,7 +40,6 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.ViewNodeAction;
-import com.wzw.ic.mvc.root.MetaRootViewNode;
 import com.wzw.ic.mvc.root.RootViewNode;
 
 /**
@@ -146,14 +147,26 @@ public abstract class BaseActivity extends Activity {
 		if (null != bundle) {
 			parentModel = (ViewNode) bundle.getSerializable(Extra.PARENT_MODEL);
 			myViewItem = (ViewItem) bundle.getSerializable(Extra.VIEW_ITEM);
-			model = myViewItem.getViewNode();
+			if (null != parentModel && null != myViewItem) {
+				model = myViewItem.getViewNode();
+			}
 		}
 		if (null == model) {
-			parentModel = new MetaRootViewNode();
-			myViewItem = parentModel.getViewItems().get(0);
+			myViewItem = RootViewNode.ROOT_VIEW_ITEM;
+			parentModel = new ViewNode("", Arrays.asList(myViewItem));
 			model = myViewItem.getViewNode();
 		}
 		setTitleIconFromViewItem(myViewItem);
+	}
+	
+	protected void updateMenu(ViewNode model) {
+		if (null != menu && null != model && null != model.getActions()) {
+			for (ViewNodeAction action: model.getActions()) {
+				MenuItem item = menu.findItem(action.getId());
+				item.setTitle(action.getTitle());
+				item.setVisible(action.isVisible());
+			}
+		}
 	}
 	
 	@Override
@@ -185,7 +198,7 @@ public abstract class BaseActivity extends Activity {
 							Object actionResult = model.onAction(action);
 							if (null != actionResult) {
 								if (actionResult instanceof ViewItem) {
-									startViewItemActivity((ViewItem) actionResult);
+									startViewItemActivity(null, (ViewItem) actionResult);
 								}
 							}
 							return true;
@@ -198,7 +211,7 @@ public abstract class BaseActivity extends Activity {
 		}
 	}
 	
-	protected void startViewItemActivity(ViewItem viewItem) {
+	protected void startViewItemActivity(ViewNode parent, ViewItem viewItem) {
 		Intent intent = null;
 		switch (viewItem.getViewType()) {
 		case ViewItem.VIEW_TYPE_GRID:
@@ -212,7 +225,10 @@ public abstract class BaseActivity extends Activity {
 			break;
 		}
 		if (null != intent) {
-			intent.putExtra(Extra.PARENT_MODEL, model);
+			if (null == parent) {
+				parent = new ViewNode("", Arrays.asList(viewItem));
+			}
+			intent.putExtra(Extra.PARENT_MODEL, parent);
 			intent.putExtra(Extra.VIEW_ITEM, viewItem);
 			startActivity(intent);
 		}
