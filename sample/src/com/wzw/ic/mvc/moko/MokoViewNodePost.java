@@ -57,7 +57,9 @@ public class MokoViewNodePost extends MokoViewNode {
 			viewItems = new ArrayList<ViewItem>();
 			for (int i = 0; i < imgElems.size(); ++i) {
 				Element img = imgElems.get(i);
-				viewItems.add(new ViewItem("", "", img.attr("src2"), ViewItem.VIEW_TYPE_IMAGE_PAGER, this));
+				ViewItem viewItem = new ViewItem("", "", img.attr("src2"), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
+				viewItem.setAuthor(userViewItem.getLabel());
+				viewItems.add(viewItem);
 			}
 		}
 		return viewItems;

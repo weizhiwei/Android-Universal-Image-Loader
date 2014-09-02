@@ -24,7 +24,12 @@ import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,7 +42,6 @@ import android.widget.ShareActionProvider;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
@@ -49,8 +53,6 @@ import com.wzw.ic.mvc.ViewItem;
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
 public class ImagePagerActivity extends BaseActivity {
-
-	private static final String STATE_POSITION = "STATE_POSITION";
 
 	DisplayImageOptions options;
 	
@@ -198,16 +200,33 @@ shareIntent.setType("image/*");
 	        
 			String story = "";
 			if (!TextUtils.isEmpty(viewItem.getLabel())) {
-				story += "<b>" + viewItem.getLabel() + "</b>";
+				story += String.format("<big><b><a href=\"%s\">%s</a></b></big>", viewItem.getNodeUrl(), viewItem.getLabel());
+			}
+			if (!TextUtils.isEmpty(viewItem.getAuthor())) {
+				story += String.format(" by <big><i>%s</i></big>", viewItem.getAuthor());
 			}
 			if (!TextUtils.isEmpty(viewItem.getStory())) {
 				if (!TextUtils.isEmpty(story)) {
-					story += "<br/>";
+					story += "<br/><br/>";
 				}
 				story += viewItem.getStory();
 			}
 			if (!TextUtils.isEmpty(story)) {
-				textView.setText(Html.fromHtml(story));
+				SpannableString ss = new SpannableString(Html.fromHtml(story));
+				if (!TextUtils.isEmpty(viewItem.getAuthor())) {
+					int start = ss.toString().indexOf("by " + viewItem.getAuthor()) + 3;
+					int end = start + viewItem.getAuthor().length();
+					ss.setSpan(new ClickableSpan () {
+	
+						@Override
+						public void onClick(View arg0) {
+							
+						}
+						
+					}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+				}
+				textView.setText(ss);
+				textView.setMovementMethod(LinkMovementMethod.getInstance());
 			}
 			
 			imageView.setOnClickListener(new OnClickListener() {

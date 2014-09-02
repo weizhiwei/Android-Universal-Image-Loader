@@ -17,6 +17,9 @@ public class ViewItem extends IcObject {
 	private boolean usingColorOverImage;
 	private String story;
 	private boolean heartsOn;
+	private String author;
+	private String webPageUrl;
+	
 	private ViewNode viewNode;
 	
 	public ViewItem(String label, String nodeUrl, String imageUrl, int viewType, ViewNode viewNode) {
@@ -48,16 +51,6 @@ public class ViewItem extends IcObject {
 		return (this.imageUrl + this.nodeUrl).hashCode();
 	}
 
-	@Override
-	public boolean equals(Object o) {
-		if (o == null || !(o instanceof ViewItem)) {
-			return false;
-		}
-		ViewItem vi = (ViewItem) o;
-		return TextUtils.equals(vi.imageUrl, this.imageUrl) &&
-				TextUtils.equals(vi.nodeUrl, this.nodeUrl);
-	}
-	
 	public String getLabel() {
 		return label;
 	}
@@ -136,5 +129,21 @@ public class ViewItem extends IcObject {
 
 	public void setViewNode(ViewNode viewNode) {
 		this.viewNode = viewNode;
+	}
+
+	public String getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+
+	public String getWebPageUrl() {
+		return webPageUrl;
+	}
+
+	public void setWebPageUrl(String webPageUrl) {
+		this.webPageUrl = webPageUrl;
 	}
 }
