@@ -14,7 +14,7 @@ import com.wzw.ic.mvc.ViewItem;
 public class NGViewNodePhotoOfTheDay extends NGViewNode {
 
 	public NGViewNodePhotoOfTheDay() {
-		super("http://photography.nationalgeographic.com/photography/photo-of-the-day/archive/?page=%d");
+		super(URL_PREFIX + "/photography/photo-of-the-day/archive/?page=%d");
 		supportPaging = true;
 	}
 
@@ -26,22 +26,27 @@ public class NGViewNodePhotoOfTheDay extends NGViewNode {
 			viewItems = new ArrayList<ViewItem>();
 			for (int i = 0; i < searchResultsElems.size(); ++i) {
 				Element elem = searchResultsElems.get(i);
+				
 				Elements imgElems = elem.select("img");
 				String imgUrl = null;
 				if (null != imgElems && imgElems.size() > 0) {
 					imgUrl = imgElems.get(0).attr("src");
 				}
+				
 				if (!TextUtils.isEmpty(imgUrl)) {
 					ViewItem viewItem = new ViewItem("", "", "http:" + imgUrl.replace("100x75", "990x742").replace("/overrides/", "/cache/"), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
 					Elements titleElems = elem.select(".photo_info h4");
 					if (null != titleElems && titleElems.size() > 0) {
 						viewItem.setLabel(titleElems.get(0).ownText());
 					}
+					Elements aElems = elem.select("a");
+					if (null != aElems && aElems.size() > 0) {
+						viewItem.setNodeUrl(URL_PREFIX + aElems.get(0).attr("href"));
+					}
 					Elements descElems = elem.select(".photo_info p");
 					if (null != descElems && descElems.size() > 1) {
 						viewItem.setStory(descElems.get(1).ownText());
 					}
-					viewItem.setAuthor("author");
 					viewItems.add(viewItem);
 				}
 			}

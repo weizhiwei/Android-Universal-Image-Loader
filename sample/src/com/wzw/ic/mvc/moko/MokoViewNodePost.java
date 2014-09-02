@@ -1,7 +1,6 @@
 package com.wzw.ic.mvc.moko;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.jsoup.nodes.Document;
@@ -10,23 +9,22 @@ import org.jsoup.select.Elements;
 
 import android.text.TextUtils;
 
-import com.nostra13.example.universalimageloader.R;
 import com.wzw.ic.mvc.ViewItem;
-import com.wzw.ic.mvc.ViewNodeAction;
 
 public class MokoViewNodePost extends MokoViewNode {
 
-	private ViewItem userViewItem;
+	private ViewItem authorViewItem;
+	private String pageTitle;
 	
-	public MokoViewNodePost(String sourceUrl) {
+	public MokoViewNodePost(String sourceUrl, String pageTitle) {
 		super(sourceUrl);
 		supportPaging = false;
-		actions = Arrays.asList(new ViewNodeAction(R.id.action_moko_see_user, ""));
+		this.pageTitle = pageTitle;
 	}
 
 	@Override
 	protected List<ViewItem> extractViewItemsFromPage(Document page) {
-		if (null == userViewItem) {
+		if (null == authorViewItem) {
 			Elements a = page.select("a#workNickName");
 			if (null != a && a.size() > 0) {
 				Element e = a.get(0);
@@ -38,15 +36,12 @@ public class MokoViewNodePost extends MokoViewNode {
 						i = is.get(0);
 					}
 					String userUrl = String.format("http://www.moko.cc/post/%s/new/", userId) + "%d.html";
-					userViewItem = new ViewItem(
+					authorViewItem = new ViewItem(
 							e.text(),
 							userUrl,
 							null == i ? "" : i.attr("src"),
 							ViewItem.VIEW_TYPE_GRID,
 							new MokoViewNodeUser(userUrl));
-					ViewNodeAction seeUserAction = actions.get(0);
-					seeUserAction.setTitle("by " + userViewItem.getLabel());
-					seeUserAction.setVisible(true);
 				}
 			}
 		}
@@ -57,16 +52,11 @@ public class MokoViewNodePost extends MokoViewNode {
 			viewItems = new ArrayList<ViewItem>();
 			for (int i = 0; i < imgElems.size(); ++i) {
 				Element img = imgElems.get(i);
-				ViewItem viewItem = new ViewItem("", "", img.attr("src2"), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
-				viewItem.setAuthor(userViewItem.getLabel());
+				ViewItem viewItem = new ViewItem(pageTitle, sourceUrl, img.attr("src2"), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
+				viewItem.setAuthor(authorViewItem);
 				viewItems.add(viewItem);
 			}
 		}
 		return viewItems;
-	}
-	
-	@Override
-	public Object onAction(ViewNodeAction action) {
-		return userViewItem;
 	}
 }

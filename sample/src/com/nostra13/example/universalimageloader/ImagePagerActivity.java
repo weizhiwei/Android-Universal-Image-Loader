@@ -17,6 +17,7 @@ package com.nostra13.example.universalimageloader;
 
 import ru.truba.touchgallery.GalleryWidget.GalleryViewPager;
 import ru.truba.touchgallery.TouchView.TouchImageView;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -115,6 +116,7 @@ public class ImagePagerActivity extends BaseActivity {
 		}
 	}
 	
+	@SuppressLint("NewApi")
 	private void setMenu() {
 		if (null == menu)
 			return;
@@ -195,32 +197,33 @@ shareIntent.setType("image/*");
 			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
 			final TextView textView = (TextView) imageLayout.findViewById(R.id.story);
 
-			ViewItem viewItem = parentModel.getViewItems().get(position);
+			final ViewItem viewItem = parentModel.getViewItems().get(position);
 			viewItem.setHeartsOn(IcDatabase.getInstance().isViewItemInHearts(viewItem));
 	        
 			String story = "";
 			if (!TextUtils.isEmpty(viewItem.getLabel())) {
-				story += String.format("<big><b><a href=\"%s\">%s</a></b></big>", viewItem.getNodeUrl(), viewItem.getLabel());
+				story += String.format("<big><b><a href=\"%s\">%s</a></b></big>", viewItem.getNodeUrl(), Html.escapeHtml(viewItem.getLabel()));
 			}
-			if (!TextUtils.isEmpty(viewItem.getAuthor())) {
-				story += String.format(" by <big><i>%s</i></big>", viewItem.getAuthor());
+			String authorName = (viewItem.getAuthor() == null ? null : viewItem.getAuthor().getLabel());
+			if (!TextUtils.isEmpty(authorName)) {
+				story += String.format(" by <big><i>%s</i></big>", Html.escapeHtml(authorName));
 			}
 			if (!TextUtils.isEmpty(viewItem.getStory())) {
 				if (!TextUtils.isEmpty(story)) {
 					story += "<br/><br/>";
 				}
-				story += viewItem.getStory();
+				story += Html.escapeHtml(viewItem.getStory());
 			}
 			if (!TextUtils.isEmpty(story)) {
 				SpannableString ss = new SpannableString(Html.fromHtml(story));
-				if (!TextUtils.isEmpty(viewItem.getAuthor())) {
-					int start = ss.toString().indexOf("by " + viewItem.getAuthor()) + 3;
-					int end = start + viewItem.getAuthor().length();
+				if (!TextUtils.isEmpty(authorName)) {
+					int start = ss.toString().indexOf("by " + authorName) + 3;
+					int end = start + authorName.length();
 					ss.setSpan(new ClickableSpan () {
 	
 						@Override
 						public void onClick(View arg0) {
-							
+							startViewItemActivity(null, viewItem.getAuthor());
 						}
 						
 					}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);

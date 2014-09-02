@@ -17,7 +17,7 @@ public class ViewItem extends IcObject {
 	private boolean usingColorOverImage;
 	private String story;
 	private boolean heartsOn;
-	private String author;
+	private ViewItem author;
 	private String webPageUrl;
 	
 	private ViewNode viewNode;
@@ -131,11 +131,11 @@ public class ViewItem extends IcObject {
 		this.viewNode = viewNode;
 	}
 
-	public String getAuthor() {
+	public ViewItem getAuthor() {
 		return author;
 	}
 
-	public void setAuthor(String author) {
+	public void setAuthor(ViewItem author) {
 		this.author = author;
 	}
 
