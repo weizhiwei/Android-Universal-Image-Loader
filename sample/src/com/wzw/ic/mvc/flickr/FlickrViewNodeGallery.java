@@ -7,6 +7,7 @@ import org.json.JSONException;
 import com.googlecode.flickrjandroid.Flickr;
 import com.googlecode.flickrjandroid.FlickrException;
 import com.googlecode.flickrjandroid.galleries.GalleriesInterface;
+import com.googlecode.flickrjandroid.people.User;
 import com.googlecode.flickrjandroid.photos.Photo;
 import com.googlecode.flickrjandroid.photos.PhotoList;
 import com.wzw.ic.mvc.ViewItem;
@@ -62,8 +63,13 @@ public class FlickrViewNodeGallery extends FlickrViewNode {
 				viewItems.clear();
 			}
 			for (Photo photo: photoList) {
-				ViewItem viewItem = new ViewItem(photo.getTitle(), "", photo.getLargeUrl(), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
+				ViewItem viewItem = new ViewItem(photo.getTitle(), photo.getUrl(), photo.getLargeUrl(), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
 				viewItem.setStory(photo.getDescription());
+				User owner = photo.getOwner();
+				if (null != owner) {
+					ViewItem ownerItem = new ViewItem(owner.getUsername(), owner.getPhotosurl(), owner.getBuddyIconUrl(), ViewItem.VIEW_TYPE_LIST, new FlickrViewNodePeoplePhotosets(owner.getId()));
+					viewItem.setAuthor(ownerItem);
+				}
 				viewItems.add(viewItem);
 			}
 		}
