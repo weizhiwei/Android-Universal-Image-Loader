@@ -93,8 +93,12 @@ public class ImagePagerActivity extends BaseActivity {
 		MenuItem heartsItem = menu.findItem(R.id.item_hearts_toggle);
 		heartsItem.setVisible(true);
 		
-		MenuItem shareItem = menu.findItem(R.id.action_share);
+		MenuItem shareItem = menu.findItem(R.id.item_action_share);
 		shareItem.setVisible(true);
+		
+		MenuItem setWallpaperItem = menu.findItem(R.id.item_set_wallpaper);
+		setWallpaperItem.setVisible(true);
+		
 		return super.onPrepareOptionsMenu(menu);
 	}
 
@@ -102,6 +106,7 @@ public class ImagePagerActivity extends BaseActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.item_hearts_toggle:
+			{
 				ViewItem viewItem = model.getViewItems().get(pager.getCurrentItem());
 				viewItem.setHeartsOn(!viewItem.isHeartsOn());
 				if (viewItem.isHeartsOn()) {
@@ -109,15 +114,22 @@ public class ImagePagerActivity extends BaseActivity {
 				} else {
 					IcDatabase.getInstance().removeViewItemFromHearts(viewItem);
 				}
-	        	setMenu();
+	        	updateMenu();
 				return true;
+			}
+			case R.id.item_set_wallpaper:
+			{
+				ViewItem viewItem = model.getViewItems().get(pager.getCurrentItem());
+				WallpaperAlarmReceiver.setWallpaper(this, viewItem.getImageUrl());
+				return true;
+			}
 			default:
 				return super.onOptionsItemSelected(item);
 		}
 	}
 	
 	@SuppressLint("NewApi")
-	private void setMenu() {
+	private void updateMenu() {
 		if (null == menu)
 			return;
 		
@@ -132,7 +144,7 @@ public class ImagePagerActivity extends BaseActivity {
     		heartsItem.setIcon(R.drawable.ic_hearts_off);
 		}
 		
-		MenuItem shareItem = menu.findItem(R.id.action_share);
+		MenuItem shareItem = menu.findItem(R.id.item_action_share);
     	ShareActionProvider shareActionProvider = (ShareActionProvider)shareItem.getActionProvider();
 	    Intent intent = new Intent(Intent.ACTION_SEND);
 	    intent.setType("image/*");
@@ -180,7 +192,7 @@ shareIntent.setType("image/*");
         	
 	        if (!isFullscreen()) {
 	        	setTitleIconFromViewItem(myViewItem);
-	        	setMenu();
+	        	updateMenu();
 	        	
 	        	final TextView textView = (TextView) imageLayout.findViewById(R.id.story);
 	        	if (!TextUtils.isEmpty(textView.getText())) {
@@ -241,7 +253,7 @@ shareIntent.setType("image/*");
 						textView.setVisibility(View.GONE);
 					}
 					toggleFullscreen();
-		        	setMenu();
+		        	updateMenu();
 				}
 			});
 			

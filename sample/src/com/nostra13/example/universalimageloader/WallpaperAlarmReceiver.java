@@ -37,22 +37,8 @@ public class WallpaperAlarmReceiver extends BroadcastReceiver {
 		}
 	}
 	
-	@Override
-	public void onReceive(final Context context, Intent intent) {
-		
-		int heartCount = IcDatabase.getInstance().getViewItemsInHeartsCount();
-		if (heartCount <= 0) {
-			return;
-		}
-		
-		List<ViewItem> pageViewItems = IcDatabase.getInstance().fetchAllViewItemsInHearts(
-				(new Random()).nextInt(heartCount), 1);
-		
-		if (null == pageViewItems || pageViewItems.size() == 0) {
-			return;
-		}
-		
-		ImageLoader.getInstance().loadImage(pageViewItems.get(0).getImageUrl(), new ImageLoadingListener() {
+	public static void setWallpaper(final Context context, String imageUrl) {
+		ImageLoader.getInstance().loadImage(imageUrl, new ImageLoadingListener() {
 			
 			@Override
 			public void onLoadingStarted(String imageUri, View view) {
@@ -117,5 +103,21 @@ public class WallpaperAlarmReceiver extends BroadcastReceiver {
 				
 			}
 		});
+	}
+	
+	@Override
+	public void onReceive(final Context context, Intent intent) {
+		
+		int heartCount = IcDatabase.getInstance().getViewItemsInHeartsCount();
+		if (heartCount <= 0) {
+			return;
+		}
+		
+		List<ViewItem> pageViewItems = IcDatabase.getInstance().fetchAllViewItemsInHearts(
+				(new Random()).nextInt(heartCount), 1);
+		
+		if (null != pageViewItems && pageViewItems.size() > 0) {
+			setWallpaper(context, pageViewItems.get(0).getImageUrl());
+		}
 	}
 }

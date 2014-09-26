@@ -7,11 +7,17 @@
           android:showAsAction="ifRoom"
           android:visible="false"/>
     
-    <item android:id="@+id/action_share"
+    <item android:id="@+id/item_action_share"
           android:title="@string/share"
           android:showAsAction="ifRoom"
           android:actionProviderClass="android.widget.ShareActionProvider"
           android:visible="false"/>
+
+    <item
+        android:id="@+id/item_set_wallpaper"
+        android:title="@string/wallpaper"
+        android:showAsAction="ifRoom"
+        android:visible="false"/>
     
     <item
         android:id="@+id/item_wallpaper_toggle"
