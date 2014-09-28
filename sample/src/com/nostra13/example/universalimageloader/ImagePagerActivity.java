@@ -27,7 +27,6 @@ import android.support.v4.view.ViewPager;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
-import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
@@ -81,7 +80,7 @@ public class ImagePagerActivity extends BaseActivity {
 			.build();
 
 		pager = (ViewPager) findViewById(R.id.ic_pagerview);
-		pager.setOffscreenPageLimit(3);
+//		pager.setOffscreenPageLimit(3);
 		pager.setAdapter(new ImagePagerAdapter());
 		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
 		
@@ -184,12 +183,17 @@ shareIntent.setType("image/*");
 		@Override
 	    public void setPrimaryItem(ViewGroup container, int position, Object object) {
 	        super.setPrimaryItem(container, position, object);
+
+	        if (myViewItem == parentModel.getViewItems().get(position)) {
+	        	return;
+	        }
+	        
+	        myViewItem = parentModel.getViewItems().get(position);
+
 	        GalleryViewPager galleryContainer = ((GalleryViewPager)container);
 	        View imageLayout = (View) object;
 	        galleryContainer.mCurrentView = (TouchImageView) imageLayout.findViewById(R.id.image);
 	        
-	        myViewItem = parentModel.getViewItems().get(position);
-        	
 	        if (!isFullscreen()) {
 	        	setTitleIconFromViewItem(myViewItem);
 	        	updateMenu();
@@ -205,6 +209,7 @@ shareIntent.setType("image/*");
 		public Object instantiateItem(ViewGroup view, int position) {
 			View imageLayout = inflater.inflate(R.layout.item_pager_image, view, false);
 			assert imageLayout != null;
+			imageLayout.setTag(position);
 			ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
 			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
 			final TextView textView = (TextView) imageLayout.findViewById(R.id.story);

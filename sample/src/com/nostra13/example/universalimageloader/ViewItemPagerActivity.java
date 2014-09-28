@@ -100,37 +100,39 @@ public class ViewItemPagerActivity extends BaseActivity {
 	    public void setPrimaryItem(ViewGroup container, int position, Object object) {
 	        super.setPrimaryItem(container, position, object);
 	        
-	        if (myViewItem != parentModel.getViewItems().get(position)) {
-		        myViewItem = parentModel.getViewItems().get(position);
-		        model = myViewItem.getViewNode();
-		        
-		        setTitleIconFromViewItem(myViewItem);
-		        updateMenu(model);
-		        
-		        if (model.supportReloading() && model.getViewItems().isEmpty()) {
-		        	View contentView = (View) object;
-		        	SwipeRefreshLayout swipeRefreshLayout = null;
-					AbsListView absListView = null;
-					BaseAdapter itemAdapter = null;
-		        	switch (myViewItem.getViewType()) {
-					case ViewItem.VIEW_TYPE_LIST:
-						swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_listview_swiperefresh);
-						absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
-						itemAdapter = (BaseAdapter) absListView.getAdapter();
-						break;
-					case ViewItem.VIEW_TYPE_GRID:
-						swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_gridview_swiperefresh);
-						absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
-						itemAdapter = (BaseAdapter) absListView.getAdapter();
-						break;
-					default:
-						break;
-					}
-					
-		        	swipeRefreshLayout.setRefreshing(true);
-					new GetDataTask(model, itemAdapter).execute(true);
-				}
+	        if (myViewItem == parentModel.getViewItems().get(position)) {
+	        	return;
 	        }
+	        
+	        myViewItem = parentModel.getViewItems().get(position);
+	        model = myViewItem.getViewNode();
+	        
+	        setTitleIconFromViewItem(myViewItem);
+	        updateMenu(model);
+	        
+	        if (model.supportReloading() && model.getViewItems().isEmpty()) {
+	        	View contentView = (View) object;
+	        	SwipeRefreshLayout swipeRefreshLayout = null;
+				AbsListView absListView = null;
+				BaseAdapter itemAdapter = null;
+	        	switch (myViewItem.getViewType()) {
+				case ViewItem.VIEW_TYPE_LIST:
+					swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_listview_swiperefresh);
+					absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
+					itemAdapter = (BaseAdapter) absListView.getAdapter();
+					break;
+				case ViewItem.VIEW_TYPE_GRID:
+					swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_gridview_swiperefresh);
+					absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
+					itemAdapter = (BaseAdapter) absListView.getAdapter();
+					break;
+				default:
+					break;
+				}
+				
+	        	swipeRefreshLayout.setRefreshing(true);
+				new GetDataTask(model, itemAdapter).execute(true);
+			}
 	    }
 		
 		@Override
@@ -163,6 +165,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 			if (null == contentView || null == swipeRefreshLayout || null == absListView) {
 				return null;
 			}
+			
+			contentView.setTag(position);
 			
 			final SwipeRefreshLayout swipeRefreshLayoutFinal = swipeRefreshLayout;
 			final BaseAdapter itemAdapterFinal = itemAdapter;

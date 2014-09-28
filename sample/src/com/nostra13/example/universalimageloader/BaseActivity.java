@@ -19,7 +19,9 @@ import java.util.Arrays;
 
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
+import android.app.ActionBar.Tab;
 import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -61,7 +63,44 @@ public abstract class BaseActivity extends Activity {
 		
 		if (Build.VERSION.SDK_INT >= 11) {
 			ActionBar actionBar = getActionBar();
-			actionBar.setDisplayHomeAsUpEnabled(true);
+//			actionBar.setDisplayHomeAsUpEnabled(true);
+			
+			actionBar.setDisplayShowHomeEnabled(false);
+			actionBar.setDisplayShowTitleEnabled(false);
+			
+			// Specify that tabs should be displayed in the action bar.
+		    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+		    // Create a tab listener that is called when the user changes tabs.
+		    ActionBar.TabListener tabListener = new ActionBar.TabListener() {
+
+				@Override
+				public void onTabReselected(Tab tab, FragmentTransaction ft) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void onTabSelected(Tab tab, FragmentTransaction ft) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+					// TODO Auto-generated method stub
+					
+				}
+		    };
+
+		    // Add 3 tabs, specifying the tab's text and TabListener
+		    for (int i = 0; i < 5; i++) {
+		        actionBar.addTab(
+		                actionBar.newTab()
+		                        .setText("Tab " + (i + 1))
+		                        .setTabListener(tabListener)
+		                        .setIcon(R.drawable.ic_hearts_on));
+		    }
 		}
 	}
 	
