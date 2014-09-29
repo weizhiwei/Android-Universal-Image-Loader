@@ -15,6 +15,9 @@
  *******************************************************************************/
 package com.nostra13.example.universalimageloader;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import android.annotation.SuppressLint;
@@ -63,14 +66,12 @@ public abstract class BaseActivity extends Activity {
 		
 		if (Build.VERSION.SDK_INT >= 11) {
 			ActionBar actionBar = getActionBar();
-//			actionBar.setDisplayHomeAsUpEnabled(true);
-			
-			actionBar.setDisplayShowHomeEnabled(false);
+
+			actionBar.setDisplayHomeAsUpEnabled(true);
+//			actionBar.setDisplayShowHomeEnabled(false);
 			actionBar.setDisplayShowTitleEnabled(false);
 			
-			// Specify that tabs should be displayed in the action bar.
-		    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-
+			
 		    // Create a tab listener that is called when the user changes tabs.
 		    ActionBar.TabListener tabListener = new ActionBar.TabListener() {
 
@@ -94,15 +95,58 @@ public abstract class BaseActivity extends Activity {
 		    };
 
 		    // Add 3 tabs, specifying the tab's text and TabListener
-		    for (int i = 0; i < 5; i++) {
+		    for (int i = 0; i < 8; i++) {
 		        actionBar.addTab(
 		                actionBar.newTab()
-		                        .setText("Tab " + (i + 1))
-		                        .setTabListener(tabListener)
-		                        .setIcon(R.drawable.ic_hearts_on));
+		                        .setText("T" + (i + 1))
+		                        .setTabListener(tabListener));
 		    }
+		    
+		    
+//		    setHasEmbeddedTabs(actionBar, true);
+		    // Specify that tabs should be displayed in the action bar.
+		    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		}
 	}
+	
+	public static void setHasEmbeddedTabs(Object inActionBar, final boolean inHasEmbeddedTabs)
+	{
+	    // get the ActionBar class
+	    Class<?> actionBarClass = inActionBar.getClass();
+
+	    // if it is a Jelly Bean implementation (ActionBarImplJB), get the super class (ActionBarImplICS)
+	    if ("android.support.v7.app.ActionBarImplJB".equals(actionBarClass.getName()))
+	    {
+	            actionBarClass = actionBarClass.getSuperclass();
+	    }
+
+	    try
+	    {
+	            // try to get the mActionBar field, because the current ActionBar is probably just a wrapper Class
+	            // if this fails, no worries, this will be an instance of the native ActionBar class or from the ActionBarImplBase class
+	            final Field actionBarField = actionBarClass.getDeclaredField("mActionBar");
+	            actionBarField.setAccessible(true);
+	            inActionBar = actionBarField.get(inActionBar);
+	            actionBarClass = inActionBar.getClass();
+	    }
+	    catch (IllegalAccessException e) {}
+	    catch (IllegalArgumentException e) {}
+	    catch (NoSuchFieldException e) {}
+
+	    try
+	    {
+	            // now call the method setHasEmbeddedTabs, this will put the tabs inside the ActionBar
+	            // if this fails, you're on you own <img src="http://www.blogc.at/wp-includes/images/smilies/icon_wink.gif" alt=";-)" class="wp-smiley">
+	            final Method method = actionBarClass.getDeclaredMethod("setHasEmbeddedTabs", new Class[] { Boolean.TYPE });
+	            method.setAccessible(true);
+	            method.invoke(inActionBar, new Object[]{ inHasEmbeddedTabs });
+	    }
+	    catch (NoSuchMethodException e)        {}
+	    catch (InvocationTargetException e) {}
+	    catch (IllegalAccessException e) {}
+	    catch (IllegalArgumentException e) {}
+	}
+
 	
 	@SuppressLint("NewApi")
 	public boolean isFullscreen() {

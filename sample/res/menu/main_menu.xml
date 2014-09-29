@@ -19,6 +19,17 @@
         android:showAsAction="ifRoom"
         android:visible="false"/>
     
+    <item android:id="@+id/item_action_search"
+          android:title="@string/search"
+          android:icon="@android:drawable/ic_menu_search"
+          android:showAsAction="ifRoom|collapseActionView"
+          android:actionViewClass="android.support.v7.widget.SearchView"/>
+
+    <item android:id="@+id/item_play_slides"
+          android:title="@string/play_slides"
+          android:icon="@android:drawable/ic_media_play"
+          android:showAsAction="ifRoom"/>
+    
     <item
         android:id="@+id/item_wallpaper_toggle"
         android:checkable="true"
