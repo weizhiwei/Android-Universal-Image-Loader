@@ -195,7 +195,7 @@ shareIntent.setType("image/*");
 	        galleryContainer.mCurrentView = (TouchImageView) imageLayout.findViewById(R.id.image);
 	        
 	        if (!isFullscreen()) {
-	        	setTitleIconFromViewItem(myViewItem);
+	        	updateTitleIconFromViewItem(myViewItem);
 	        	updateMenu();
 	        	
 	        	final TextView textView = (TextView) imageLayout.findViewById(R.id.story);

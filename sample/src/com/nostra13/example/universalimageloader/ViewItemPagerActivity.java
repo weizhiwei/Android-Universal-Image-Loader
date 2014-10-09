@@ -4,10 +4,15 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import android.app.ActionBar;
+import android.app.FragmentTransaction;
+import android.app.ActionBar.Tab;
 import android.database.DataSetObserver;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -44,6 +49,71 @@ public class ViewItemPagerActivity extends BaseActivity {
 		setContentView(R.layout.ac_view_item_pager);
 		
 		setModelFromIntent();
+		
+		if (Build.VERSION.SDK_INT >= 11) {
+			ActionBar actionBar = getActionBar();
+			
+			setHasEmbeddedTabs(actionBar, true);
+		    
+		    // Create a tab listener that is called when the user changes tabs.
+		    ActionBar.TabListener tabListener = new ActionBar.TabListener() {
+	
+				@Override
+				public void onTabReselected(Tab tab, FragmentTransaction ft) {
+				}
+	
+				@Override
+				public void onTabSelected(Tab tab, FragmentTransaction ft) {
+					if (null != pager) {
+						pager.setCurrentItem(tab.getPosition());
+					}
+				}
+	
+				@Override
+				public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+				}
+		    };
+		    
+		    for (int i = 0; i < parentModel.getViewItems().size(); i++) {
+		    	ViewItem viewItem = parentModel.getViewItems().get(i);
+		    	final Tab tab = actionBar.newTab();
+		    	tab.setText(viewItem.getLabel());
+//		    	tab.setIcon(R.drawable.ic_pictures);
+                tab.setTabListener(tabListener);
+//				if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+//					imageLoader.loadImage(viewItem.getImageUrl(), new ImageLoadingListener() {
+//						
+//						@Override
+//						public void onLoadingStarted(String imageUri, View view) {
+//							// TODO Auto-generated method stub
+//							
+//						}
+//						
+//						@Override
+//						public void onLoadingFailed(String imageUri, View view,
+//								FailReason failReason) {
+//							// TODO Auto-generated method stub
+//							
+//						}
+//						
+//						@Override
+//						public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//							tab.setIcon(new BitmapDrawable(loadedImage));
+//						}
+//						
+//						@Override
+//						public void onLoadingCancelled(String imageUri, View view) {
+//							// TODO Auto-generated method stub
+//							
+//						}
+//					});
+//				}
+				actionBar.addTab(tab);
+			}
+		    
+		    // Specify that tabs should be displayed in the action bar.
+		    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+		}
 		
 		Bundle bundle = getIntent().getExtras();
 		assert bundle != null;
@@ -105,8 +175,13 @@ public class ViewItemPagerActivity extends BaseActivity {
 	        myViewItem = parentModel.getViewItems().get(position);
 	        model = myViewItem.getViewNode();
 	        
-	        setTitleIconFromViewItem(myViewItem);
+	        updateTitleIconFromViewItem(myViewItem);
 	        updateMenu(model);
+	        
+	        if (Build.VERSION.SDK_INT >= 11) {
+				ActionBar actionBar = getActionBar();
+				actionBar.selectTab(actionBar.getTabAt(position));
+	        }
 	        
 	        if (model.supportReloading() && model.getViewItems().isEmpty()) {
 	        	View contentView = (View) object;

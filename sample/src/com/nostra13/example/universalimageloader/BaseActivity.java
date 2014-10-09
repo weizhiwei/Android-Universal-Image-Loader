@@ -70,46 +70,10 @@ public abstract class BaseActivity extends Activity {
 			actionBar.setDisplayHomeAsUpEnabled(true);
 //			actionBar.setDisplayShowHomeEnabled(false);
 			actionBar.setDisplayShowTitleEnabled(false);
-			
-			
-		    // Create a tab listener that is called when the user changes tabs.
-		    ActionBar.TabListener tabListener = new ActionBar.TabListener() {
-
-				@Override
-				public void onTabReselected(Tab tab, FragmentTransaction ft) {
-					// TODO Auto-generated method stub
-					
-				}
-
-				@Override
-				public void onTabSelected(Tab tab, FragmentTransaction ft) {
-					// TODO Auto-generated method stub
-					
-				}
-
-				@Override
-				public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-					// TODO Auto-generated method stub
-					
-				}
-		    };
-
-		    // Add 3 tabs, specifying the tab's text and TabListener
-		    for (int i = 0; i < 8; i++) {
-		        actionBar.addTab(
-		                actionBar.newTab()
-		                        .setText("T" + (i + 1))
-		                        .setTabListener(tabListener));
-		    }
-		    
-		    
-//		    setHasEmbeddedTabs(actionBar, true);
-		    // Specify that tabs should be displayed in the action bar.
-		    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		}
 	}
-	
-	public static void setHasEmbeddedTabs(Object inActionBar, final boolean inHasEmbeddedTabs)
+		
+	protected static void setHasEmbeddedTabs(Object inActionBar, final boolean inHasEmbeddedTabs)
 	{
 	    // get the ActionBar class
 	    Class<?> actionBarClass = inActionBar.getClass();
@@ -190,39 +154,39 @@ public abstract class BaseActivity extends Activity {
 		setFullscreen(!isFullscreen());
 	}
 	
-	protected void setTitleIconFromViewItem(ViewItem viewItem) {
-		if (null != viewItem) {
-			setTitle(viewItem.getLabel());
-			if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-				imageLoader.loadImage(viewItem.getImageUrl(), new ImageLoadingListener() {
-					
-					@Override
-					public void onLoadingStarted(String imageUri, View view) {
-						// TODO Auto-generated method stub
-						
-					}
-					
-					@Override
-					public void onLoadingFailed(String imageUri, View view,
-							FailReason failReason) {
-						// TODO Auto-generated method stub
-						
-					}
-					
-					@Override
-					public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-						ImageView logo = (ImageView) findViewById(android.R.id.home);
-						logo.setImageBitmap(loadedImage);
-					}
-					
-					@Override
-					public void onLoadingCancelled(String imageUri, View view) {
-						// TODO Auto-generated method stub
-						
-					}
-				});
-			}
-		}
+	protected void updateTitleIconFromViewItem(ViewItem viewItem) {
+//		if (null != viewItem) {
+//			setTitle(viewItem.getLabel());
+//			if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+//				imageLoader.loadImage(viewItem.getImageUrl(), new ImageLoadingListener() {
+//					
+//					@Override
+//					public void onLoadingStarted(String imageUri, View view) {
+//						// TODO Auto-generated method stub
+//						
+//					}
+//					
+//					@Override
+//					public void onLoadingFailed(String imageUri, View view,
+//							FailReason failReason) {
+//						// TODO Auto-generated method stub
+//						
+//					}
+//					
+//					@Override
+//					public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//						ImageView logo = (ImageView) findViewById(android.R.id.home);
+//						logo.setImageBitmap(loadedImage);
+//					}
+//					
+//					@Override
+//					public void onLoadingCancelled(String imageUri, View view) {
+//						// TODO Auto-generated method stub
+//						
+//					}
+//				});
+//			}
+//		}
 	}
 	
 	protected void setModelFromIntent() {
@@ -233,13 +197,10 @@ public abstract class BaseActivity extends Activity {
 			if (null != parentModel && null != myViewItem) {
 				model = myViewItem.getViewNode();
 			}
+			if (null != myViewItem) {
+				updateTitleIconFromViewItem(myViewItem);
+			}
 		}
-		if (null == model) {
-			myViewItem = RootViewNode.ROOT_VIEW_ITEM;
-			parentModel = new ViewNode("", Arrays.asList(myViewItem));
-			model = myViewItem.getViewNode();
-		}
-		setTitleIconFromViewItem(myViewItem);
 	}
 	
 	protected void updateMenu(ViewNode model) {
