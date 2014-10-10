@@ -52,10 +52,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 		
 		if (Build.VERSION.SDK_INT >= 11) {
 			ActionBar actionBar = getActionBar();
-			
-			setHasEmbeddedTabs(actionBar, true);
-		    
-		    // Create a tab listener that is called when the user changes tabs.
+
+			// Create a tab listener that is called when the user changes tabs.
 		    ActionBar.TabListener tabListener = new ActionBar.TabListener() {
 	
 				@Override
@@ -77,40 +75,12 @@ public class ViewItemPagerActivity extends BaseActivity {
 		    for (int i = 0; i < parentModel.getViewItems().size(); i++) {
 		    	ViewItem viewItem = parentModel.getViewItems().get(i);
 		    	final Tab tab = actionBar.newTab();
-		    	tab.setText(viewItem.getLabel());
-//		    	tab.setIcon(R.drawable.ic_pictures);
                 tab.setTabListener(tabListener);
-//				if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-//					imageLoader.loadImage(viewItem.getImageUrl(), new ImageLoadingListener() {
-//						
-//						@Override
-//						public void onLoadingStarted(String imageUri, View view) {
-//							// TODO Auto-generated method stub
-//							
-//						}
-//						
-//						@Override
-//						public void onLoadingFailed(String imageUri, View view,
-//								FailReason failReason) {
-//							// TODO Auto-generated method stub
-//							
-//						}
-//						
-//						@Override
-//						public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//							tab.setIcon(new BitmapDrawable(loadedImage));
-//						}
-//						
-//						@Override
-//						public void onLoadingCancelled(String imageUri, View view) {
-//							// TODO Auto-generated method stub
-//							
-//						}
-//					});
-//				}
-				actionBar.addTab(tab);
+                setTabTitleIcon(tab, i, viewItem);
+                actionBar.addTab(tab);
 			}
 		    
+			setHasEmbeddedTabs(actionBar, hasEmbeddedTabs());
 		    // Specify that tabs should be displayed in the action bar.
 		    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		}
@@ -147,7 +117,15 @@ public class ViewItemPagerActivity extends BaseActivity {
 //		});
 		pager.setAdapter(new ViewItemPagerAdapter());
 		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
-	}	
+	}
+	
+	protected boolean hasEmbeddedTabs() {
+		return false;
+	}
+	
+	protected void setTabTitleIcon(Tab tab, int position, ViewItem viewItem) {
+		tab.setText(viewItem.getLabel());
+	}
 	
 	private class ViewItemPagerAdapter extends PagerAdapter {
 		

@@ -26,45 +26,6 @@ public class EntryActivity extends ViewItemPagerActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		if (Build.VERSION.SDK_INT >= 11) {
-			final ActionBar actionBar = getActionBar();
-//			setHasEmbeddedTabs(actionBar, true);
-		    for (int i = 0; i < parentModel.getViewItems().size(); i++) {
-		    	ViewItem viewItem = parentModel.getViewItems().get(i);
-		    	final Tab tab = actionBar.getTabAt(i);
-//		    	tab.setText("我");
-//		    	tab.setIcon(R.drawable.ic_gallery);
-				if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-					imageLoader.loadImage(viewItem.getImageUrl(), new ImageLoadingListener() {
-						
-						@Override
-						public void onLoadingStarted(String imageUri, View view) {
-							// TODO Auto-generated method stub
-							
-						}
-						
-						@Override
-						public void onLoadingFailed(String imageUri, View view,
-								FailReason failReason) {
-							// TODO Auto-generated method stub
-							
-						}
-						
-						@Override
-						public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//							tab.setIcon(new BitmapDrawable(loadedImage));
-						}
-						
-						@Override
-						public void onLoadingCancelled(String imageUri, View view) {
-							// TODO Auto-generated method stub
-							
-						}
-					});
-				}
-			}
-		    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-		}
 	}
 	
 	@Override
@@ -73,5 +34,16 @@ public class EntryActivity extends ViewItemPagerActivity {
 		myViewItem = parentModel.getViewItems().get(0);
 		model = myViewItem.getViewNode();
 		updateTitleIconFromViewItem(myViewItem);
+	}
+	
+	@Override
+	protected boolean hasEmbeddedTabs() {
+		return true;
+	}
+	
+	@Override
+	protected void setTabTitleIcon(Tab tab, int position, ViewItem viewItem) {
+		final int[] ICONS = new int[] {R.drawable.ic_pictures, R.drawable.ic_user, R.drawable.ic_gallery};
+		tab.setIcon(ICONS[position]);
 	}
 }
