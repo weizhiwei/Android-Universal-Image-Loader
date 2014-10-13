@@ -2,7 +2,7 @@ package com.wzw.ic.mvc;
 
 import android.text.TextUtils;
 
-public class ViewItem extends IcObject {
+public class ViewItem extends IcObject implements Comparable<ViewItem> {
 	
 	public static final int VIEW_TYPE_LIST = 1;
 	public static final int VIEW_TYPE_GRID = 2;
@@ -145,5 +145,10 @@ public class ViewItem extends IcObject {
 
 	public void setWebPageUrl(String webPageUrl) {
 		this.webPageUrl = webPageUrl;
+	}
+
+	@Override
+	public int compareTo(ViewItem another) {
+		return this.hashCode() - another.hashCode();
 	}
 }

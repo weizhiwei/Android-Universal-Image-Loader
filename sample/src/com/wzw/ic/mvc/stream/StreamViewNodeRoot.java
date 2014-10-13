@@ -1,17 +1,25 @@
-package com.wzw.ic.mvc.hearts;
+package com.wzw.ic.mvc.stream;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.nostra13.example.universalimageloader.IcDatabase;
 import com.wzw.ic.mvc.ViewItem;
+import com.wzw.ic.mvc.ViewNode;
+import com.wzw.ic.mvc.flickr.FlickrViewNodeStream;
+import com.wzw.ic.mvc.moko.MokoViewNodeStream;
 
-
-public class HeartsViewNodeRoot extends HeartsViewNode {
+public class StreamViewNodeRoot extends StreamViewNode {
 
 	protected int pageNo;
-	
-	public HeartsViewNodeRoot() {
-		super("hearts");
+	protected final ViewNode[] SUBSTREAMS = new ViewNode[] {
+		new MokoViewNodeStream(),
+		new FlickrViewNodeStream(),
+	};
+
+	public StreamViewNodeRoot() {
+		super("pictures");
 	}
 
 	@Override
@@ -26,14 +34,21 @@ public class HeartsViewNodeRoot extends HeartsViewNode {
 	
 	private List<ViewItem> doLoad(boolean reload) {
 		int newPageNo = reload ? 0 : pageNo + 1;
-		final int PER_PAGE = 30;
 		
-		List<ViewItem> pageViewItems = IcDatabase.getInstance().fetchAllViewItemsInHearts(newPageNo*PER_PAGE, PER_PAGE);
+		List<ViewItem> pageViewItems = new ArrayList<ViewItem> ();
+		for (ViewNode node: SUBSTREAMS) {
+			List<ViewItem> subpage = reload ? node.reload() : node.loadOneMorePage();
+			if (null != subpage) {
+				pageViewItems.addAll(subpage);
+			}
+		}
+		
 		if (null != pageViewItems && pageViewItems.size() > 0) {
 			for (ViewItem item: pageViewItems) {
 				item.setViewType(ViewItem.VIEW_TYPE_IMAGE_PAGER);
 				item.setViewNode(this);
 			}
+			Collections.sort(pageViewItems);
 			
 			pageNo = newPageNo;
 			if (reload) {
@@ -41,6 +56,7 @@ public class HeartsViewNodeRoot extends HeartsViewNode {
 			}
 			viewItems.addAll(pageViewItems);
 		}
+		
 		return pageViewItems;
 	}
 	

@@ -26,11 +26,12 @@ public class FlickrViewNodeCommons extends FlickrViewNode {
 	}
 
 	@Override
-	public void reload() {
-		doLoad(true);
+	public List<ViewItem> reload() {
+		return doLoad(true);
 	}
 
-	private void doLoad(boolean reload) {
+	private List<ViewItem> doLoad(boolean reload) {
+		List<ViewItem> pageViewItems = null;
 		Document doc = null;
 		try {
 			doc = Jsoup
@@ -41,7 +42,6 @@ public class FlickrViewNodeCommons extends FlickrViewNode {
 			e.printStackTrace();
 		}
 		if (doc != null) {
-			List<ViewItem> pageViewItems = null;
 			Elements instElems = doc.select("#tc_institutions_list a");
 			if (null != instElems && instElems.size() > 0) {
 				pageViewItems = new ArrayList<ViewItem>();
@@ -73,6 +73,8 @@ public class FlickrViewNodeCommons extends FlickrViewNode {
 				viewItems.addAll(pageViewItems);
 			}
 		}
+		
+		return pageViewItems;
 	}
 	
 	@Override
@@ -81,6 +83,7 @@ public class FlickrViewNodeCommons extends FlickrViewNode {
 	}
 
 	@Override
-	public void loadOneMorePage() {
+	public List<ViewItem> loadOneMorePage() {
+		return null;
 	}
 }

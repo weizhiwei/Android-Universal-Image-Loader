@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -19,7 +21,8 @@ public class FotoViewNodeMagazine extends FotoViewNode {
 	protected int pageNo;
 	protected String dataSourceStateId;
 	
-	private void doLoad(boolean reload) {
+	private List<ViewItem> doLoad(boolean reload) {
+		List<ViewItem> pageViewItems = null;
 		int newPageNo = reload ? 0 : pageNo + 1;
 		final int PER_PAGE = 30;
 		String newDataSourceStateId = reload ? null : dataSourceStateId;
@@ -49,9 +52,8 @@ public class FotoViewNodeMagazine extends FotoViewNode {
 			if (null != items && items.length() > 0) {			
 				pageNo = newPageNo;
 				dataSourceStateId = jsonObj.optString("dataSourceStateId");
-				if (reload) {
-					viewItems.clear();
-				}
+				
+				pageViewItems = new ArrayList<ViewItem> (items.length());
 				for (int i = 0; i < items.length(); ++i) {
 					JSONObject item = items.optJSONObject(i);
 					if (null != item) {
@@ -73,12 +75,19 @@ public class FotoViewNodeMagazine extends FotoViewNode {
 									image,
 									ViewItem.VIEW_TYPE_LIST,
 									new FotoViewNodeStory("http://www.fotopedia.com" + nodeUrl));
-							viewItems.add(viewItem);
+							pageViewItems.add(viewItem);
 						}
 					}
 				}
+				if (null != pageViewItems && pageViewItems.size() > 0) {
+					if (reload) {
+						viewItems.clear();
+					}
+					viewItems.addAll(pageViewItems);
+				}
 			}
 		}
+		return pageViewItems;
 	}
 
 	@Override
@@ -87,8 +96,8 @@ public class FotoViewNodeMagazine extends FotoViewNode {
 	}
 
 	@Override
-	public void reload() {
-		doLoad(true);
+	public List<ViewItem> reload() {
+		return doLoad(true);
 	}
 
 	@Override
@@ -97,7 +106,7 @@ public class FotoViewNodeMagazine extends FotoViewNode {
 	}
 
 	@Override
-	public void loadOneMorePage() {
-		doLoad(false);
+	public List<ViewItem> loadOneMorePage() {
+		return doLoad(false);
 	}
 }

@@ -3,6 +3,8 @@ package com.wzw.ic.mvc.flickr;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONException;
 
@@ -18,7 +20,8 @@ public class FlickrViewNodeInterestingness extends FlickrViewNode {
 
 	protected int pageNo;
 	
-	private void doLoad(boolean reload) {
+	private List<ViewItem> doLoad(boolean reload) {
+		List<ViewItem> pageViewItems = null;
 		int newPageNo = reload ? 1 : pageNo + 1;
 		
 		Flickr f = new Flickr(FLICKR_API_KEY);
@@ -48,13 +51,11 @@ public class FlickrViewNodeInterestingness extends FlickrViewNode {
 			if (!reload &&
 				photoList.getPages() <= pageNo) {
 				pageNo = photoList.getPages();
-				return;
+				return pageViewItems;
 			}
 			
-			pageNo = newPageNo;
-			if (reload) {
-				viewItems.clear();
-			}
+			pageViewItems = new ArrayList<ViewItem> (photoList.size());
+			
 			for (Photo photo: photoList) {
 				ViewItem viewItem = new ViewItem(photo.getTitle(), photo.getUrl(), photo.getLargeUrl(), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
 				viewItem.setStory(photo.getDescription());
@@ -63,9 +64,19 @@ public class FlickrViewNodeInterestingness extends FlickrViewNode {
 					ViewItem ownerItem = new ViewItem(owner.getUsername(), owner.getPhotosurl(), owner.getBuddyIconUrl(), ViewItem.VIEW_TYPE_LIST, new FlickrViewNodePeoplePhotosets(owner.getId()));
 					viewItem.setAuthor(ownerItem);
 				}
-				viewItems.add(viewItem);
+				pageViewItems.add(viewItem);
+			}
+			
+			if (null != pageViewItems && pageViewItems.size() > 0) {
+				pageNo = newPageNo;
+				if (reload) {
+					viewItems.clear();
+				}
+				viewItems.addAll(pageViewItems);
 			}
 		}
+		
+		return pageViewItems;
 	}
 	
 	public FlickrViewNodeInterestingness() {
@@ -78,8 +89,8 @@ public class FlickrViewNodeInterestingness extends FlickrViewNode {
 	}
 
 	@Override
-	public void reload() {
-		doLoad(true);
+	public List<ViewItem> reload() {
+		return doLoad(true);
 	}
 
 	@Override
@@ -88,7 +99,7 @@ public class FlickrViewNodeInterestingness extends FlickrViewNode {
 	}
 
 	@Override
-	public void loadOneMorePage() {
-		doLoad(false);
+	public List<ViewItem> loadOneMorePage() {
+		return doLoad(false);
 	}
 }

@@ -24,7 +24,8 @@ public class FotoViewNodeStory extends FotoViewNode {
 	}
 
 	@Override
-	public void reload() {
+	public List<ViewItem> reload() {
+		List<ViewItem> pageViewItems = null;
 		Document doc = null;
 		try {
 			doc = Jsoup
@@ -35,7 +36,6 @@ public class FotoViewNodeStory extends FotoViewNode {
 			e.printStackTrace();
 		}
 		if (doc != null) {
-			List<ViewItem> pageViewItems = null;
 			Elements figureElems = doc.select("figure");
 			if (null != figureElems && figureElems.size() > 0) {
 				pageViewItems = new ArrayList<ViewItem>();
@@ -66,6 +66,7 @@ public class FotoViewNodeStory extends FotoViewNode {
 				viewItems.addAll(pageViewItems);
 			}
 		}
+		return pageViewItems;
 	}
 
 	@Override
@@ -74,6 +75,7 @@ public class FotoViewNodeStory extends FotoViewNode {
 	}
 
 	@Override
-	public void loadOneMorePage() {
+	public List<ViewItem> loadOneMorePage() {
+		return null;
 	}
 }

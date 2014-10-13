@@ -1,6 +1,8 @@
 package com.wzw.ic.mvc.flickr;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONException;
 
@@ -26,11 +28,12 @@ public class FlickrViewNodePhotoset extends FlickrViewNode {
 	}
 
 	@Override
-	public void reload() {
-		doLoad(true);
+	public List<ViewItem> reload() {
+		return doLoad(true);
 	}
 
-	private void doLoad(boolean reload) {
+	private List<ViewItem> doLoad(boolean reload) {
+		List<ViewItem> pageViewItems = null;
 		int newPageNo = reload ? 1 : pageNo + 1;
 		
 		Flickr f = new Flickr(FLICKR_API_KEY);
@@ -59,15 +62,11 @@ public class FlickrViewNodePhotoset extends FlickrViewNode {
 			if (!reload &&
 				photoList.getPages() <= pageNo) {
 				pageNo = photoList.getPages();
-				return;
-			}
-			
-			pageNo = newPageNo;
-			if (reload) {
-				viewItems.clear();
+				return pageViewItems;
 			}
 			
 			User owner = photoset.getOwner();
+			pageViewItems = new ArrayList<ViewItem> (photoList.size());
 			for (Photo photo: photoList) {
 				ViewItem viewItem = new ViewItem(photo.getTitle(), photo.getUrl(), photo.getLargeUrl(), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
 				viewItem.setStory(photo.getDescription());
@@ -76,9 +75,17 @@ public class FlickrViewNodePhotoset extends FlickrViewNode {
 					viewItem.setAuthor(ownerItem);
 					viewItem.setNodeUrl("https://flickr.com/photos/" + owner.getId() + "/" + photo.getId()); // flickr fix from PhotoUtil.createPhoto()
 				}
-				viewItems.add(viewItem);
+				pageViewItems.add(viewItem);
+			}
+			if (null != pageViewItems && pageViewItems.size() > 0) {
+				pageNo = newPageNo;
+				if (reload) {
+					viewItems.clear();
+				}
+				viewItems.addAll(pageViewItems);
 			}
 		}
+		return pageViewItems;
 	}
 	
 	@Override
@@ -87,7 +94,7 @@ public class FlickrViewNodePhotoset extends FlickrViewNode {
 	}
 
 	@Override
-	public void loadOneMorePage() {
-		doLoad(false);
+	public List<ViewItem> loadOneMorePage() {
+		return doLoad(false);
 	}
 }

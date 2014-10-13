@@ -1,6 +1,8 @@
 package com.wzw.ic.mvc.flickr;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONException;
 
@@ -24,11 +26,12 @@ public class FlickrViewNodePeopleGalleries extends FlickrViewNode {
 	}
 
 	@Override
-	public void reload() {
-		doLoad(true);
+	public List<ViewItem> reload() {
+		return doLoad(true);
 	}
 	
-	private void doLoad(boolean reload) {
+	private List<ViewItem> doLoad(boolean reload) {
+		List<ViewItem> pageViewItems = null;
 		int newPageNo = reload ? 1 : pageNo + 1;
 		
 		Flickr f = new Flickr(FLICKR_API_KEY);
@@ -54,14 +57,10 @@ public class FlickrViewNodePeopleGalleries extends FlickrViewNode {
 			if (!reload &&
 				galleries.getPages() <= pageNo) {
 				pageNo = galleries.getPages();
-				return;
+				return pageViewItems;
 			}
 			
-			pageNo = newPageNo;
-			if (reload) {
-				viewItems.clear();
-			}
-			
+			pageViewItems = new ArrayList<ViewItem> (galleries.size());
 			for (Gallery gallery: galleries) {
 				ViewItem viewItem = new ViewItem(
 						gallery.getTitle(),
@@ -70,9 +69,18 @@ public class FlickrViewNodePeopleGalleries extends FlickrViewNode {
 								gallery.getPrimaryPhoto().getLargeSquareUrl(),
 								ViewItem.VIEW_TYPE_GRID,
 								new FlickrViewNodeGallery(gallery.getGalleryId()));
-				viewItems.add(viewItem);
+				pageViewItems.add(viewItem);
+			}
+			
+			if (null != pageViewItems && pageViewItems.size() > 0) {
+				pageNo = newPageNo;
+				if (reload) {
+					viewItems.clear();
+				}
+				viewItems.addAll(pageViewItems);
 			}
 		}
+		return pageViewItems;
 	}
 	
 	@Override
@@ -81,7 +89,7 @@ public class FlickrViewNodePeopleGalleries extends FlickrViewNode {
 	}
 
 	@Override
-	public void loadOneMorePage() {
-		doLoad(false);
+	public List<ViewItem> loadOneMorePage() {
+		return doLoad(false);
 	}
 }

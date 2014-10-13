@@ -36,14 +36,16 @@ public class ViewNode extends IcObject {
 		return false;
 	}
 	
-	public void reload() {
+	public List<ViewItem> reload() {
+		return null;
 	}
 	
 	public boolean supportPaging() {
 		return false;
 	}
 	
-	public void loadOneMorePage() {
+	public List<ViewItem> loadOneMorePage() {
+		return null;
 	}
 	
 	public Object onAction(ViewNodeAction action) {

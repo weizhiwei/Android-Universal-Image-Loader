@@ -34,8 +34,8 @@ public abstract class MokoViewNode extends ViewNode {
 	}
 	
 	@Override
-	public void reload()  {
-		doLoad(true);
+	public List<ViewItem> reload()  {
+		return doLoad(true);
 	}
 
 	private String getLoginKey() {
@@ -59,7 +59,8 @@ public abstract class MokoViewNode extends ViewNode {
 		return loginKey;
 	}
 	
-	private void doLoad(boolean reload) {
+	private List<ViewItem> doLoad(boolean reload) {
+		List<ViewItem> pageViewItems = null;
 		Document doc = null;
 		int newPageNo = reload ? 1 : pageNo + 1;
 		
@@ -73,7 +74,7 @@ public abstract class MokoViewNode extends ViewNode {
 			e.printStackTrace();
 		}
 		if (doc != null) {
-			List<ViewItem> pageViewItems = extractViewItemsFromPage(doc);
+			pageViewItems = extractViewItemsFromPage(doc);
 			if (null != pageViewItems && pageViewItems.size() > 0) {
 				pageNo = newPageNo;
 				if (reload) {
@@ -82,11 +83,12 @@ public abstract class MokoViewNode extends ViewNode {
 				viewItems.addAll(pageViewItems);
 			}
 		}
+		return pageViewItems;
 	}
 	
 	@Override
-	public void loadOneMorePage() {
-		doLoad(false);
+	public List<ViewItem> loadOneMorePage() {
+		return doLoad(false);
 	}
 
 	@Override
