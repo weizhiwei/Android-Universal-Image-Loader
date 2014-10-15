@@ -1,16 +1,8 @@
 package com.nostra13.example.universalimageloader;
 
-import android.app.ActionBar;
 import android.app.ActionBar.Tab;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.View;
 
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.root.RootViewNode;
 

@@ -117,6 +117,34 @@ public class ViewItemPagerActivity extends BaseActivity {
 //		});
 		pager.setAdapter(new ViewItemPagerAdapter());
 		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
+		// trigger a initial update of page 0
+		myViewItem = null;
+	}
+	
+	private void updateCurrentPage() {
+        if (model.supportReloading() && model.getViewItems().isEmpty()) {
+        	View contentView = (View) pager.findViewWithTag(pager.getCurrentItem());
+        	SwipeRefreshLayout swipeRefreshLayout = null;
+			AbsListView absListView = null;
+			BaseAdapter itemAdapter = null;
+        	switch (myViewItem.getViewType()) {
+			case ViewItem.VIEW_TYPE_LIST:
+				swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_listview_swiperefresh);
+				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
+				itemAdapter = (BaseAdapter) absListView.getAdapter();
+				break;
+			case ViewItem.VIEW_TYPE_GRID:
+				swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_gridview_swiperefresh);
+				absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
+				itemAdapter = (BaseAdapter) absListView.getAdapter();
+				break;
+			default:
+				break;
+			}
+			
+        	swipeRefreshLayout.setRefreshing(true);
+			new GetDataTask(model, itemAdapter).execute(true);
+		}
 	}
 	
 	protected boolean hasEmbeddedTabs() {
@@ -161,29 +189,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				actionBar.selectTab(actionBar.getTabAt(position));
 	        }
 	        
-	        if (model.supportReloading() && model.getViewItems().isEmpty()) {
-	        	View contentView = (View) object;
-	        	SwipeRefreshLayout swipeRefreshLayout = null;
-				AbsListView absListView = null;
-				BaseAdapter itemAdapter = null;
-	        	switch (myViewItem.getViewType()) {
-				case ViewItem.VIEW_TYPE_LIST:
-					swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_listview_swiperefresh);
-					absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
-					itemAdapter = (BaseAdapter) absListView.getAdapter();
-					break;
-				case ViewItem.VIEW_TYPE_GRID:
-					swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_gridview_swiperefresh);
-					absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
-					itemAdapter = (BaseAdapter) absListView.getAdapter();
-					break;
-				default:
-					break;
-				}
-				
-	        	swipeRefreshLayout.setRefreshing(true);
-				new GetDataTask(model, itemAdapter).execute(true);
-			}
+	        updateCurrentPage();
 	    }
 		
 		@Override

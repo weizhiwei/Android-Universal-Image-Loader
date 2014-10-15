@@ -15,11 +15,9 @@ import com.wzw.ic.mvc.stream.StreamViewNodeRoot;
 
 public class RootViewNode extends ViewNode {
 
-	public static final ViewItem ROOT_VIEW_ITEM = new ViewItem("iC", "ic", null, ViewItem.VIEW_TYPE_GRID, new RootViewNode());
-	
 	public RootViewNode() {
 		super("root", Arrays.asList(
-			new ViewItem("Pictures", "pictures", null, ViewItem.VIEW_TYPE_GRID, new StreamViewNodeRoot()),	
+			new ViewItem("Stream", "stream", null, ViewItem.VIEW_TYPE_GRID, new StreamViewNodeRoot()),	
 			new ViewItem("Hearts", "hearts", null, ViewItem.VIEW_TYPE_GRID, new HeartsViewNodeRoot()),
 			new ViewItem("Gallery", "gallery", null, ViewItem.VIEW_TYPE_GRID, new ViewNode("", Arrays.asList(
 					new ViewItem("MOKO!", "moko", MokoViewNode.MOKO_ICON, ViewItem.VIEW_TYPE_GRID, new MokoViewNodeRoot()),

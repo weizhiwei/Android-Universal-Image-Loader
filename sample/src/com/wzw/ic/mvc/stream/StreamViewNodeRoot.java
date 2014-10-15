@@ -19,7 +19,7 @@ public class StreamViewNodeRoot extends StreamViewNode {
 	};
 
 	public StreamViewNodeRoot() {
-		super("pictures");
+		super("stream");
 	}
 
 	@Override
@@ -44,10 +44,6 @@ public class StreamViewNodeRoot extends StreamViewNode {
 		}
 		
 		if (null != pageViewItems && pageViewItems.size() > 0) {
-			for (ViewItem item: pageViewItems) {
-				item.setViewType(ViewItem.VIEW_TYPE_IMAGE_PAGER);
-				item.setViewNode(this);
-			}
 			Collections.sort(pageViewItems);
 			
 			pageNo = newPageNo;
