@@ -10,6 +10,8 @@
     <string name="hearts_off">don\'t like</string>
     <string name="search">search</string>
     <string name="play_slides">play slides</string>
+    <string name="switch_views">switch views</string>
     <string name="share">share</string>
     <string name="wallpaper">wallpaper</string>
+    <string name="settings">settings</string>
 </resources>

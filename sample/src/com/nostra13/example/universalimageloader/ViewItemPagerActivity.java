@@ -19,12 +19,14 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -38,6 +40,7 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListe
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
+import com.wzw.ic.mvc.ViewNodeAction;
 
 public class ViewItemPagerActivity extends BaseActivity {
 	DisplayImageOptions gridOptions, listOptions;
@@ -52,37 +55,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		
 		if (Build.VERSION.SDK_INT >= 11) {
 			ActionBar actionBar = getActionBar();
-
-			// Create a tab listener that is called when the user changes tabs.
-		    ActionBar.TabListener tabListener = new ActionBar.TabListener() {
-	
-				@Override
-				public void onTabReselected(Tab tab, FragmentTransaction ft) {
-				}
-	
-				@Override
-				public void onTabSelected(Tab tab, FragmentTransaction ft) {
-					if (null != pager) {
-						pager.setCurrentItem(tab.getPosition());
-					}
-				}
-	
-				@Override
-				public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-				}
-		    };
-		    
-		    for (int i = 0; i < parentModel.getViewItems().size(); i++) {
-		    	ViewItem viewItem = parentModel.getViewItems().get(i);
-		    	final Tab tab = actionBar.newTab();
-                tab.setTabListener(tabListener);
-                setTabTitleIcon(tab, i, viewItem);
-                actionBar.addTab(tab);
-			}
-		    
-			setHasEmbeddedTabs(actionBar, hasEmbeddedTabs());
-		    // Specify that tabs should be displayed in the action bar.
-		    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+			initActionBar(actionBar);
 		}
 		
 		Bundle bundle = getIntent().getExtras();
@@ -121,6 +94,14 @@ public class ViewItemPagerActivity extends BaseActivity {
 		myViewItem = null;
 	}
 	
+//	@Override
+//	public void onResume() {
+//		super.onResume();
+//		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
+//		// trigger a initial update of page 0
+//		myViewItem = null;
+//	}
+	
 	private void updateCurrentPage() {
         if (model.supportReloading() && model.getViewItems().isEmpty()) {
         	View contentView = (View) pager.findViewWithTag(pager.getCurrentItem());
@@ -146,13 +127,43 @@ public class ViewItemPagerActivity extends BaseActivity {
 			new GetDataTask(model, itemAdapter).execute(true);
 		}
 	}
-	
-	protected boolean hasEmbeddedTabs() {
-		return false;
+		
+	protected void initActionBar(ActionBar actionBar) {
+		// Create a tab listener that is called when the user changes tabs.
+	    ActionBar.TabListener tabListener = new ActionBar.TabListener() {
+
+			@Override
+			public void onTabReselected(Tab tab, FragmentTransaction ft) {
+			}
+
+			@Override
+			public void onTabSelected(Tab tab, FragmentTransaction ft) {
+				if (null != pager) {
+					pager.setCurrentItem(tab.getPosition());
+				}
+			}
+
+			@Override
+			public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+			}
+	    };
+	    
+	    for (int i = 0; i < parentModel.getViewItems().size(); i++) {
+	    	ViewItem viewItem = parentModel.getViewItems().get(i);
+	    	final Tab tab = actionBar.newTab();
+            tab.setTabListener(tabListener);
+            tab.setText(viewItem.getLabel());
+            actionBar.addTab(tab);
+		}
+	    
+//		setHasEmbeddedTabs(actionBar, true);
+	    
+	    // Specify that tabs should be displayed in the action bar.
+	    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 	}
 	
-	protected void setTabTitleIcon(Tab tab, int position, ViewItem viewItem) {
-		tab.setText(viewItem.getLabel());
+	protected void setActionBarSelection(ActionBar actionBar, int position) {
+		actionBar.selectTab(actionBar.getTabAt(position));
 	}
 	
 	private class ViewItemPagerAdapter extends PagerAdapter {
@@ -186,7 +197,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 	        
 	        if (Build.VERSION.SDK_INT >= 11) {
 				ActionBar actionBar = getActionBar();
-				actionBar.selectTab(actionBar.getTabAt(position));
+				setActionBarSelection(actionBar, position);
 	        }
 	        
 	        updateCurrentPage();
@@ -212,7 +223,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
 				swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_gridview_swiperefresh);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
-				itemAdapter = new GridItemAdapter(childModel);
+				itemAdapter = new GridItemAdapter(childModel, (GridView) absListView);
 				break;
 			default:
 				break;
@@ -297,9 +308,11 @@ public class ViewItemPagerActivity extends BaseActivity {
 	private class GridItemAdapter extends BaseAdapter {
 		
 		private ViewNode model;
+		private GridView gridView;
 		
-		public GridItemAdapter(ViewNode model) {
+		public GridItemAdapter(ViewNode model, GridView gridView) {
 			this.model = model;
+			this.gridView = gridView;
 		}
 		
 		@Override
@@ -332,37 +345,61 @@ public class ViewItemPagerActivity extends BaseActivity {
 			} else {
 				holder = (GridViewHolder) view.getTag();
 			}
+			
+			int rowHeight;
+			switch (gridView.getNumColumns()) {
+			case 1:
+				rowHeight = GridView.LayoutParams.WRAP_CONTENT;
+				break;
+			case 2:
+			case 3:
+			default:
+				rowHeight = gridView.getWidth()/gridView.getNumColumns();
+				break;
+			}
+			view.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.FILL_PARENT, rowHeight));
 
 			ViewItem viewItem = model.getViewItems().get(position);
-			if (!TextUtils.isEmpty(viewItem.getImageUrl()) && !viewItem.isUsingColorOverImage()) {
-				imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, gridOptions, new SimpleImageLoadingListener() {
-										 @Override
-										 public void onLoadingStarted(String imageUri, View view) {
-											 holder.progressBar.setProgress(0);
-											 holder.progressBar.setVisibility(View.VISIBLE);
-										 }
-
-										 @Override
-										 public void onLoadingFailed(String imageUri, View view,
-												 FailReason failReason) {
-											 holder.progressBar.setVisibility(View.GONE);
-										 }
-
-										 @Override
-										 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-											 holder.progressBar.setVisibility(View.GONE);
-										 }
-									 }, new ImageLoadingProgressListener() {
-										 @Override
-										 public void onProgressUpdate(String imageUri, View view, int current,
-												 int total) {
-											 holder.progressBar.setProgress(Math.round(100.0f * current / total));
-										 }
-									 }
-				);
-			} else {
-				holder.imageView.setBackgroundColor(viewItem.getColor());
+			switch (viewItem.getViewItemType()) {
+			case ViewItem.VIEW_ITEM_TYPE_COLOR:
+				holder.imageView.setBackgroundColor(viewItem.getViewItemColor());
 				holder.progressBar.setVisibility(View.GONE);
+				break;
+			case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
+				holder.imageView.setImageResource(viewItem.getViewItemImageResId());
+				holder.progressBar.setVisibility(View.GONE);
+				break;
+			case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
+				if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+					imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, gridOptions, new SimpleImageLoadingListener() {
+											 @Override
+											 public void onLoadingStarted(String imageUri, View view) {
+												 holder.progressBar.setProgress(0);
+												 holder.progressBar.setVisibility(View.VISIBLE);
+											 }
+
+											 @Override
+											 public void onLoadingFailed(String imageUri, View view,
+													 FailReason failReason) {
+												 holder.progressBar.setVisibility(View.GONE);
+											 }
+
+											 @Override
+											 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+												 holder.progressBar.setVisibility(View.GONE);
+											 }
+										 }, new ImageLoadingProgressListener() {
+											 @Override
+											 public void onProgressUpdate(String imageUri, View view, int current,
+													 int total) {
+												 holder.progressBar.setProgress(Math.round(100.0f * current / total));
+											 }
+										 }
+					);
+				}
+				break;
+			default:
+				break;
 			}
 
 			if (viewItem.isShowingLabelInGrid()) {
@@ -424,10 +461,20 @@ public class ViewItemPagerActivity extends BaseActivity {
 			
 			holder.text.setText(viewItem.getLabel());
 
-			if (!TextUtils.isEmpty(viewItem.getImageUrl()) && !viewItem.isUsingColorOverImage()) {
-				imageLoader.displayImage(viewItem.getImageUrl(), holder.image, listOptions, animateFirstListener);
-			} else {
-				holder.image.setBackgroundColor(viewItem.getColor());
+			switch (viewItem.getViewItemType()) {
+			case ViewItem.VIEW_ITEM_TYPE_COLOR:
+				holder.image.setBackgroundColor(viewItem.getViewItemColor());
+				break;
+			case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
+				holder.image.setImageResource(viewItem.getViewItemImageResId());
+				break;
+			case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
+				if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+					imageLoader.displayImage(viewItem.getImageUrl(), holder.image, listOptions, animateFirstListener);
+				}
+				break;
+			default:
+				break;
 			}
 
 			return view;
@@ -497,4 +544,26 @@ public class ViewItemPagerActivity extends BaseActivity {
 //			subPullRefreshView.setRefreshing();
 //		}
 //	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.item_switch_views:
+				if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_GRID) {
+					View contentView = pager.findViewWithTag(pager.getCurrentItem());
+					GridView gridView = (GridView) contentView.findViewById(R.id.ic_gridview);
+					switchGridViews(gridView, 0);
+				}
+				return true;
+			default:
+				return false;
+		}
+	}
+	
+	protected void switchGridViews(GridView gridView, int numColumns) {
+		if (numColumns <= 0 || numColumns > 3) {
+			numColumns = gridView.getNumColumns() == 1 ? 3 : gridView.getNumColumns() - 1;
+		}
+		gridView.setNumColumns(numColumns);
+	}
 }

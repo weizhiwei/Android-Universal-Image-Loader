@@ -1,5 +1,6 @@
 package com.wzw.ic.mvc;
 
+import android.graphics.Bitmap;
 import android.text.TextUtils;
 
 public class ViewItem extends IcObject implements Comparable<ViewItem> {
@@ -8,18 +9,23 @@ public class ViewItem extends IcObject implements Comparable<ViewItem> {
 	public static final int VIEW_TYPE_GRID = 2;
 	public static final int VIEW_TYPE_IMAGE_PAGER = 3;
 	
+	public static final int VIEW_ITEM_TYPE_COLOR = 1;
+	public static final int VIEW_ITEM_TYPE_IMAGE_RES = 2;
+	public static final int VIEW_ITEM_TYPE_IMAGE_URL = 3;
+	
 	private String label;
 	private String nodeUrl;
 	private String imageUrl;
-	private int viewType;
-	private int color;
 	private boolean showingLabelInGrid;
-	private boolean usingColorOverImage;
+	private int viewItemType;
+	private int viewItemColor;
+	private int viewItemImageResId;
 	private String story;
 	private boolean heartsOn;
 	private ViewItem author;
 	private String webPageUrl;
 	
+	private int viewType;
 	private ViewNode viewNode;
 	
 	public ViewItem(String label, String nodeUrl, String imageUrl, int viewType, ViewNode viewNode) {
@@ -27,9 +33,8 @@ public class ViewItem extends IcObject implements Comparable<ViewItem> {
 		this.setNodeUrl(nodeUrl);
 		this.setImageUrl(imageUrl);
 		this.setViewType(viewType);
-		this.setColor(color);
+		this.setViewItemType(VIEW_ITEM_TYPE_IMAGE_URL);
 		this.setShowingLabelInGrid(false);
-		this.setUsingColorOverImage(false);
 		this.setHeartsOn(false);
 		this.setViewNode(viewNode);
 	}
@@ -75,14 +80,6 @@ public class ViewItem extends IcObject implements Comparable<ViewItem> {
 		this.imageUrl = imageUrl;
 	}
 
-	public int getColor() {
-		return color;
-	}
-
-	public void setColor(int color) {
-		this.color = color;
-	}
-
 	public boolean isShowingLabelInGrid() {
 		return showingLabelInGrid;
 	}
@@ -97,14 +94,6 @@ public class ViewItem extends IcObject implements Comparable<ViewItem> {
 
 	public void setStory(String story) {
 		this.story = story;
-	}
-
-	public boolean isUsingColorOverImage() {
-		return usingColorOverImage;
-	}
-
-	public void setUsingColorOverImage(boolean usingColorOverImage) {
-		this.usingColorOverImage = usingColorOverImage;
 	}
 
 	public boolean isHeartsOn() {
@@ -151,4 +140,30 @@ public class ViewItem extends IcObject implements Comparable<ViewItem> {
 	public int compareTo(ViewItem another) {
 		return this.hashCode() - another.hashCode();
 	}
+
+	public int getViewItemType() {
+		return viewItemType;
+	}
+
+	public void setViewItemType(int viewItemType) {
+		this.viewItemType = viewItemType;
+	}
+
+	public int getViewItemColor() {
+		return viewItemColor;
+	}
+
+	public void setViewItemColor(int viewItemColor) {
+		this.viewItemColor = viewItemColor;
+	}
+	
+	public int getViewItemImageResId() {
+		return viewItemImageResId;
+	}
+
+	public void setViewItemImageResId(int viewItemImageResId) {
+		this.viewItemImageResId = viewItemImageResId;
+	}
+	
+	
 }
