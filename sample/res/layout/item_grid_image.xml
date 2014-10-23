@@ -27,16 +27,16 @@
         
     <TextView
         android:id="@+id/text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:layout_height="24dp"
 		android:layout_alignParentLeft="true"
-        android:gravity="left"
+        android:gravity="left|center_vertical"
         android:background="#55000000"
         android:textColor="#FFFFFF"
         android:maxLines="1"
         android:singleLine="true"
         android:ellipsize="marquee"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:layout_toLeftOf="@+id/origin_icon" />
     
     <ImageView
