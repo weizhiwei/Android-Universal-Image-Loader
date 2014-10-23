@@ -48,6 +48,7 @@ import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.wzw.ic.mvc.ViewItem;
+import com.wzw.ic.mvc.root.RootViewNode;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -198,6 +199,11 @@ shareIntent.setType("image/*");
 	        	if (!TextUtils.isEmpty(textView.getText())) {
 					textView.setVisibility(View.VISIBLE);
 	        	}
+	        	
+	        	final ImageView originIconImageView = (ImageView) imageLayout.findViewById(R.id.origin_icon);
+	        	if (!TextUtils.isEmpty(myViewItem.getOrigin())) {
+	        		originIconImageView.setVisibility(View.VISIBLE);
+	        	}
 	        }
 	    }
 		
@@ -209,6 +215,7 @@ shareIntent.setType("image/*");
 			ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
 			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
 			final TextView textView = (TextView) imageLayout.findViewById(R.id.story);
+			final ImageView originIconImageView = (ImageView) imageLayout.findViewById(R.id.origin_icon);
 
 			final ViewItem viewItem = parentModel.getViewItems().get(position);
 			viewItem.setHeartsOn(IcDatabase.getInstance().isViewItemInHearts(viewItem));
@@ -245,6 +252,11 @@ shareIntent.setType("image/*");
 				textView.setMovementMethod(LinkMovementMethod.getInstance());
 			}
 			
+			if (!TextUtils.isEmpty(viewItem.getOrigin())) {
+				ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
+				originIconImageView.setImageResource(originViewItem.getViewItemImageResId());
+			}
+			
 			imageView.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -252,6 +264,11 @@ shareIntent.setType("image/*");
 						textView.setVisibility(View.VISIBLE);
 					} else {
 						textView.setVisibility(View.GONE);
+					}
+					if (View.VISIBLE != originIconImageView.getVisibility() && !TextUtils.isEmpty(viewItem.getOrigin())) {
+						originIconImageView.setVisibility(View.VISIBLE);
+					} else {
+						originIconImageView.setVisibility(View.GONE);
 					}
 					toggleFullscreen();
 		        	updateMenu();

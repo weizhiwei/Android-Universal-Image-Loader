@@ -19,13 +19,33 @@
         android:layout_gravity="center"
         android:visibility="gone" />
     
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom" >
+    
+    <ImageView
+        android:id="@+id/origin_icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+		android:layout_alignParentLeft="true"
+		android:layout_alignTop="@+id/story"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/descr_image"
+        android:scaleType="centerCrop"
+        android:visibility="gone" />
+        
     <TextView
         android:id="@+id/story"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
+        android:minHeight="48dp"
+        android:maxHeight="480dp"
+        android:layout_alignParentRight="true"
         android:background="#55000000"
         android:textColor="#FFFFFF"
-        android:visibility="gone" />
-
+        android:visibility="gone"
+        android:layout_toRightOf="@+id/origin_icon" />
+        
+    </RelativeLayout>
 </FrameLayout>
