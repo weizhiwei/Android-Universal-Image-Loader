@@ -87,19 +87,10 @@ public class ImagePagerActivity extends BaseActivity {
 		setFullscreen(true);
 	}
 
-	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		MenuItem heartsItem = menu.findItem(R.id.item_hearts_toggle);
-		heartsItem.setVisible(true);
-		
-		MenuItem shareItem = menu.findItem(R.id.item_action_share);
-		shareItem.setVisible(true);
-		
-		MenuItem setWallpaperItem = menu.findItem(R.id.item_set_wallpaper);
-		setWallpaperItem.setVisible(true);
-		
-		return super.onPrepareOptionsMenu(menu);
-	}
+//	@Override
+//	public boolean onPrepareOptionsMenu(Menu menu) {		
+//		return super.onPrepareOptionsMenu(menu);
+//	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -135,6 +126,7 @@ public class ImagePagerActivity extends BaseActivity {
 		ViewItem viewItem = model.getViewItems().get(pager.getCurrentItem());
 		
 		MenuItem heartsItem = menu.findItem(R.id.item_hearts_toggle);
+		heartsItem.setVisible(true);
 		if (viewItem.isHeartsOn()) {
     		heartsItem.setTitle(R.string.hearts_on);
     		heartsItem.setIcon(R.drawable.ic_hearts_on);
@@ -144,7 +136,8 @@ public class ImagePagerActivity extends BaseActivity {
 		}
 		
 		MenuItem shareItem = menu.findItem(R.id.item_action_share);
-    	ShareActionProvider shareActionProvider = (ShareActionProvider)shareItem.getActionProvider();
+		shareItem.setVisible(true);
+		ShareActionProvider shareActionProvider = (ShareActionProvider)shareItem.getActionProvider();
 	    Intent intent = new Intent(Intent.ACTION_SEND);
 	    intent.setType("image/*");
 	    intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imageLoader.getDiskCache().get(viewItem.getImageUrl()))); // TODO null check
@@ -160,6 +153,9 @@ shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
 shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, imageUris);
 shareIntent.setType("image/*");
 	     */
+	    
+	    MenuItem setWallpaperItem = menu.findItem(R.id.item_set_wallpaper);
+		setWallpaperItem.setVisible(true);
 	}
 	
 	private class ImagePagerAdapter extends PagerAdapter {

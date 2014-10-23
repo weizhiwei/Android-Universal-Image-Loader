@@ -69,6 +69,7 @@ public class FlickrViewNodePeopleGalleries extends FlickrViewNode {
 								gallery.getPrimaryPhoto().getLargeSquareUrl(),
 								ViewItem.VIEW_TYPE_GRID,
 								new FlickrViewNodeGallery(gallery.getGalleryId()));
+				viewItem.setOrigin(FLICKR_NAME);
 				pageViewItems.add(viewItem);
 			}
 			

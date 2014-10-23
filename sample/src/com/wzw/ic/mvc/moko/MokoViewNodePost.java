@@ -42,6 +42,7 @@ public class MokoViewNodePost extends MokoViewNode {
 							null == i ? "" : i.attr("src"),
 							ViewItem.VIEW_TYPE_GRID,
 							new MokoViewNodeUser(userUrl));
+					authorViewItem.setOrigin(MOKO_NAME);
 				}
 			}
 		}
@@ -54,6 +55,7 @@ public class MokoViewNodePost extends MokoViewNode {
 				Element img = imgElems.get(i);
 				ViewItem viewItem = new ViewItem(pageTitle, sourceUrl, img.attr("src2"), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
 				viewItem.setAuthor(authorViewItem);
+				viewItem.setOrigin(MOKO_NAME);
 				viewItems.add(viewItem);
 			}
 		}

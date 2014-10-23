@@ -11,6 +11,7 @@ import android.database.DataSetObserver;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.text.TextUtils;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +43,7 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.ViewNodeAction;
+import com.wzw.ic.mvc.root.RootViewNode;
 
 public class ViewItemPagerActivity extends BaseActivity {
 	DisplayImageOptions gridOptions, listOptions;
@@ -185,6 +188,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 	    public void setPrimaryItem(ViewGroup container, int position, Object object) {
 	        super.setPrimaryItem(container, position, object);
 	        
+	        updateMenu(model);
+	        
 	        if (myViewItem == parentModel.getViewItems().get(position)) {
 	        	return;
 	        }
@@ -193,7 +198,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 	        model = myViewItem.getViewNode();
 	        
 	        updateTitleIconFromViewItem(myViewItem);
-	        updateMenu(model);
 	        
 	        if (Build.VERSION.SDK_INT >= 11) {
 				ActionBar actionBar = getActionBar();
@@ -303,6 +307,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		ImageView imageView;
 		ProgressBar progressBar;
 		TextView text;
+		ImageView originIconImageView;
 	}
 	
 	private class GridItemAdapter extends BaseAdapter {
@@ -341,6 +346,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				holder.imageView = (ImageView) view.findViewById(R.id.image);
 				holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
 				holder.text = (TextView) view.findViewById(R.id.text);
+				holder.originIconImageView = (ImageView) view.findViewById(R.id.origin_icon);
 				view.setTag(holder);
 			} else {
 				holder = (GridViewHolder) view.getTag();
@@ -402,12 +408,19 @@ public class ViewItemPagerActivity extends BaseActivity {
 				break;
 			}
 
-			if (viewItem.isShowingLabelInGrid()) {
+			if (!TextUtils.isEmpty(viewItem.getLabel())) {
 				holder.text.setVisibility(View.VISIBLE);
 				holder.text.setText(viewItem.getLabel());
-				holder.text.setTextColor(Color.WHITE);
 			} else {
 				holder.text.setVisibility(View.GONE);
+			}
+			
+			if (!TextUtils.isEmpty(viewItem.getOrigin())) {
+				holder.originIconImageView.setVisibility(View.VISIBLE);
+				ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
+				holder.originIconImageView.setImageResource(originViewItem.getViewItemImageResId());
+			} else {
+				holder.originIconImageView.setVisibility(View.GONE);
 			}
 			
 			return view;
@@ -545,6 +558,20 @@ public class ViewItemPagerActivity extends BaseActivity {
 //		}
 //	}
 	
+//	@Override
+//	public boolean onPrepareOptionsMenu(Menu menu) {
+//		return super.onPrepareOptionsMenu(menu);
+//	}
+	
+	@Override
+	protected void updateMenu(ViewNode model) {
+		super.updateMenu(model);
+		if (null != menu) {
+			MenuItem item = menu.findItem(R.id.item_switch_views);
+			item.setVisible(myViewItem.getViewType() == ViewItem.VIEW_TYPE_GRID);
+		}
+	}
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -556,7 +583,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				}
 				return true;
 			default:
-				return false;
+				return super.onOptionsItemSelected(item);
 		}
 	}
 	

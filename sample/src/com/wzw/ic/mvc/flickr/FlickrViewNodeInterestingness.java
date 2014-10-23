@@ -58,10 +58,12 @@ public class FlickrViewNodeInterestingness extends FlickrViewNode {
 			
 			for (Photo photo: photoList) {
 				ViewItem viewItem = new ViewItem(photo.getTitle(), photo.getUrl(), photo.getLargeUrl(), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
+				viewItem.setOrigin(FLICKR_NAME);
 				viewItem.setStory(photo.getDescription());
 				User owner = photo.getOwner();
 				if (null != owner) {
 					ViewItem ownerItem = new ViewItem(owner.getUsername(), owner.getPhotosurl(), owner.getBuddyIconUrl(), ViewItem.VIEW_TYPE_LIST, new FlickrViewNodePeoplePhotosets(owner.getId()));
+					ownerItem.setOrigin(FLICKR_NAME);
 					viewItem.setAuthor(ownerItem);
 				}
 				pageViewItems.add(viewItem);

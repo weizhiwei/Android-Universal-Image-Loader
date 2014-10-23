@@ -69,9 +69,11 @@ public class FlickrViewNodePhotoset extends FlickrViewNode {
 			pageViewItems = new ArrayList<ViewItem> (photoList.size());
 			for (Photo photo: photoList) {
 				ViewItem viewItem = new ViewItem(photo.getTitle(), photo.getUrl(), photo.getLargeUrl(), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
+				viewItem.setOrigin(FLICKR_NAME);
 				viewItem.setStory(photo.getDescription());
 				if (null != owner) {
 					ViewItem ownerItem = new ViewItem(owner.getUsername(), owner.getPhotosurl(), owner.getBuddyIconUrl(), ViewItem.VIEW_TYPE_LIST, new FlickrViewNodePeoplePhotosets(owner.getId()));
+					ownerItem.setOrigin(FLICKR_NAME);
 					viewItem.setAuthor(ownerItem);
 					viewItem.setNodeUrl("https://flickr.com/photos/" + owner.getId() + "/" + photo.getId()); // flickr fix from PhotoUtil.createPhoto()
 				}

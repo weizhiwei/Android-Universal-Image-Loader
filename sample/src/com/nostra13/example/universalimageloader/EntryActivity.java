@@ -30,7 +30,7 @@ public class EntryActivity extends ViewItemPagerActivity {
 	
 	@Override
 	protected void setModelFromIntent() {
-		parentModel = new RootViewNode();
+		parentModel = RootViewNode.getInstance();
 		myViewItem = parentModel.getViewItems().get(0);
 		model = myViewItem.getViewNode();
 		updateTitleIconFromViewItem(myViewItem);

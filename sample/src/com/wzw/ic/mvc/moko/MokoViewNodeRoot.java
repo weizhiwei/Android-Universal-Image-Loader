@@ -46,6 +46,7 @@ public class MokoViewNodeRoot extends MokoViewNode {
 				viewItem.setViewItemColor(color);
 				viewItem.setViewItemType(ViewItem.VIEW_ITEM_TYPE_COLOR);
 				viewItem.setShowingLabelInGrid(true);
+//				viewItem.setOrigin(MOKO_NAME);
 				viewItems.add(viewItem);
 			}
 		}

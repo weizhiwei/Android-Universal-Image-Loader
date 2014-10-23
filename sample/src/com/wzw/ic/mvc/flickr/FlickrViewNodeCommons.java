@@ -63,6 +63,7 @@ public class FlickrViewNodeCommons extends FlickrViewNode {
 								imgUrl,
 								ViewItem.VIEW_TYPE_LIST,
 								new FlickrViewNodePeoplePhotosets(id));
+						viewItem.setOrigin(FLICKR_NAME);
 						pageViewItems.add(viewItem);
 					}
 				}

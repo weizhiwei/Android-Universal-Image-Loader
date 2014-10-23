@@ -10,34 +10,55 @@ import com.wzw.ic.mvc.flickr.FlickrViewNodeRoot;
 import com.wzw.ic.mvc.hearts.HeartsViewNodeRoot;
 import com.wzw.ic.mvc.moko.MokoViewNode;
 import com.wzw.ic.mvc.moko.MokoViewNodeRoot;
-import com.wzw.ic.mvc.nationalgeographic.NGViewNode;
 import com.wzw.ic.mvc.nationalgeographic.NGViewNodeRoot;
 import com.wzw.ic.mvc.stream.StreamViewNodeRoot;
 
 public class RootViewNode extends ViewNode {
 
-	public RootViewNode() {
+	private static RootViewNode theRootNode = new RootViewNode();
+	
+	private ViewItem gallery;
+	
+	protected RootViewNode() {
 		
 		super("root", null);
 		
-		ViewItem moko = new ViewItem("MOKO!", "moko", MokoViewNode.MOKO_ICON, ViewItem.VIEW_TYPE_GRID, new MokoViewNodeRoot());
+		ViewItem moko = new ViewItem("MOKO!", MokoViewNode.MOKO_NAME, null, ViewItem.VIEW_TYPE_GRID, new MokoViewNodeRoot());
+		moko.setViewItemType(ViewItem.VIEW_ITEM_TYPE_IMAGE_RES);
 		moko.setViewItemImageResId(R.drawable.moko);
 		
-		ViewItem flickr = new ViewItem("Flickr", "flickr", FlickrViewNode.FLICKR_ICON, ViewItem.VIEW_TYPE_GRID, new FlickrViewNodeRoot());
+		ViewItem flickr = new ViewItem("Flickr", FlickrViewNode.FLICKR_NAME, null, ViewItem.VIEW_TYPE_GRID, new FlickrViewNodeRoot());
+		flickr.setViewItemType(ViewItem.VIEW_ITEM_TYPE_IMAGE_RES);
 		flickr.setViewItemImageResId(R.drawable.flickr);
 		
 //		ViewItem foto = new ViewItem("Fotopedia", "fotopedia", FotoViewNode.FOTO_ICON, ViewItem.VIEW_TYPE_LIST, new FotoViewNodeRoot());
 		
-		ViewItem ng = new ViewItem("National Geographic", "nationalgeographic", NGViewNode.NG_ICON, ViewItem.VIEW_TYPE_GRID, new NGViewNodeRoot());
+		ViewItem ng = new ViewItem("National Geographic", "nationalgeographic", null, ViewItem.VIEW_TYPE_GRID, new NGViewNodeRoot());
+		ng.setViewItemType(ViewItem.VIEW_ITEM_TYPE_IMAGE_RES);
 		ng.setViewItemImageResId(R.drawable.ngraphic);
+		
+		gallery = new ViewItem("Gallery", "gallery", null, ViewItem.VIEW_TYPE_GRID, new ViewNode("", Arrays.asList(
+				moko, flickr, ng)));
 		
 		this.viewItems = Arrays.asList(
 				new ViewItem("Stream", "stream", null, ViewItem.VIEW_TYPE_GRID, new StreamViewNodeRoot()),	
 				new ViewItem("Feeds",  "feeds", null, ViewItem.VIEW_TYPE_GRID, new HeartsViewNodeRoot()),
 				new ViewItem("Hearts", "hearts", null, ViewItem.VIEW_TYPE_GRID, new HeartsViewNodeRoot()),
 				new ViewItem("Stars",  "stars", null, ViewItem.VIEW_TYPE_GRID, new HeartsViewNodeRoot()),
-				new ViewItem("Gallery", "gallery", null, ViewItem.VIEW_TYPE_GRID, new ViewNode("", Arrays.asList(
-						moko, flickr, ng)))
+				gallery
 				);
+	}
+	
+	public static RootViewNode getInstance() {
+		return theRootNode;
+	}
+	
+	public ViewItem findGalleryViewItem(String name) {
+		for (ViewItem viewItem: gallery.getViewNode().getViewItems()) {
+			if (viewItem.getNodeUrl().equals(name)) {
+				return viewItem;
+			}
+		}
+		return null;
 	}
 }

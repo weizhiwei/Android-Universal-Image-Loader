@@ -29,12 +29,14 @@ public class MokoViewNodeChannel extends MokoViewNode {
 				Element img = imgElems.get(i);
 				Element a = aElems.get(i);
 				String title = img.attr("alt");
-				viewItems.add(new ViewItem(
+				ViewItem viewItem = new ViewItem(
 						title,
 						URL_PREFIX + a.attr("href"),
 						img.attr("src2"),
 						ViewItem.VIEW_TYPE_GRID,
-						new MokoViewNodePost(URL_PREFIX + a.attr("href"), title)));
+						new MokoViewNodePost(URL_PREFIX + a.attr("href"), title));
+				viewItem.setOrigin(MOKO_NAME);
+				viewItems.add(viewItem);
 			}
 		}
 		return viewItems;

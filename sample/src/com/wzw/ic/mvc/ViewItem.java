@@ -23,6 +23,7 @@ public class ViewItem extends IcObject implements Comparable<ViewItem> {
 	private String story;
 	private boolean heartsOn;
 	private ViewItem author;
+	private String origin;
 	private String webPageUrl;
 	
 	private int viewType;
@@ -164,6 +165,12 @@ public class ViewItem extends IcObject implements Comparable<ViewItem> {
 	public void setViewItemImageResId(int viewItemImageResId) {
 		this.viewItemImageResId = viewItemImageResId;
 	}
-	
-	
+
+	public String getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(String origin) {
+		this.origin = origin;
+	}
 }
