@@ -25,6 +25,7 @@ public class ViewItem extends IcObject implements Comparable<ViewItem> {
 	private ViewItem author;
 	private String origin;
 	private String webPageUrl;
+	private int initialZoomLevel;
 	
 	private int viewType;
 	private ViewNode viewNode;
@@ -172,5 +173,13 @@ public class ViewItem extends IcObject implements Comparable<ViewItem> {
 
 	public void setOrigin(String origin) {
 		this.origin = origin;
+	}
+
+	public int getInitialZoomLevel() {
+		return initialZoomLevel;
+	}
+
+	public void setInitialZoomLevel(int initialZoomLevel) {
+		this.initialZoomLevel = initialZoomLevel;
 	}
 }

@@ -247,6 +247,9 @@ public class ViewItemPagerActivity extends BaseActivity {
 				swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_gridview_swiperefresh);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
 				itemAdapter = new GridItemAdapter(childModel, (GridView) absListView);
+				if (viewItem.getInitialZoomLevel() > 0 && viewItem.getInitialZoomLevel() <= 3) {
+					((GridView) absListView).setNumColumns(viewItem.getInitialZoomLevel());
+				}
 				break;
 			default:
 				break;

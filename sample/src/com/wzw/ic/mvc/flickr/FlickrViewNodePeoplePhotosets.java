@@ -79,6 +79,7 @@ public class FlickrViewNodePeoplePhotosets extends FlickrViewNode {
 						ViewItem.VIEW_TYPE_GRID,
 						new FlickrViewNodePhotoset(photoset.getId()));
 				viewItem.setOrigin(FLICKR_NAME);
+				viewItem.setInitialZoomLevel(1);
 				pageViewItems.add(viewItem);
 			}
 			if (null != pageViewItems && pageViewItems.size() > 0) {

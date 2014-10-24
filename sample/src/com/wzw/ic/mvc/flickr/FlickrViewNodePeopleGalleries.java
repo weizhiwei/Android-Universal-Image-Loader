@@ -70,6 +70,7 @@ public class FlickrViewNodePeopleGalleries extends FlickrViewNode {
 								ViewItem.VIEW_TYPE_GRID,
 								new FlickrViewNodeGallery(gallery.getGalleryId()));
 				viewItem.setOrigin(FLICKR_NAME);
+				viewItem.setInitialZoomLevel(1);
 				pageViewItems.add(viewItem);
 			}
 			

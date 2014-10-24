@@ -6,7 +6,9 @@ public class FlickrViewNodeRoot extends FlickrViewNode {
 
 	public FlickrViewNodeRoot() {
 		super("https://www.flickr.com");
-		viewItems.add(new ViewItem("Interestingness", "interestingness", FLICKR_ICON, ViewItem.VIEW_TYPE_GRID, new FlickrViewNodeInterestingness()));
+		ViewItem viewItemInterestingness = new ViewItem("Interestingness", "interestingness", FLICKR_ICON, ViewItem.VIEW_TYPE_GRID, new FlickrViewNodeInterestingness());
+		viewItemInterestingness.setInitialZoomLevel(2);
+		viewItems.add(viewItemInterestingness);
 		viewItems.add(new ViewItem("Commons", "commons", FLICKR_ICON, ViewItem.VIEW_TYPE_LIST, new FlickrViewNodeCommons()));
 		viewItems.add(new ViewItem("Galleries", "https://www.flickr.com/photos/66956608@N06/galleries/", FLICKR_ICON, ViewItem.VIEW_TYPE_LIST, new FlickrViewNodePeopleGalleries("66956608@N06")));
 		viewItems.add(new ViewItem("weizhiwei", "https://www.flickr.com/people/67764677@N07/", "http://farm7.staticflickr.com/6178/buddyicons/67764677@N07.jpg", ViewItem.VIEW_TYPE_LIST, new FlickrViewNodePeoplePhotosets("67764677@N07")));
