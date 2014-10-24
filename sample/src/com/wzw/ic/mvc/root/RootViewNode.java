@@ -39,17 +39,22 @@ public class RootViewNode extends ViewNode {
 		
 		gallery = new ViewItem("Gallery", "gallery", null, ViewItem.VIEW_TYPE_GRID, new ViewNode("", Arrays.asList(
 				moko, flickr, ng)));
+		gallery.setViewItemImageResId(R.drawable.ic_gallery);
 		
-		ViewItem stream = new ViewItem("Stream", "stream", null, ViewItem.VIEW_TYPE_GRID, new StreamViewNodeRoot());
+		ViewItem stream = new ViewItem("Pictures", "stream", null, ViewItem.VIEW_TYPE_GRID, new StreamViewNodeRoot());
 		stream.setInitialZoomLevel(2);
+		stream.setViewItemImageResId(R.drawable.ic_pictures);
 		
-		this.viewItems = Arrays.asList(
-				stream,	
-				new ViewItem("Feeds",  "feeds", null, ViewItem.VIEW_TYPE_GRID, new HeartsViewNodeRoot()),
-				new ViewItem("Hearts", "hearts", null, ViewItem.VIEW_TYPE_GRID, new HeartsViewNodeRoot()),
-				new ViewItem("Stars",  "stars", null, ViewItem.VIEW_TYPE_GRID, new HeartsViewNodeRoot()),
-				gallery
-				);
+		ViewItem feeds = new ViewItem("Feeds",  "feeds", null, ViewItem.VIEW_TYPE_GRID, new HeartsViewNodeRoot());
+		feeds.setViewItemImageResId(R.drawable.ic_user);
+		
+		ViewItem hearts = new ViewItem("Hearts", "hearts", null, ViewItem.VIEW_TYPE_GRID, new HeartsViewNodeRoot());
+		hearts.setViewItemImageResId(R.drawable.ic_user);
+		
+		ViewItem stars = new ViewItem("Stars",  "stars", null, ViewItem.VIEW_TYPE_GRID, new HeartsViewNodeRoot());
+		stars.setViewItemImageResId(R.drawable.ic_user);
+		
+		this.viewItems = Arrays.asList(stream, feeds, hearts, stars, gallery);
 	}
 	
 	public static RootViewNode getInstance() {
