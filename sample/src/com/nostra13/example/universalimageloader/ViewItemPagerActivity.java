@@ -22,7 +22,10 @@ import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
@@ -48,6 +51,7 @@ import com.wzw.ic.mvc.root.RootViewNode;
 public class ViewItemPagerActivity extends BaseActivity {
 	DisplayImageOptions gridOptions, listOptions;
 	ViewPager pager;
+	ScaleGestureDetector mScaleDetector;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -84,6 +88,13 @@ public class ViewItemPagerActivity extends BaseActivity {
 			.displayer(new RoundedBitmapDisplayer(20))
 			.build();
 		
+		mScaleDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener () {
+		    @Override
+		    public void onScaleEnd(ScaleGestureDetector detector) {
+		    	zoomGridView(detector.getScaleFactor() > 1.0, false);
+		    }
+		});
+		
 		pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
 //		pager.setOffscreenPageLimit(3);
 //		pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener () {
@@ -91,6 +102,14 @@ public class ViewItemPagerActivity extends BaseActivity {
 //		    public void onPageSelected(int position) {
 //		    }
 //		});
+		pager.setOnTouchListener(new OnTouchListener() {
+			
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				mScaleDetector.onTouchEvent(event);
+				return false;
+			}
+		});
 		pager.setAdapter(new ViewItemPagerAdapter());
 		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
 		// trigger a initial update of page 0
@@ -567,7 +586,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 	protected void updateMenu(ViewNode model) {
 		super.updateMenu(model);
 		if (null != menu) {
-			MenuItem item = menu.findItem(R.id.item_switch_views);
+			MenuItem item = menu.findItem(R.id.item_zoom_in);
 			item.setVisible(myViewItem.getViewType() == ViewItem.VIEW_TYPE_GRID);
 		}
 	}
@@ -575,22 +594,30 @@ public class ViewItemPagerActivity extends BaseActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case R.id.item_switch_views:
-				if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_GRID) {
-					View contentView = pager.findViewWithTag(pager.getCurrentItem());
-					GridView gridView = (GridView) contentView.findViewById(R.id.ic_gridview);
-					switchGridViews(gridView, 0);
-				}
+			case R.id.item_zoom_in:
+				zoomGridView(true, true);
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
 		}
 	}
 	
-	protected void switchGridViews(GridView gridView, int numColumns) {
-		if (numColumns <= 0 || numColumns > 3) {
+	protected void setGridViewColumns(GridView gridView, int numColumns) {
+		if (numColumns <= 0) {
 			numColumns = gridView.getNumColumns() == 1 ? 3 : gridView.getNumColumns() - 1;
+		} else if (numColumns > 3) {
+			numColumns = gridView.getNumColumns() == 3 ? 1 : gridView.getNumColumns() - 1;
 		}
 		gridView.setNumColumns(numColumns);
+	}
+	
+	protected void zoomGridView(boolean in, boolean circular) {
+		if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_GRID) {
+			View contentView = pager.findViewWithTag(pager.getCurrentItem());
+			GridView gridView = (GridView) contentView.findViewById(R.id.ic_gridview);
+			setGridViewColumns(gridView, in ?
+					(gridView.getNumColumns() == 1 ? (circular ? 3 : 1) : gridView.getNumColumns() - 1) :
+					(gridView.getNumColumns() == 3 ? (circular ? 1 : 3) : gridView.getNumColumns() + 1));
+		}
 	}
 }
