@@ -1,10 +1,8 @@
 package com.wzw.ic.mvc.stream;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import com.nostra13.example.universalimageloader.IcDatabase;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.flickr.FlickrViewNodeStream;
@@ -44,8 +42,6 @@ public class StreamViewNodeRoot extends StreamViewNode {
 		}
 		
 		if (null != pageViewItems && pageViewItems.size() > 0) {
-			Collections.sort(pageViewItems);
-			
 			pageNo = newPageNo;
 			if (reload) {
 				viewItems.clear();

@@ -2,16 +2,13 @@ package com.nostra13.example.universalimageloader;
 
 import android.app.ActionBar;
 import android.app.ActionBar.OnNavigationListener;
-import android.app.ActionBar.Tab;
-import android.app.FragmentTransaction;
-import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.BaseAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.wzw.ic.mvc.ViewItem;
@@ -73,8 +70,9 @@ public class EntryActivity extends ViewItemPagerActivity {
 				textView.setGravity(Gravity.CENTER_VERTICAL);
 				textView.setHeight(120);
 				textView.setPadding(30, 0, 0, 0);
-				if (actionBar.getSelectedNavigationIndex() == position) {
-					textView.setBackgroundColor(0xFF0000FF);
+				if (actionBar.getSelectedNavigationIndex() == position &&
+					!(parent instanceof Spinner)) {
+					textView.setBackgroundColor(0xFFBBBBFF);
 				}
 				return textView;
 		    }

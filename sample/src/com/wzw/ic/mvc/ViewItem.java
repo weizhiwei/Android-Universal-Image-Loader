@@ -1,9 +1,8 @@
 package com.wzw.ic.mvc;
 
-import android.graphics.Bitmap;
 import android.text.TextUtils;
 
-public class ViewItem extends IcObject implements Comparable<ViewItem> {
+public class ViewItem extends IcObject {
 	
 	public static final int VIEW_TYPE_LIST = 1;
 	public static final int VIEW_TYPE_GRID = 2;
@@ -136,11 +135,6 @@ public class ViewItem extends IcObject implements Comparable<ViewItem> {
 
 	public void setWebPageUrl(String webPageUrl) {
 		this.webPageUrl = webPageUrl;
-	}
-
-	@Override
-	public int compareTo(ViewItem another) {
-		return this.hashCode() - another.hashCode();
 	}
 
 	public int getViewItemType() {
