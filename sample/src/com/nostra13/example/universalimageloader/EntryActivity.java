@@ -72,7 +72,7 @@ public class EntryActivity extends ViewItemPagerActivity {
 				textView.setPadding(30, 0, 0, 0);
 				if (actionBar.getSelectedNavigationIndex() == position &&
 					!(parent instanceof Spinner)) {
-					textView.setBackgroundColor(0xFFBBBBFF);
+					textView.setBackgroundColor(0xFFAAAAFF);
 				}
 				return textView;
 		    }

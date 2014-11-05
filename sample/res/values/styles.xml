@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
     <style name="ProgressBarStyle" parent="@android:style/Widget.ProgressBar.Horizontal"/>
-    <style name="ActionBarDropDownStyle" parent="@android:style/Widget.Holo.DropDownItem.Spinner">
-	    <item name="android:background">@drawable/spinner_ab_holo_dark</item>
-    </style>
-    
 </resources>

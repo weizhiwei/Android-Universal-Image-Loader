@@ -27,8 +27,7 @@
 		</activity>
             
         <activity
-            android:name=".EntryActivity"
-            android:theme="@style/ActionBarDropDownTheme">
+            android:name=".EntryActivity">
         	<intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
