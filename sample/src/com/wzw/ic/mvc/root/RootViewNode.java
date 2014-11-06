@@ -70,4 +70,8 @@ public class RootViewNode extends ViewNode {
 		}
 		return null;
 	}
+	
+	public ViewItem getGalleryViewItem() {
+		return gallery;
+	}
 }

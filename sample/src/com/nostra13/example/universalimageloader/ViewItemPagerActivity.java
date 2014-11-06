@@ -445,8 +445,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			
 			if (!TextUtils.isEmpty(viewItem.getOrigin())) {
 				holder.originIconImageView.setVisibility(View.VISIBLE);
-				ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
-				holder.originIconImageView.setImageResource(originViewItem.getViewItemImageResId());
+				setupOriginIcon(holder.originIconImageView, viewItem);		
 			} else {
 				holder.originIconImageView.setVisibility(View.GONE);
 			}

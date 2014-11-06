@@ -227,8 +227,7 @@ shareIntent.setType("image/*");
 			}
 			
 			if (!TextUtils.isEmpty(viewItem.getOrigin())) {
-				ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
-				originIconImageView.setImageResource(originViewItem.getViewItemImageResId());
+				setupOriginIcon(originIconImageView, viewItem);
 			}
 			
 			imageView.setOnClickListener(new OnClickListener() {
