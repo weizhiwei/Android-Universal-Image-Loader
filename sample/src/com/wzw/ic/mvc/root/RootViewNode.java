@@ -10,6 +10,7 @@ import com.wzw.ic.mvc.flickr.FlickrViewNodeRoot;
 import com.wzw.ic.mvc.hearts.HeartsViewNodeRoot;
 import com.wzw.ic.mvc.moko.MokoViewNode;
 import com.wzw.ic.mvc.moko.MokoViewNodeRoot;
+import com.wzw.ic.mvc.nationalgeographic.NGViewNode;
 import com.wzw.ic.mvc.nationalgeographic.NGViewNodeRoot;
 import com.wzw.ic.mvc.stream.StreamViewNodeRoot;
 
@@ -33,7 +34,7 @@ public class RootViewNode extends ViewNode {
 		
 //		ViewItem foto = new ViewItem("Fotopedia", "fotopedia", FotoViewNode.FOTO_ICON, ViewItem.VIEW_TYPE_LIST, new FotoViewNodeRoot());
 		
-		ViewItem ng = new ViewItem("National Geographic", "nationalgeographic", null, ViewItem.VIEW_TYPE_GRID, new NGViewNodeRoot());
+		ViewItem ng = new ViewItem("National Geographic", NGViewNode.NG_NAME, null, ViewItem.VIEW_TYPE_GRID, new NGViewNodeRoot());
 		ng.setViewItemType(ViewItem.VIEW_ITEM_TYPE_IMAGE_RES);
 		ng.setViewItemImageResId(R.drawable.ngraphic);
 		

@@ -47,6 +47,7 @@ public class NGViewNodePhotoOfTheDay extends NGViewNode {
 					if (null != descElems && descElems.size() > 1) {
 						viewItem.setStory(descElems.get(1).ownText());
 					}
+					viewItem.setOrigin(NG_NAME);
 					viewItems.add(viewItem);
 				}
 			}

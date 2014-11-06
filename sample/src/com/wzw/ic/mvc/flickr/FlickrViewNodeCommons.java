@@ -61,9 +61,10 @@ public class FlickrViewNodeCommons extends FlickrViewNode {
 								inst.attr("title"),
 								String.format("https://www.flickr.com/people/%s/", id),
 								imgUrl,
-								ViewItem.VIEW_TYPE_LIST,
+								ViewItem.VIEW_TYPE_GRID,
 								new FlickrViewNodePeoplePhotosets(id));
 						viewItem.setOrigin(FLICKR_NAME);
+						viewItem.setInitialZoomLevel(2);
 						pageViewItems.add(viewItem);
 					}
 				}

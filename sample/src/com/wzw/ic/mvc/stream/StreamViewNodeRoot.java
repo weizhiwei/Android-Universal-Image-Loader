@@ -11,6 +11,7 @@ import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.flickr.FlickrViewNodeStream;
 import com.wzw.ic.mvc.moko.MokoViewNodeStream;
+import com.wzw.ic.mvc.nationalgeographic.NGViewNodeStream;
 
 public class StreamViewNodeRoot extends StreamViewNode {
 
@@ -18,6 +19,7 @@ public class StreamViewNodeRoot extends StreamViewNode {
 	protected final ViewNode[] SUBSTREAMS = new ViewNode[] {
 		new MokoViewNodeStream(),
 		new FlickrViewNodeStream(),
+//		new NGViewNodeStream(),
 	};
 
 	public StreamViewNodeRoot() {
