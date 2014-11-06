@@ -31,7 +31,12 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -286,5 +291,44 @@ public abstract class BaseActivity extends Activity {
 		pm.setComponentEnabledSetting(receiver,
 		        enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
 		        PackageManager.DONT_KILL_APP);
+	}
+	
+	protected SpannableString buildPictureText(final ViewItem viewItem, boolean needStory, boolean bigFont, boolean labelLinkOn, boolean ownerLinkOn) {
+		String story = "";
+		if (!TextUtils.isEmpty(viewItem.getLabel())) {
+			String LINK = labelLinkOn ? "<a href=\"%s\">%s</a>" : "%2$s";
+			String FONT = String.format(bigFont ? "<big><b>%s</b></big>" : "%s", LINK);
+			story += String.format(FONT, viewItem.getNodeUrl(), Html.escapeHtml(viewItem.getLabel()));
+		}
+		String authorName = (viewItem.getAuthor() == null ? null : viewItem.getAuthor().getLabel());
+		if (!TextUtils.isEmpty(authorName)) {
+			String FONT = String.format(bigFont ? "<big>%s</big>" : "%s", "<i>%s</i>");
+			story += String.format(" by " + FONT, Html.escapeHtml(authorName));
+		}
+		if (needStory && !TextUtils.isEmpty(viewItem.getStory())) {
+			if (!TextUtils.isEmpty(story)) {
+				story += "<br/><br/>";
+			}
+			story += Html.escapeHtml(viewItem.getStory());
+		}
+		
+		SpannableString ss = null;
+		if (!TextUtils.isEmpty(story)) {
+			ss = new SpannableString(Html.fromHtml(story));
+			if (ownerLinkOn && !TextUtils.isEmpty(authorName)) {
+				int start = ss.toString().indexOf("by " + authorName) + 3;
+				int end = start + authorName.length();
+				ss.setSpan(new ClickableSpan () {
+
+					@Override
+					public void onClick(View arg0) {
+						startViewItemActivity(null, viewItem.getAuthor());
+					}
+					
+				}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			}
+		}
+		
+		return ss;
 	}
 }

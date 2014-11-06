@@ -19,12 +19,18 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -51,7 +57,6 @@ import com.wzw.ic.mvc.root.RootViewNode;
 public class ViewItemPagerActivity extends BaseActivity {
 	DisplayImageOptions gridOptions, listOptions;
 	ViewPager pager;
-	ScaleGestureDetector mScaleDetector;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -88,13 +93,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 			.displayer(new RoundedBitmapDisplayer(20))
 			.build();
 		
-		mScaleDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener () {
-		    @Override
-		    public void onScaleEnd(ScaleGestureDetector detector) {
-		    	zoomGridView(detector.getScaleFactor() > 1.0, false);
-		    }
-		});
-		
 		pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
 //		pager.setOffscreenPageLimit(3);
 //		pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener () {
@@ -102,14 +100,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 //		    public void onPageSelected(int position) {
 //		    }
 //		});
-		pager.setOnTouchListener(new OnTouchListener() {
-			
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				mScaleDetector.onTouchEvent(event);
-				return false;
-			}
-		});
 		pager.setAdapter(new ViewItemPagerAdapter());
 		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
 		// trigger a initial update of page 0
@@ -293,13 +283,32 @@ public class ViewItemPagerActivity extends BaseActivity {
 			});
 			
 			absListView.setAdapter(itemAdapter);
-			absListView.setOnItemClickListener(new OnItemClickListener() {
+			// move to grid/list view's onClick, cause onItemClick is not working with TextView.setMovementMethod()
+//			absListView.setOnItemClickListener(new OnItemClickListener() {
+//				@Override
+//				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//					// drill down
+//					ViewItemPagerActivity.this.startViewItemActivity(model, model.getViewItems().get(position));
+//				}
+//			});
+			
+			final ScaleGestureDetector scaleDetector = new ScaleGestureDetector(ViewItemPagerActivity.this,
+					new ScaleGestureDetector.SimpleOnScaleGestureListener () {
+			    @Override
+			    public void onScaleEnd(ScaleGestureDetector detector) {
+			    	zoomGridView(detector.getScaleFactor() > 1.0, false);
+			    }
+			});
+			
+			absListView.setOnTouchListener(new OnTouchListener() {
+				
 				@Override
-				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-					// drill down
-					ViewItemPagerActivity.this.startViewItemActivity(model, model.getViewItems().get(position));
+				public boolean onTouch(View v, MotionEvent event) {
+					scaleDetector.onTouchEvent(event);
+					return false;
 				}
 			});
+			
 			if (childModel.supportPaging()) {
 				absListView.setOnScrollListener(new EndlessScrollListener() {
 				    @Override
@@ -310,11 +319,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 			}
 			
 			view.addView(contentView, 0);
-			
-//			if (childModel.supportReloading()) {
-//				swipeRefreshLayout.setRefreshing(true);
-//				new GetDataTask(childModel, itemAdapter).execute(true);
-//			}
 			
 			return contentView;
 		}
@@ -387,7 +391,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			}
 			view.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.FILL_PARENT, rowHeight));
 
-			ViewItem viewItem = model.getViewItems().get(position);
+			final ViewItem viewItem = model.getViewItems().get(position);
 			switch (viewItem.getViewItemType()) {
 			case ViewItem.VIEW_ITEM_TYPE_COLOR:
 				holder.imageView.setBackgroundColor(viewItem.getViewItemColor());
@@ -430,9 +434,11 @@ public class ViewItemPagerActivity extends BaseActivity {
 				break;
 			}
 
-			if (!TextUtils.isEmpty(viewItem.getLabel())) {
+			SpannableString text = buildPictureText(viewItem, false, false, false, true);
+			if (null != text) {
 				holder.text.setVisibility(View.VISIBLE);
-				holder.text.setText(viewItem.getLabel());
+				holder.text.setText(text);
+				holder.text.setMovementMethod(LinkMovementMethod.getInstance());
 			} else {
 				holder.text.setVisibility(View.GONE);
 			}
@@ -444,6 +450,13 @@ public class ViewItemPagerActivity extends BaseActivity {
 			} else {
 				holder.originIconImageView.setVisibility(View.GONE);
 			}
+			
+			view.setOnClickListener(new OnClickListener() {				
+				@Override
+				public void onClick(View arg0) {
+					ViewItemPagerActivity.this.startViewItemActivity(model, viewItem);
+				}
+			});
 			
 			return view;
 		}
@@ -492,7 +505,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				holder = (ListViewHolder) view.getTag();
 			}
 
-			ViewItem viewItem = model.getViewItems().get(position);
+			final ViewItem viewItem = model.getViewItems().get(position);
 			
 			holder.text.setText(viewItem.getLabel());
 
@@ -512,6 +525,13 @@ public class ViewItemPagerActivity extends BaseActivity {
 				break;
 			}
 
+			view.setOnClickListener(new OnClickListener() {				
+				@Override
+				public void onClick(View arg0) {
+					ViewItemPagerActivity.this.startViewItemActivity(model, viewItem);
+				}
+			});
+			
 			return view;
 		}
 	}

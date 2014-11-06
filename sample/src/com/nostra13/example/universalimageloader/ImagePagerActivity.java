@@ -219,36 +219,10 @@ shareIntent.setType("image/*");
 
 			final ViewItem viewItem = parentModel.getViewItems().get(position);
 			viewItem.setHeartsOn(IcDatabase.getInstance().isViewItemInHearts(viewItem));
-	        
-			String story = "";
-			if (!TextUtils.isEmpty(viewItem.getLabel())) {
-				story += String.format("<big><b><a href=\"%s\">%s</a></b></big>", viewItem.getNodeUrl(), Html.escapeHtml(viewItem.getLabel()));
-			}
-			String authorName = (viewItem.getAuthor() == null ? null : viewItem.getAuthor().getLabel());
-			if (!TextUtils.isEmpty(authorName)) {
-				story += String.format(" by <big><i>%s</i></big>", Html.escapeHtml(authorName));
-			}
-			if (!TextUtils.isEmpty(viewItem.getStory())) {
-				if (!TextUtils.isEmpty(story)) {
-					story += "<br/><br/>";
-				}
-				story += Html.escapeHtml(viewItem.getStory());
-			}
-			if (!TextUtils.isEmpty(story)) {
-				SpannableString ss = new SpannableString(Html.fromHtml(story));
-				if (!TextUtils.isEmpty(authorName)) {
-					int start = ss.toString().indexOf("by " + authorName) + 3;
-					int end = start + authorName.length();
-					ss.setSpan(new ClickableSpan () {
-	
-						@Override
-						public void onClick(View arg0) {
-							startViewItemActivity(null, viewItem.getAuthor());
-						}
-						
-					}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-				}
-				textView.setText(ss);
+			
+			SpannableString text = buildPictureText(viewItem, true, true, true, true);
+			if (null != text) {
+				textView.setText(text);
 				textView.setMovementMethod(LinkMovementMethod.getInstance());
 			}
 			
