@@ -17,9 +17,9 @@ public class StreamViewNodeRoot extends StreamViewNode {
 
 	protected int pageNo;
 	protected final ViewNode[] SUBSTREAMS = new ViewNode[] {
-		new MokoViewNodeStream(),
+//		new MokoViewNodeStream(),
 		new FlickrViewNodeStream(),
-//		new NGViewNodeStream(),
+		new NGViewNodeStream(),
 	};
 
 	public StreamViewNodeRoot() {
