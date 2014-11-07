@@ -283,14 +283,13 @@ public class ViewItemPagerActivity extends BaseActivity {
 			});
 			
 			absListView.setAdapter(itemAdapter);
-			// move to grid/list view's onClick, cause onItemClick is not working with TextView.setMovementMethod()
-//			absListView.setOnItemClickListener(new OnItemClickListener() {
-//				@Override
-//				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//					// drill down
-//					ViewItemPagerActivity.this.startViewItemActivity(model, model.getViewItems().get(position));
-//				}
-//			});
+			absListView.setOnItemClickListener(new OnItemClickListener() {
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+					// drill down
+					ViewItemPagerActivity.this.startViewItemActivity(model, model.getViewItems().get(position));
+				}
+			});
 			
 			final ScaleGestureDetector scaleDetector = new ScaleGestureDetector(ViewItemPagerActivity.this,
 					new ScaleGestureDetector.SimpleOnScaleGestureListener () {
@@ -434,11 +433,11 @@ public class ViewItemPagerActivity extends BaseActivity {
 				break;
 			}
 
-			SpannableString text = buildPictureText(viewItem, false, false, false, true);
+			SpannableString text = buildPictureText(viewItem, false, false, false, false);
 			if (null != text) {
 				holder.text.setVisibility(View.VISIBLE);
 				holder.text.setText(text);
-				holder.text.setMovementMethod(LinkMovementMethod.getInstance());
+//				holder.text.setMovementMethod(LinkMovementMethod.getInstance());
 			} else {
 				holder.text.setVisibility(View.GONE);
 			}
@@ -449,13 +448,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 			} else {
 				holder.originIconImageView.setVisibility(View.GONE);
 			}
-			
-			view.setOnClickListener(new OnClickListener() {				
-				@Override
-				public void onClick(View arg0) {
-					ViewItemPagerActivity.this.startViewItemActivity(model, viewItem);
-				}
-			});
 			
 			return view;
 		}
@@ -523,13 +515,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 			default:
 				break;
 			}
-
-			view.setOnClickListener(new OnClickListener() {				
-				@Override
-				public void onClick(View arg0) {
-					ViewItemPagerActivity.this.startViewItemActivity(model, viewItem);
-				}
-			});
 			
 			return view;
 		}
