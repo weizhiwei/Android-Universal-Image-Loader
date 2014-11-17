@@ -5,13 +5,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import android.app.ActionBar;
-import android.app.FragmentTransaction;
 import android.app.ActionBar.Tab;
+import android.app.FragmentTransaction;
 import android.database.DataSetObserver;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,18 +16,12 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
-import android.text.Html;
-import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -49,10 +40,9 @@ import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
+import com.tonicartos.widget.stickygridheaders.StickyGridHeadersBaseAdapter;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
-import com.wzw.ic.mvc.ViewNodeAction;
-import com.wzw.ic.mvc.root.RootViewNode;
 
 public class ViewItemPagerActivity extends BaseActivity {
 	DisplayImageOptions gridOptions, listOptions;
@@ -335,7 +325,11 @@ public class ViewItemPagerActivity extends BaseActivity {
 		ImageView originIconImageView;
 	}
 	
-	private class GridItemAdapter extends BaseAdapter {
+	private static class HeaderViewHolder {
+        public TextView textView;
+    }
+	
+	private class GridItemAdapter extends BaseAdapter implements StickyGridHeadersBaseAdapter {
 		
 		private ViewNode model;
 		private GridView gridView;
@@ -450,6 +444,36 @@ public class ViewItemPagerActivity extends BaseActivity {
 			}
 			
 			return view;
+		}
+
+		@Override
+		public View getHeaderView(int position, View convertView, ViewGroup parent) {
+			HeaderViewHolder holder;
+	        if (convertView == null) {
+	            convertView = getLayoutInflater().inflate(R.layout.header, parent, false);
+	            holder = new HeaderViewHolder();
+	            holder.textView = (TextView)convertView.findViewById(android.R.id.text1);
+	            convertView.setTag(holder);
+	        } else {
+	            holder = (HeaderViewHolder)convertView.getTag();
+	        }
+
+	        ViewItem viewItem = model.getViewItems().get(position);
+	        holder.textView.setText(viewItem.getLabel());
+
+	        return convertView;
+	    }
+
+		@Override
+		public int getCountForHeader(int arg0) {
+			// TODO Auto-generated method stub
+			return 1;
+		}
+
+		@Override
+		public int getNumHeaders() {
+			// TODO Auto-generated method stub
+			return getCount();
 		}
 	}
 	
