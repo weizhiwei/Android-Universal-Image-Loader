@@ -41,6 +41,7 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.tonicartos.widget.stickygridheaders.StickyGridHeadersBaseAdapter;
+import com.tonicartos.widget.stickygridheaders.StickyGridHeadersGridView;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 
@@ -126,7 +127,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			}
 			
         	swipeRefreshLayout.setRefreshing(true);
-			new GetDataTask(model, itemAdapter).execute(true);
+			new GetDataTask(model, new GetDataTaskFinished()).execute(true);
 		}
 	}
 		
@@ -230,6 +231,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				if (viewItem.getInitialZoomLevel() > 0 && viewItem.getInitialZoomLevel() <= 3) {
 					((GridView) absListView).setNumColumns(viewItem.getInitialZoomLevel());
 				}
+				((StickyGridHeadersGridView)absListView).setAreHeadersSticky(false);
 				break;
 			default:
 				break;
@@ -242,9 +244,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 			
 			contentView.setTag(position);
 			
-			final SwipeRefreshLayout swipeRefreshLayoutFinal = swipeRefreshLayout;
-			final BaseAdapter itemAdapterFinal = itemAdapter;
-			
 			// Set a listener to be invoked when the list should be refreshed.
 			swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
 				    @Override
@@ -252,7 +251,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		                // Your code to refresh the list here.
 		                // Make sure you call swipeContainer.setRefreshing(false) when
 		                // once the network request has completed successfully.
-						new GetDataTask(childModel, itemAdapterFinal).execute(true);
+						new GetDataTask(childModel, new GetDataTaskFinished()).execute(true);
 		            }
 			});
 			swipeRefreshLayout.setEnabled(childModel.supportReloading());
@@ -261,17 +260,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 	                android.R.color.holo_green_light, 
 	                android.R.color.holo_orange_light, 
 	                android.R.color.holo_red_light);
-			
-			itemAdapter.registerDataSetObserver(new DataSetObserver() {
-				@Override
-	            public void onChanged() {
-					swipeRefreshLayoutFinal.setRefreshing(false);
-					if (position == pager.getCurrentItem()) {
-						updateMenu(childModel);
-					}
-				}
-			});
-			
+						
 			absListView.setAdapter(itemAdapter);
 			absListView.setOnItemClickListener(new OnItemClickListener() {
 				@Override
@@ -302,7 +291,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				absListView.setOnScrollListener(new EndlessScrollListener() {
 				    @Override
 				    public void onLoadMore(int page, int totalItemsCount) {
-				    	new GetDataTask(childModel, itemAdapterFinal).execute(false);
+				    	new GetDataTask(childModel, new GetDataTaskFinished()).execute(false);
 				    }
 			    });
 			}
@@ -346,7 +335,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		@Override
 		public Object getItem(int position) {
-			return null;
+			return null == model.getViewItems() ? null : model.getViewItems().get(position);
 		}
 
 		@Override
@@ -466,14 +455,13 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		@Override
 		public int getCountForHeader(int arg0) {
-			// TODO Auto-generated method stub
-			return 1;
+			return 0;
 		}
 
 		@Override
 		public int getNumHeaders() {
-			// TODO Auto-generated method stub
-			return getCount();
+//			return getCount();
+			return 0;
 		}
 	}
 	
@@ -498,7 +486,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		@Override
 		public Object getItem(int position) {
-			return position;
+			return null == model.getViewItems() ? null : model.getViewItems().get(position);
 		}
 
 		@Override
@@ -561,14 +549,48 @@ public class ViewItemPagerActivity extends BaseActivity {
 		}
 	}
 
+	private class GetDataTaskFinished implements GetDataTaskFinishedListener {
+
+		@Override
+		public void onGetDataTaskFinished(ViewNode model) {
+			View contentView = (View) pager.findViewWithTag(pager.getCurrentItem());
+			SwipeRefreshLayout swipeRefreshLayout = null;
+			AbsListView absListView = null;
+			BaseAdapter itemAdapter = null;
+        	switch (myViewItem.getViewType()) {
+			case ViewItem.VIEW_TYPE_LIST:
+				swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_listview_swiperefresh);
+				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
+				itemAdapter = (BaseAdapter) absListView.getAdapter();
+				break;
+			case ViewItem.VIEW_TYPE_GRID:
+				swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_gridview_swiperefresh);
+				absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
+				itemAdapter = (BaseAdapter) absListView.getAdapter();
+				break;
+			default:
+				break;
+			}
+        	swipeRefreshLayout.setRefreshing(false);
+        	itemAdapter.notifyDataSetChanged();
+//			if (position == pager.getCurrentItem()) {
+//				updateMenu(model);
+//			}
+		}
+	}
+	
+	private interface GetDataTaskFinishedListener {
+		public void onGetDataTaskFinished(ViewNode model);
+	}
+	
 	private static class GetDataTask extends AsyncTask<Object, Void, Void> {
 
 		protected ViewNode model;
-		protected BaseAdapter adapter;
+		protected GetDataTaskFinishedListener listener;
 		
-		public GetDataTask(ViewNode model, BaseAdapter adapter) {
+		public GetDataTask(ViewNode model, GetDataTaskFinishedListener listener) {
 			this.model = model;
-			this.adapter = adapter;
+			this.listener = listener;
 		}
 		
 		@Override
@@ -585,8 +607,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		@Override
 		protected void onPostExecute(Void result) {
-			adapter.notifyDataSetChanged();
-			
+			listener.onGetDataTaskFinished(model);
 			// Call onRefreshComplete when the list has been refreshed.
 			super.onPostExecute(result);
 		}
@@ -618,7 +639,9 @@ public class ViewItemPagerActivity extends BaseActivity {
 		super.updateMenu(model);
 		if (null != menu) {
 			MenuItem item = menu.findItem(R.id.item_zoom_in);
-			item.setVisible(myViewItem.getViewType() == ViewItem.VIEW_TYPE_GRID);
+			if (null != myViewItem) {
+				item.setVisible(myViewItem.getViewType() == ViewItem.VIEW_TYPE_GRID);
+			}
 		}
 	}
 	

@@ -73,9 +73,9 @@ public abstract class BaseActivity extends Activity {
 		if (Build.VERSION.SDK_INT >= 11) {
 			ActionBar actionBar = getActionBar();
 
-			actionBar.setDisplayHomeAsUpEnabled(true);
+//			actionBar.setDisplayHomeAsUpEnabled(true);
 //			actionBar.setDisplayShowHomeEnabled(false);
-			actionBar.setDisplayShowTitleEnabled(false);
+//			actionBar.setDisplayShowTitleEnabled(false);
 		}
 	}
 		
