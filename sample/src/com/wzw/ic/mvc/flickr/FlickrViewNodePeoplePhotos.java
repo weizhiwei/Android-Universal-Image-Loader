@@ -8,17 +8,17 @@ import org.json.JSONException;
 
 import com.googlecode.flickrjandroid.Flickr;
 import com.googlecode.flickrjandroid.FlickrException;
+import com.googlecode.flickrjandroid.people.PeopleInterface;
 import com.googlecode.flickrjandroid.people.User;
 import com.googlecode.flickrjandroid.photos.Photo;
 import com.googlecode.flickrjandroid.photos.PhotoList;
-import com.googlecode.flickrjandroid.photosets.Photoset;
-import com.googlecode.flickrjandroid.photosets.PhotosetsInterface;
 import com.wzw.ic.mvc.ViewItem;
 
-public class FlickrViewNodePhotoset extends FlickrViewNode {
+public class FlickrViewNodePeoplePhotos extends FlickrViewNode {
+
 	protected int pageNo;
 	
-	public FlickrViewNodePhotoset(String sourceUrl) {
+	public FlickrViewNodePeoplePhotos(String sourceUrl) {
 		super(sourceUrl);
 	}
 
@@ -31,16 +31,16 @@ public class FlickrViewNodePhotoset extends FlickrViewNode {
 	public List<ViewItem> reload() {
 		return doLoad(true);
 	}
-
+	
 	private List<ViewItem> doLoad(boolean reload) {
 		List<ViewItem> pageViewItems = null;
 		int newPageNo = reload ? 1 : pageNo + 1;
 		
 		Flickr f = new Flickr(FLICKR_API_KEY);
-		PhotosetsInterface photosetsInterface = f.getPhotosetsInterface();
-		Photoset photoset = null;
+		PeopleInterface peopleInterface = f.getPeopleInterface();
+		PhotoList photoList = null;
 		try {
-			photoset = photosetsInterface.getPhotos(sourceUrl, EXTRAS, Flickr.PRIVACY_LEVEL_NO_FILTER, 30, newPageNo);
+			photoList = peopleInterface.getPublicPhotos(sourceUrl, EXTRAS, 30, newPageNo);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -52,12 +52,9 @@ public class FlickrViewNodePhotoset extends FlickrViewNode {
 			e.printStackTrace();
 		}
 		
-		if (null != photoset &&
-			null != photoset.getPhotoList() &&
-			photoset.getPhotoList().size() > 0) {
-			
-			PhotoList photoList = photoset.getPhotoList();
-			
+		if (null != photoList &&
+			photoList.size() > 0) {
+
 			// hit the end
 			if (!reload &&
 				photoList.getPages() <= pageNo) {
@@ -78,6 +75,7 @@ public class FlickrViewNodePhotoset extends FlickrViewNode {
 					viewItem.setAuthor(ownerItem);
 					viewItem.setNodeUrl("https://flickr.com/photos/" + owner.getId() + "/" + photo.getId()); // flickr fix from PhotoUtil.createPhoto()
 				}
+				viewItem.setPostedDate(photo.getDatePosted());
 				pageViewItems.add(viewItem);
 			}
 			if (null != pageViewItems && pageViewItems.size() > 0) {

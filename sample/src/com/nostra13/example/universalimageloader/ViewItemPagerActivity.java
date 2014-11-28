@@ -131,6 +131,10 @@ public class ViewItemPagerActivity extends BaseActivity {
 	}
 		
 	protected void initActionBar(ActionBar actionBar) {
+		if (parentModel.getViewItems().size() <= 1) {
+			return;
+		}
+		
 		// Create a tab listener that is called when the user changes tabs.
 	    ActionBar.TabListener tabListener = new ActionBar.TabListener() {
 
@@ -165,6 +169,9 @@ public class ViewItemPagerActivity extends BaseActivity {
 	}
 	
 	protected void setActionBarSelection(ActionBar actionBar, int position) {
+		if (parentModel.getViewItems().size() <= 1) {
+			return;
+		}
 		actionBar.selectTab(actionBar.getTabAt(position));
 	}
 	

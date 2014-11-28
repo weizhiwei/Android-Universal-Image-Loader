@@ -1,5 +1,7 @@
 package com.wzw.ic.mvc;
 
+import java.util.Date;
+
 import android.text.TextUtils;
 
 public class ViewItem extends IcObject {
@@ -25,6 +27,8 @@ public class ViewItem extends IcObject {
 	private String origin;
 	private String webPageUrl;
 	private int initialZoomLevel;
+	
+	private Date postedDate;
 	
 	private int viewType;
 	private ViewNode viewNode;
@@ -175,5 +179,13 @@ public class ViewItem extends IcObject {
 
 	public void setInitialZoomLevel(int initialZoomLevel) {
 		this.initialZoomLevel = initialZoomLevel;
+	}
+
+	public Date getPostedDate() {
+		return postedDate;
+	}
+
+	public void setPostedDate(Date postedDate) {
+		this.postedDate = postedDate;
 	}
 }

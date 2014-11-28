@@ -14,7 +14,7 @@ public class FlickrViewNodeRoot extends FlickrViewNode {
 		ViewItem viewItemGalleries = new ViewItem("Galleries", "https://www.flickr.com/photos/66956608@N06/galleries/", FLICKR_ICON, ViewItem.VIEW_TYPE_GRID, new FlickrViewNodePeopleGalleries("66956608@N06"));
 		viewItemGalleries.setInitialZoomLevel(2);
 		viewItems.add(viewItemGalleries);
-		ViewItem viewItemWzw = new ViewItem("weizhiwei", "https://www.flickr.com/people/67764677@N07/", "http://farm7.staticflickr.com/6178/buddyicons/67764677@N07.jpg", ViewItem.VIEW_TYPE_GRID, new FlickrViewNodePeoplePhotosets("67764677@N07"));
+		ViewItem viewItemWzw = new ViewItem("weizhiwei", "https://www.flickr.com/people/67764677@N07/", "http://farm7.staticflickr.com/6178/buddyicons/67764677@N07.jpg", ViewItem.VIEW_TYPE_GRID, new FlickrViewNodePeoplePhotos("67764677@N07"));
 		viewItemWzw.setInitialZoomLevel(2);
 		viewItems.add(viewItemWzw);
 		ViewItem viewItemVk = new ViewItem("Vision Ke", "https://www.flickr.com/people/70058109@N06/", "http://farm7.staticflickr.com/6218/buddyicons/70058109@N06.jpg", ViewItem.VIEW_TYPE_GRID, new FlickrViewNodePeoplePhotosets("70058109@N06"));

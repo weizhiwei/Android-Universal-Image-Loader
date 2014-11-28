@@ -7,12 +7,10 @@ import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.flickr.FlickrViewNode;
 import com.wzw.ic.mvc.flickr.FlickrViewNodeRoot;
-import com.wzw.ic.mvc.hearts.HeartsViewNodeRoot;
 import com.wzw.ic.mvc.moko.MokoViewNode;
 import com.wzw.ic.mvc.moko.MokoViewNodeRoot;
 import com.wzw.ic.mvc.nationalgeographic.NGViewNode;
 import com.wzw.ic.mvc.nationalgeographic.NGViewNodeRoot;
-import com.wzw.ic.mvc.stream.StreamViewNodeRoot;
 
 public class RootViewNode extends ViewNode {
 
@@ -42,17 +40,14 @@ public class RootViewNode extends ViewNode {
 				moko, flickr, ng)));
 		gallery.setViewItemImageResId(R.drawable.ic_gallery);
 		
-		ViewItem stream = new ViewItem("Pictures", "stream", null, ViewItem.VIEW_TYPE_GRID, new StreamViewNodeRoot());
+		ViewItem stream = new ViewItem("Pictures", "stream", null, ViewItem.VIEW_TYPE_GRID, new StreamViewNode());
 		stream.setInitialZoomLevel(1);
 		stream.setViewItemImageResId(R.drawable.ic_pictures);
 		
-		ViewItem feeds = new ViewItem("New",  "feeds", null, ViewItem.VIEW_TYPE_GRID, new HeartsViewNodeRoot());
+		ViewItem feeds = new ViewItem("People",  "feeds", null, ViewItem.VIEW_TYPE_GRID, new FeedsViewNode());
 		feeds.setViewItemImageResId(R.drawable.ic_user);
 		
-		ViewItem hearts = new ViewItem("Hearts", "hearts", null, ViewItem.VIEW_TYPE_GRID, new HeartsViewNodeRoot());
-		hearts.setViewItemImageResId(R.drawable.ic_user);
-		
-		this.viewItems = Arrays.asList(stream, feeds, gallery, hearts);
+		this.viewItems = Arrays.asList(stream, feeds, gallery);
 	}
 	
 	public static RootViewNode getInstance() {

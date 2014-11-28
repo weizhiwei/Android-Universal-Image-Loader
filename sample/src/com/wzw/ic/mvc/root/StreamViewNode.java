@@ -1,4 +1,4 @@
-package com.wzw.ic.mvc.stream;
+package com.wzw.ic.mvc.root;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import com.wzw.ic.mvc.flickr.FlickrViewNodeStream;
 import com.wzw.ic.mvc.moko.MokoViewNodeStream;
 import com.wzw.ic.mvc.nationalgeographic.NGViewNodeStream;
 
-public class StreamViewNodeRoot extends StreamViewNode {
+public class StreamViewNode extends ViewNode {
 
 	protected int pageNo;
 	protected final ViewNode[] SUBSTREAMS = new ViewNode[] {
@@ -22,7 +22,7 @@ public class StreamViewNodeRoot extends StreamViewNode {
 		new NGViewNodeStream(),
 	};
 
-	public StreamViewNodeRoot() {
+	public StreamViewNode() {
 		super("stream");
 	}
 

@@ -1,16 +1,17 @@
-package com.wzw.ic.mvc.hearts;
+package com.wzw.ic.mvc.root;
 
 import java.util.List;
 
 import com.nostra13.example.universalimageloader.IcDatabase;
 import com.wzw.ic.mvc.ViewItem;
+import com.wzw.ic.mvc.ViewNode;
 
 
-public class HeartsViewNodeRoot extends HeartsViewNode {
+public class HeartsViewNode extends ViewNode {
 
 	protected int pageNo;
 	
-	public HeartsViewNodeRoot() {
+	public HeartsViewNode() {
 		super("hearts");
 	}
 
