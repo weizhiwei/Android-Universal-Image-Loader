@@ -1,6 +1,8 @@
 package com.wzw.ic.mvc.nationalgeographic;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import org.jsoup.nodes.Document;
@@ -47,6 +49,11 @@ public class NGViewNodePhotoOfTheDay extends NGViewNode {
 					if (null != descElems && descElems.size() > 1) {
 						viewItem.setStory(descElems.get(1).ownText());
 					}
+					Elements pubDateElems = elem.select("p.publication_time");
+					if (null != pubDateElems && pubDateElems.size() > 0) {
+						String pubDateStr = pubDateElems.get(0).ownText();
+						viewItem.setPostedDate(parsePubDate(pubDateStr));
+					}
 					viewItem.setOrigin(NG_NAME);
 					viewItems.add(viewItem);
 				}
@@ -55,4 +62,44 @@ public class NGViewNodePhotoOfTheDay extends NGViewNode {
 		return viewItems;
 	}
 
+	private static Date parsePubDate(String pubDateStr) {
+		// Photo of the Day, November 28, 2014
+		try {
+			String[] s = pubDateStr.split(" ");
+			String month = s[4].toUpperCase(), date = s[5], year = s[6];
+			int m, d, y;
+			if (month.startsWith("JAN")) {
+				m = 1;
+			} else if (month.startsWith("FEB")) {
+				m = 2;
+			} else if (month.startsWith("MAR")) {
+				m = 3;
+			} else if (month.startsWith("APR")) {
+				m = 4;
+			} else if (month.startsWith("MAY")) {
+				m = 5;
+			} else if (month.startsWith("JUN")) {
+				m = 6;
+			} else if (month.startsWith("JUL")) {
+				m = 7;
+			} else if (month.startsWith("AUG")) {
+				m = 8;
+			} else if (month.startsWith("SEP")) {
+				m = 9;
+			} else if (month.startsWith("OCT")) {
+				m = 10;
+			} else if (month.startsWith("NOV")) {
+				m = 11;
+			} else if (month.startsWith("DEC")) {
+				m = 12;
+			} else {
+				return null;
+			}
+			d = Integer.parseInt(date.substring(0, date.length()-1));
+			y = Integer.parseInt(year);
+			return new Date(y-1900,m-1,d);
+		} catch (Exception e) {
+		}
+		return null;
+	}
 }

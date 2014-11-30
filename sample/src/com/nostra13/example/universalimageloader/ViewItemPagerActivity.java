@@ -9,6 +9,7 @@ import android.app.ActionBar.Tab;
 import android.app.FragmentTransaction;
 import android.database.DataSetObserver;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -42,6 +43,8 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListe
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.tonicartos.widget.stickygridheaders.StickyGridHeadersBaseAdapter;
 import com.tonicartos.widget.stickygridheaders.StickyGridHeadersGridView;
+import com.tonicartos.widget.stickygridheaders.StickyGridHeadersGridView.OnHeaderClickListener;
+import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 
@@ -238,6 +241,17 @@ public class ViewItemPagerActivity extends BaseActivity {
 					((GridView) absListView).setNumColumns(viewItem.getInitialZoomLevel());
 				}
 				((StickyGridHeadersGridView)absListView).setAreHeadersSticky(false);
+				((StickyGridHeadersGridView)absListView).setOnHeaderClickListener(
+						new OnHeaderClickListener () {
+							@Override
+							public void onHeaderClick(AdapterView<?> parent, View view, long id) {
+								HeaderViewHolder holder = (HeaderViewHolder) view.getTag();
+								if (null != holder.viewItem) {
+									ViewItemPagerActivity.this.startViewItemActivity(holder.model, holder.viewItem);
+								}
+							}
+							
+						});
 				break;
 			default:
 				swipeRefreshLayout = null;
@@ -274,7 +288,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 					// drill down
-					ViewItemPagerActivity.this.startViewItemActivity(model, model.getViewItems().get(position));
+					ViewItemPagerActivity.this.startViewItemActivity(model, (ViewItem) itemAdapter.getItem(position));
 				}
 			});
 			
@@ -319,12 +333,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		ImageView imageView;
 		ProgressBar progressBar;
 		TextView text;
-		ImageView originIconImageView;
 	}
-	
-	private static class HeaderViewHolder {
-        public TextView textView;
-    }
 	
 	private class GridItemAdapter extends BaseAdapter implements StickyGridHeadersBaseAdapter {
 		
@@ -343,14 +352,34 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		@Override
 		public Object getItem(int position) {
-			return null == model.getViewItems() ? null : model.getViewItems().get(position);
+			if (null == model.getViewItems()) {
+				return null;
+			}
+			ItemPositionStatus ips = getHeaderPositionForItem(position);
+			ViewItem viewItem = null;
+			if (ips != null) {
+				if (!ips.isPaddingItem) {
+					viewItem = model.getViewItems().get(ips.itemPositionInModel);
+				}
+			} else {
+				viewItem = model.getViewItems().get(position);
+			}
+			
+			return viewItem;
 		}
 
 		@Override
 		public long getItemId(int position) {
-			return position;
+			Object item = getItem(position);
+			return item == null ? 0 : item.hashCode();
 		}
 
+		@Override
+		public boolean isEnabled (int position) {
+			ItemPositionStatus ips = getHeaderPositionForItem(position);
+			return ips == null || !ips.isPaddingItem;
+		}
+		
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			final GridViewHolder holder;
@@ -362,7 +391,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 				holder.imageView = (ImageView) view.findViewById(R.id.image);
 				holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
 				holder.text = (TextView) view.findViewById(R.id.text);
-				holder.originIconImageView = (ImageView) view.findViewById(R.id.origin_icon);
 				view.setTag(holder);
 			} else {
 				holder = (GridViewHolder) view.getTag();
@@ -380,19 +408,38 @@ public class ViewItemPagerActivity extends BaseActivity {
 				break;
 			}
 			view.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.FILL_PARENT, rowHeight));
-
-			final ViewItem viewItem = model.getViewItems().get(position);
+			
+			ItemPositionStatus ips = getHeaderPositionForItem(position);
+			final ViewItem viewItem;
+			if (ips != null) {
+				int color = randomColorForHeader(ips.header);
+				view.setBackgroundColor(color);
+				if (ips.isPaddingItem) {
+					holder.imageView.setVisibility(View.GONE);
+					holder.progressBar.setVisibility(View.GONE);
+					holder.text.setVisibility(View.GONE);
+					return view;
+				} else {
+					viewItem = model.getViewItems().get(ips.itemPositionInModel);
+				}
+			} else {
+				viewItem = model.getViewItems().get(position);
+			}
+			
 			switch (viewItem.getViewItemType()) {
 			case ViewItem.VIEW_ITEM_TYPE_COLOR:
-				holder.imageView.setBackgroundColor(viewItem.getViewItemColor());
+				view.setBackgroundColor(viewItem.getViewItemColor());
+				holder.imageView.setVisibility(View.GONE);
 				holder.progressBar.setVisibility(View.GONE);
 				break;
 			case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
+				holder.imageView.setVisibility(View.VISIBLE);
 				holder.imageView.setImageResource(viewItem.getViewItemImageResId());
 				holder.progressBar.setVisibility(View.GONE);
 				break;
 			case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
 				if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+					holder.imageView.setVisibility(View.VISIBLE);
 					imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, gridOptions, new SimpleImageLoadingListener() {
 											 @Override
 											 public void onLoadingStarted(String imageUri, View view) {
@@ -425,7 +472,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			}
 
 			SpannableString text = buildPictureText(viewItem, false, false, false, false);
-			if (null != text) {
+			if (null != text && gridView.getNumColumns() < 3) {
 				holder.text.setVisibility(View.VISIBLE);
 				holder.text.setText(text);
 //				holder.text.setMovementMethod(LinkMovementMethod.getInstance());
@@ -433,43 +480,88 @@ public class ViewItemPagerActivity extends BaseActivity {
 				holder.text.setVisibility(View.GONE);
 			}
 			
-			if (!TextUtils.isEmpty(viewItem.getOrigin())) {
-				holder.originIconImageView.setVisibility(View.VISIBLE);
-				setupOriginIcon(holder.originIconImageView, viewItem);		
-			} else {
-				holder.originIconImageView.setVisibility(View.GONE);
-			}
-			
 			return view;
 		}
 
+		private class ItemPositionStatus {
+			public int header;
+			public boolean isPaddingItem;
+			public int itemPositionInModel;
+			public ItemPositionStatus(
+					int header,
+					boolean isPaddingItem,
+					int itemPositionInModel) {
+				this.header = header;
+				this.isPaddingItem = isPaddingItem;
+				this.itemPositionInModel = itemPositionInModel;
+			}
+		}
+		
+		private ItemPositionStatus getHeaderPositionForItem(int itemPos) {
+			int itemPositionInModel = 0;
+			for (int i = 0; i < getNumHeaders(); ++i) {
+				itemPos -= getCountForHeader(i);
+				itemPositionInModel += model.getHeaders().get(i);
+				if (itemPos < 0) {
+					itemPos += getCountForHeader(i);
+					itemPositionInModel -= model.getHeaders().get(i);
+					return new ItemPositionStatus(
+							i,
+							itemPos >= model.getHeaders().get(i),
+							itemPositionInModel + itemPos);
+				}
+			}
+			return null;
+		}
+		
+		private int randomColorForHeader(int header) {
+			final int[] COLORS = {Color.GREEN, Color.LTGRAY, Color.CYAN};
+			return COLORS[header*314159%COLORS.length];
+		}
+		
 		@Override
 		public View getHeaderView(int position, View convertView, ViewGroup parent) {
 			HeaderViewHolder holder;
 	        if (convertView == null) {
-	            convertView = getLayoutInflater().inflate(R.layout.header, parent, false);
-	            holder = new HeaderViewHolder();
-	            holder.textView = (TextView)convertView.findViewById(android.R.id.text1);
+	            convertView = getLayoutInflater().inflate(model.getHeaderViewResId(), parent, false);
+	            holder = model.createHolderFromHeaderView(convertView);
 	            convertView.setTag(holder);
 	        } else {
 	            holder = (HeaderViewHolder)convertView.getTag();
 	        }
 
-	        ViewItem viewItem = model.getViewItems().get(position);
-	        holder.textView.setText(viewItem.getLabel());
-
+	        convertView.setBackgroundColor(randomColorForHeader(position));
+	        View divider = convertView.findViewById(R.id.divider);
+	        if (null != divider) {
+	        	divider.setVisibility(position == 0 ? View.GONE : View.VISIBLE);
+	        }
+	        
+	        model.updateHeaderView(convertView, holder, position);
+	        
 	        return convertView;
 	    }
 
 		@Override
-		public int getCountForHeader(int arg0) {
-			return 0;
+		public int getCountForHeader(int header) {
+			List<Integer> headers = model.getHeaders();
+			if (null == headers) {
+				return 0;
+			}
+			if (header >= headers.size()) {
+				return 0;
+			}
+			int count = headers.get(header);
+			int numColumns = gridView.getNumColumns();
+			int r = count % numColumns;
+			if (0 != r) {
+				count += (numColumns - r);
+			}
+			return count;
 		}
 
 		@Override
 		public int getNumHeaders() {
-//			return getCount();
-			return 0;
+			return null == model.getHeaders() ? 0 : model.getHeaders().size();
 		}
 	}
 	

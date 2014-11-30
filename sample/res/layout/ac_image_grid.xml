@@ -11,11 +11,11 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:gravity="center"
-    android:horizontalSpacing="4dip"
+    android:horizontalSpacing="0dip"
     android:numColumns="3"
     android:stretchMode="columnWidth"
-    android:verticalSpacing="4dip"
-    android:padding="4dip" />
+    android:verticalSpacing="0dip"
+    android:padding="0dip" />
 
 </android.support.v4.widget.SwipeRefreshLayout>
 

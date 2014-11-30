@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_height="fill_parent"
+    android:padding="3dip">
 
     <ImageView
         android:id="@+id/image"
@@ -19,35 +20,18 @@
         android:max="100"
         android:layout_gravity="top"
         style="@style/ProgressBarStyle" />
-    
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom" >
-        
-    <ImageView
-        android:id="@+id/origin_icon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-		android:layout_alignParentLeft="true"
-        android:adjustViewBounds="true"
-        android:contentDescription="@string/descr_image"
-        android:scaleType="centerCrop" />
         
     <TextView
         android:id="@+id/text"
         android:layout_width="fill_parent"
-        android:layout_height="24dp"
-		android:layout_alignParentRight="true"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
         android:gravity="center_vertical"
         android:background="#55000000"
         android:textColor="#FFFFFF"
         android:maxLines="1"
         android:singleLine="true"
         android:ellipsize="marquee"
-        android:textSize="14sp"
-        android:layout_toRightOf="@+id/origin_icon" />
-        
-    </RelativeLayout>
+        android:textSize="14sp" />
     
 </FrameLayout>

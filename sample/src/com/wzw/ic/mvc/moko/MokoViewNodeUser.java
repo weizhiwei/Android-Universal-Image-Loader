@@ -8,9 +8,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import android.text.TextUtils;
+
 import com.wzw.ic.mvc.ViewItem;
 
 public class MokoViewNodeUser extends MokoViewNode {
+	
+	private ViewItem authorViewItem;
+	
 	public MokoViewNodeUser(String sourceUrl) {
 		super(sourceUrl);
 		supportPaging = true;
@@ -18,6 +23,30 @@ public class MokoViewNodeUser extends MokoViewNode {
 	
 	@Override
 	protected List<ViewItem> extractViewItemsFromPage(Document page) {
+		if (null == authorViewItem) {
+			Elements a = page.select("a#workNickName");
+			if (null != a && a.size() > 0) {
+				Element e = a.get(0);
+				String userId = e.attr("href").replace("/", "");
+				if (!TextUtils.isEmpty(userId)) {
+					Elements is = page.select("img#imgUserLogo");
+					Element i = null;
+					if (null != is && is.size() > 0) {
+						i = is.get(0);
+					}
+					String userUrl = String.format("http://www.moko.cc/post/%s/new/", userId) + "%d.html";
+					authorViewItem = new ViewItem(
+							e.text(),
+							userUrl,
+							null == i ? "" : i.attr("src"),
+							ViewItem.VIEW_TYPE_GRID,
+							new MokoViewNodeUser(userUrl));
+					authorViewItem.setOrigin(MOKO_NAME);
+					authorViewItem.setInitialZoomLevel(2);
+				}
+			}
+		}
+		
 		List<ViewItem> viewItems = null;
 		Elements imgElems = page.select("div.coverbox img.cover");
 		Elements aElems = page.select("div.coverbox a.coverBg");
@@ -38,6 +67,7 @@ public class MokoViewNodeUser extends MokoViewNode {
 						new MokoViewNodePost(URL_PREFIX + a.attr("href"), title));
 				viewItem.setOrigin(MOKO_NAME);
 				viewItem.setInitialZoomLevel(1);
+				viewItem.setAuthor(authorViewItem);
 				try {
 					String dateStr = dateElems.get(i).text().split(" ")[1];
 					String[] dateStrs = dateStr.split("-");

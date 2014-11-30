@@ -3,14 +3,18 @@ package com.wzw.ic.mvc;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.view.View;
+
 public class ViewNode extends IcObject {
 	protected String sourceUrl;
 	protected List<ViewItem> viewItems;
 	protected List<ViewNodeAction> actions;
-
+	protected List<Integer> headers;
+	
 	public ViewNode(String sourceUrl) {
 		this.sourceUrl = sourceUrl;
 		this.viewItems = new ArrayList<ViewItem>();
+		this.headers = new ArrayList<Integer>();
 		this.actions = new ArrayList<ViewNodeAction>();
 	}
 
@@ -50,5 +54,20 @@ public class ViewNode extends IcObject {
 	
 	public Object onAction(ViewNodeAction action) {
 		return null;
+	}
+	
+	public List<Integer> getHeaders() {
+		return headers;
+	}
+	
+	public int getHeaderViewResId() {
+		return 0;
+	}
+	
+	public HeaderViewHolder createHolderFromHeaderView(View headerView) {
+		return null;
+	}
+	
+	public void updateHeaderView(View headerView, HeaderViewHolder holder, int position) {
 	}
 }

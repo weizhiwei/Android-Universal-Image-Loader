@@ -29,7 +29,7 @@ public class ViewItem extends IcObject {
 	private int initialZoomLevel;
 	
 	private Date postedDate;
-	
+
 	private int viewType;
 	private ViewNode viewNode;
 	
