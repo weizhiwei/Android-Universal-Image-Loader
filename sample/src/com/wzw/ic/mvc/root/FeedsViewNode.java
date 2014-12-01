@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -12,6 +13,7 @@ import android.graphics.Bitmap;
 import android.text.Html;
 import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -160,8 +162,10 @@ public class FeedsViewNode extends ViewNode {
 			if (!TextUtils.isEmpty(caption)) {
 				caption += "<br/>";
 			}
-			caption += ("last updated on "
-	        		+ DateFormat.getDateInstance().format(viewItem.getPostedDate()));
+			caption += ("last updated: "
+					+ DateUtils.getRelativeTimeSpanString(
+							viewItem.getPostedDate().getTime(), (new Date()).getTime(),
+							DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE));
 		}
 		if (!TextUtils.isEmpty(caption)) {
 			((FeedsHeaderViewHolder)holder).textView.setText(new SpannableString(Html.fromHtml(caption)));
