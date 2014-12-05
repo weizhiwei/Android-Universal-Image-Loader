@@ -1,6 +1,5 @@
 package com.wzw.ic.mvc.root;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,6 +24,8 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
+import com.wzw.ic.mvc.ViewNodeRoot;
+import com.wzw.ic.mvc.ViewNode.ViewItemActivityStarter;
 import com.wzw.ic.mvc.flickr.FlickrViewNodePeoplePhotos;
 import com.wzw.ic.mvc.moko.MokoViewNodeUser;
 
@@ -36,6 +37,8 @@ public class FeedsViewNode extends ViewNode {
 		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "davei1314") + "%d.html"),
 		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "zhangqunyun") + "%d.html"),
 		new FlickrViewNodePeoplePhotos("67764677@N07"),
+		new FlickrViewNodePeoplePhotos("70058109@N06"),
+		new FlickrViewNodePeoplePhotos("85310965@N08"),
 	};
 
 	public FeedsViewNode() {
@@ -139,10 +142,7 @@ public class FeedsViewNode extends ViewNode {
 	
 	@Override
 	public HeaderViewHolder createHolderFromHeaderView(View headerView) {
-		FeedsHeaderViewHolder holder = new FeedsHeaderViewHolder();
-        holder.textView = (TextView)headerView.findViewById(R.id.text);
-        holder.imageView = (ImageView)headerView.findViewById(R.id.image);
-        return holder;
+        return new FeedsHeaderViewHolder(headerView);
 	}
 	
 	@Override
@@ -172,8 +172,6 @@ public class FeedsViewNode extends ViewNode {
 		}
 		
         if (null != viewItem.getAuthor()) {
-        	holder.model = null;
-        	holder.viewItem = viewItem.getAuthor();
         	((FeedsHeaderViewHolder)holder).imageView.setVisibility(View.VISIBLE);
         	ImageLoader.getInstance().loadImage(viewItem.getAuthor().getImageUrl(), new ImageLoadingListener() {
 					
@@ -207,7 +205,39 @@ public class FeedsViewNode extends ViewNode {
 	}
 	
 	private static class FeedsHeaderViewHolder extends HeaderViewHolder {
-        public TextView textView;
+		public TextView textView;
         public ImageView imageView;
+
+        public FeedsHeaderViewHolder(View convertView) {
+			super(convertView);
+			
+			textView = (TextView)convertView.findViewById(R.id.text);
+	        imageView = (ImageView)convertView.findViewById(R.id.image);
+		}
     }
+	
+	@Override
+	public void onHeaderClicked(int header, ViewItemActivityStarter starter) {
+		int n = 0;
+		for (int i = 0; i < header; ++i) {
+			n += headers.get(i);
+		}
+		ViewItem viewItem = viewItems.get(n);
+		
+        if (null != viewItem.getAuthor()) {
+        	starter.startViewItemActivity(null, viewItem.getAuthor());
+        }
+	}
+	
+	@Override
+	public void onFooterClicked(int footer, ViewItemActivityStarter starter) {
+		onHeaderClicked(footer, starter);
+	}
+	
+	@Override
+	public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {
+		if (null != viewItem.getAuthor()) {
+        	starter.startViewItemActivity(viewItem.getAuthor().getViewNode(), viewItem);
+        }
+	}
 }
