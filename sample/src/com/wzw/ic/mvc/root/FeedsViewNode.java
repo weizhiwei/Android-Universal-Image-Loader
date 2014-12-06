@@ -20,6 +20,8 @@ import com.nostra13.example.universalimageloader.R;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
@@ -167,38 +169,35 @@ public class FeedsViewNode extends ViewNode {
 			((FeedsHeaderViewHolder)holder).textView.setText(new SpannableString(Html.fromHtml(caption)));
 		}
 		
+		((FeedsHeaderViewHolder)holder).imageView.setVisibility(View.GONE);
         if (null != viewItem.getAuthor()) {
         	holder.model = null;
         	holder.viewItem = viewItem.getAuthor();
-        	((FeedsHeaderViewHolder)holder).imageView.setVisibility(View.VISIBLE);
-        	ImageLoader.getInstance().loadImage(viewItem.getAuthor().getImageUrl(), new ImageLoadingListener() {
-					
-					@Override
-					public void onLoadingStarted(String imageUri, View view) {
-						// TODO Auto-generated method stub
-						
-					}
-					
-					@Override
-					public void onLoadingFailed(String imageUri, View view,
-							FailReason failReason) {
-						// TODO Auto-generated method stub
-						
-					}
-					
-					@Override
-					public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-						((FeedsHeaderViewHolder)holder).imageView.setImageBitmap(loadedImage);
-					}
-					
-					@Override
-					public void onLoadingCancelled(String imageUri, View view) {
-						// TODO Auto-generated method stub
-						
-					}
-				});
-        } else {
-        	((FeedsHeaderViewHolder)holder).imageView.setVisibility(View.GONE);
+        	
+        	if (!TextUtils.isEmpty(viewItem.getAuthor().getImageUrl())) {
+        		((FeedsHeaderViewHolder)holder).imageView.setVisibility(View.VISIBLE);
+        		ImageLoader.getInstance().displayImage(viewItem.getAuthor().getImageUrl(),
+        				((FeedsHeaderViewHolder)holder).imageView, null, new SimpleImageLoadingListener() {
+										 @Override
+										 public void onLoadingStarted(String imageUri, View view) {
+										 }
+
+										 @Override
+										 public void onLoadingFailed(String imageUri, View view,
+												 FailReason failReason) {
+										 }
+
+										 @Override
+										 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+										 }
+									 }, new ImageLoadingProgressListener() {
+										 @Override
+										 public void onProgressUpdate(String imageUri, View view, int current,
+												 int total) {
+										 }
+									 }
+				);
+			}	
         }
 	}
 	
