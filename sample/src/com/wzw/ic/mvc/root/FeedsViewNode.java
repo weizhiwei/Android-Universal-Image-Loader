@@ -1,10 +1,10 @@
 package com.wzw.ic.mvc.root;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.text.Html;
 import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -25,6 +26,8 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
+import com.wzw.ic.mvc.ViewNodeRoot;
+import com.wzw.ic.mvc.ViewNode.ViewItemActivityStarter;
 import com.wzw.ic.mvc.flickr.FlickrViewNodePeoplePhotos;
 import com.wzw.ic.mvc.moko.MokoViewNodeUser;
 
@@ -36,6 +39,8 @@ public class FeedsViewNode extends ViewNode {
 		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "davei1314") + "%d.html"),
 		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "zhangqunyun") + "%d.html"),
 		new FlickrViewNodePeoplePhotos("67764677@N07"),
+		new FlickrViewNodePeoplePhotos("70058109@N06"),
+		new FlickrViewNodePeoplePhotos("85310965@N08"),
 	};
 
 	public FeedsViewNode() {
@@ -139,10 +144,7 @@ public class FeedsViewNode extends ViewNode {
 	
 	@Override
 	public HeaderViewHolder createHolderFromHeaderView(View headerView) {
-		FeedsHeaderViewHolder holder = new FeedsHeaderViewHolder();
-        holder.textView = (TextView)headerView.findViewById(R.id.text);
-        holder.imageView = (ImageView)headerView.findViewById(R.id.image);
-        return holder;
+        return new FeedsHeaderViewHolder(headerView);
 	}
 	
 	@Override
@@ -162,8 +164,10 @@ public class FeedsViewNode extends ViewNode {
 			if (!TextUtils.isEmpty(caption)) {
 				caption += "<br/>";
 			}
-			caption += ("last updated on "
-	        		+ DateFormat.getDateInstance().format(viewItem.getPostedDate()));
+			caption += ("last updated: "
+					+ DateUtils.getRelativeTimeSpanString(
+							viewItem.getPostedDate().getTime(), (new Date()).getTime(),
+							DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE));
 		}
 		if (!TextUtils.isEmpty(caption)) {
 			((FeedsHeaderViewHolder)holder).textView.setText(new SpannableString(Html.fromHtml(caption)));
@@ -171,9 +175,6 @@ public class FeedsViewNode extends ViewNode {
 		
 		((FeedsHeaderViewHolder)holder).imageView.setVisibility(View.GONE);
         if (null != viewItem.getAuthor()) {
-        	holder.model = null;
-        	holder.viewItem = viewItem.getAuthor();
-        	
         	if (!TextUtils.isEmpty(viewItem.getAuthor().getImageUrl())) {
         		((FeedsHeaderViewHolder)holder).imageView.setVisibility(View.VISIBLE);
         		ImageLoader.getInstance().displayImage(viewItem.getAuthor().getImageUrl(),
@@ -197,12 +198,44 @@ public class FeedsViewNode extends ViewNode {
 										 }
 									 }
 				);
-			}	
+			}
         }
 	}
 	
 	private static class FeedsHeaderViewHolder extends HeaderViewHolder {
-        public TextView textView;
+		public TextView textView;
         public ImageView imageView;
+
+        public FeedsHeaderViewHolder(View convertView) {
+			super(convertView);
+			
+			textView = (TextView)convertView.findViewById(R.id.text);
+	        imageView = (ImageView)convertView.findViewById(R.id.image);
+		}
     }
+	
+	@Override
+	public void onHeaderClicked(int header, ViewItemActivityStarter starter) {
+		int n = 0;
+		for (int i = 0; i < header; ++i) {
+			n += headers.get(i);
+		}
+		ViewItem viewItem = viewItems.get(n);
+		
+        if (null != viewItem.getAuthor()) {
+        	starter.startViewItemActivity(null, viewItem.getAuthor());
+        }
+	}
+	
+	@Override
+	public void onFooterClicked(int footer, ViewItemActivityStarter starter) {
+		onHeaderClicked(footer, starter);
+	}
+	
+	@Override
+	public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {
+		if (null != viewItem.getAuthor()) {
+        	starter.startViewItemActivity(viewItem.getAuthor().getViewNode(), viewItem);
+        }
+	}
 }

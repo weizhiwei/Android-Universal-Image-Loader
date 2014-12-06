@@ -40,7 +40,7 @@ public class RootViewNode extends ViewNode {
 				moko, flickr, ng)));
 		gallery.setViewItemImageResId(R.drawable.ic_gallery);
 		
-		ViewItem stream = new ViewItem("Pictures", "stream", null, ViewItem.VIEW_TYPE_GRID, new StreamViewNode());
+		ViewItem stream = new ViewItem("Pictures", "stream", null, ViewItem.VIEW_TYPE_GRID, new StreamViewNode(gallery));
 		stream.setInitialZoomLevel(1);
 		stream.setViewItemImageResId(R.drawable.ic_pictures);
 		

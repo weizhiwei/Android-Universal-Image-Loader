@@ -10,12 +10,16 @@ import org.jsoup.select.Elements;
 import android.graphics.Color;
 
 import com.wzw.ic.mvc.ViewItem;
+import com.wzw.ic.mvc.ViewNodeRoot;
 
-public class MokoViewNodeRoot extends MokoViewNode {
+public class MokoViewNodeRoot extends MokoViewNode implements ViewNodeRoot {
+	
+	private ViewItem stream;
 	
 	public MokoViewNodeRoot() {
 		super("http://www.moko.cc/");
 		supportPaging = false;
+		stream = new ViewItem("New", "new", MOKO_ICON, ViewItem.VIEW_TYPE_GRID, new MokoViewNodeStream());
 	}
 
 	@Override
@@ -50,7 +54,13 @@ public class MokoViewNodeRoot extends MokoViewNode {
 				viewItem.setInitialZoomLevel(2);
 				viewItems.add(viewItem);
 			}
+			viewItems.add(stream);
 		}
 		return viewItems;
+	}
+
+	@Override
+	public ViewItem getStream() {
+		return stream;
 	}
 }

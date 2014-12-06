@@ -241,17 +241,17 @@ public class ViewItemPagerActivity extends BaseActivity {
 					((GridView) absListView).setNumColumns(viewItem.getInitialZoomLevel());
 				}
 				((StickyGridHeadersGridView)absListView).setAreHeadersSticky(false);
-				((StickyGridHeadersGridView)absListView).setOnHeaderClickListener(
-						new OnHeaderClickListener () {
-							@Override
-							public void onHeaderClick(AdapterView<?> parent, View view, long id) {
-								HeaderViewHolder holder = (HeaderViewHolder) view.getTag();
-								if (null != holder.viewItem) {
-									ViewItemPagerActivity.this.startViewItemActivity(holder.model, holder.viewItem);
-								}
-							}
-							
-						});
+//				((StickyGridHeadersGridView)absListView).setOnHeaderClickListener(
+//						new OnHeaderClickListener () {
+//							@Override
+//							public void onHeaderClick(AdapterView<?> parent, View view, long id) {
+//								HeaderViewHolder holder = (HeaderViewHolder) view.getTag();
+//								if (null != holder.viewItem) {
+//									ViewItemPagerActivity.this.startViewItemActivity(holder.model, holder.viewItem);
+//								}
+//							}
+//							
+//						});
 				break;
 			default:
 				swipeRefreshLayout = null;
@@ -288,7 +288,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 					// drill down
-					ViewItemPagerActivity.this.startViewItemActivity(model, (ViewItem) itemAdapter.getItem(position));
+					model.onViewItemClicked((ViewItem)itemAdapter.getItem(position), ViewItemPagerActivity.this);
 				}
 			});
 			
@@ -520,8 +520,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 		}
 		
 		@Override
-		public View getHeaderView(int position, View convertView, ViewGroup parent) {
-			HeaderViewHolder holder;
+		public View getHeaderView(final int position, View convertView, ViewGroup parent) {
+			final HeaderViewHolder holder;
 	        if (convertView == null) {
 	            convertView = getLayoutInflater().inflate(model.getHeaderViewResId(), parent, false);
 	            holder = model.createHolderFromHeaderView(convertView);
@@ -529,14 +529,37 @@ public class ViewItemPagerActivity extends BaseActivity {
 	        } else {
 	            holder = (HeaderViewHolder)convertView.getTag();
 	        }
-
-	        convertView.setBackgroundColor(randomColorForHeader(position));
-	        View divider = convertView.findViewById(R.id.divider);
-	        if (null != divider) {
-	        	divider.setVisibility(position == 0 ? View.GONE : View.VISIBLE);
-	        }
 	        
-	        model.updateHeaderView(convertView, holder, position);
+	        if (null != holder.footer) {
+	        	holder.footer.setVisibility(position == 0 ? View.GONE : View.VISIBLE);
+	        	if (position > 0) {
+	        		((TextView)holder.footer).setText("See more");
+	        		holder.footer.setBackgroundColor(randomColorForHeader(position-1));
+	        		holder.footer.setOnClickListener(new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							model.onFooterClicked(position-1, ViewItemPagerActivity.this);
+						}
+	        		});
+	        	}
+	        }
+	        if (null != holder.divider) {
+	        	holder.divider.setVisibility((position == 0 || position >= model.getHeaders().size())
+	        			? View.GONE : View.VISIBLE);
+	        }
+	        if (null != holder.header) {
+	        	holder.header.setVisibility(position >= model.getHeaders().size() ? View.GONE : View.VISIBLE);
+	        	if (position < model.getHeaders().size()) {
+	        		holder.header.setBackgroundColor(randomColorForHeader(position));
+	        		model.updateHeaderView(convertView, holder, position);
+	        		holder.header.setOnClickListener(new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							model.onHeaderClicked(position, ViewItemPagerActivity.this);
+						}
+					});
+	        	}
+	        }
 	        
 	        return convertView;
 	    }
@@ -561,7 +584,13 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		@Override
 		public int getNumHeaders() {
-			return null == model.getHeaders() ? 0 : model.getHeaders().size();
+			if (null == model.getHeaders()) {
+				return 0;
+			} else if (0 == model.getHeaders().size()) {
+				return 0;
+			} else {
+				return model.getHeaders().size() + 1;
+			}
 		}
 	}
 	

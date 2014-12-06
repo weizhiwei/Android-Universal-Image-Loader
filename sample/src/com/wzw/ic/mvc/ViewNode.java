@@ -70,4 +70,20 @@ public class ViewNode extends IcObject {
 	
 	public void updateHeaderView(View headerView, HeaderViewHolder holder, int position) {
 	}
+	
+	public interface ViewItemActivityStarter {
+		public void startViewItemActivity(ViewNode parent, ViewItem viewItem);
+	}
+	
+	public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {
+		starter.startViewItemActivity(this, viewItem);
+	}
+	
+	public void onHeaderClicked(int header, ViewItemActivityStarter starter) {
+		
+	}
+	
+	public void onFooterClicked(int footer, ViewItemActivityStarter starter) {
+		
+	}
 }

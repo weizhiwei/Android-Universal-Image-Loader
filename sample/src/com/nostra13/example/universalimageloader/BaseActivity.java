@@ -56,7 +56,7 @@ import com.wzw.ic.mvc.root.RootViewNode;
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
-public abstract class BaseActivity extends Activity {
+public abstract class BaseActivity extends Activity implements ViewNode.ViewItemActivityStarter {
 
 	protected ImageLoader imageLoader = ImageLoader.getInstance();
 	protected ViewNode parentModel;
@@ -261,7 +261,7 @@ public abstract class BaseActivity extends Activity {
 		}
 	}
 	
-	protected void startViewItemActivity(ViewNode parent, ViewItem viewItem) {
+	public void startViewItemActivity(ViewNode parent, ViewItem viewItem) {
 		Intent intent = null;
 		switch (viewItem.getViewType()) {
 		case ViewItem.VIEW_TYPE_GRID:
