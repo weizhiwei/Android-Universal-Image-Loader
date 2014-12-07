@@ -20,14 +20,11 @@ import android.widget.TextView;
 import com.nostra13.example.universalimageloader.R;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
-import com.wzw.ic.mvc.ViewNodeRoot;
-import com.wzw.ic.mvc.ViewNode.ViewItemActivityStarter;
 import com.wzw.ic.mvc.flickr.FlickrViewNodePeoplePhotos;
 import com.wzw.ic.mvc.moko.MokoViewNodeUser;
 
@@ -35,7 +32,6 @@ public class FeedsViewNode extends ViewNode {
 
 	protected int pageNo;
 	protected final ViewNode[] SUBFEEDS = new ViewNode[] {
-//		new MokoViewNodeStream(),
 		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "davei1314") + "%d.html"),
 		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "zhangqunyun") + "%d.html"),
 		new FlickrViewNodePeoplePhotos("67764677@N07"),
@@ -229,13 +225,32 @@ public class FeedsViewNode extends ViewNode {
 	
 	@Override
 	public void onFooterClicked(int footer, ViewItemActivityStarter starter) {
-		onHeaderClicked(footer, starter);
-	}
+		int n = 0;
+		for (int i = 0; i < footer; ++i) {
+			n += headers.get(i);
+		}
+		ViewItem viewItem = viewItems.get(n);
+		
+        if (null != viewItem.getAuthor()) {
+        	for (ViewNode pplNode: SUBFEEDS) {
+				if (pplNode.getSourceUrl().equals(viewItem.getAuthor().getViewNode().getSourceUrl())) {
+					starter.startViewItemActivity(null,
+							new ViewItem(null, null, null, ViewItem.VIEW_TYPE_GRID, pplNode));
+					break;
+				}
+			}
+        }
+    }
 	
 	@Override
 	public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {
 		if (null != viewItem.getAuthor()) {
-        	starter.startViewItemActivity(viewItem.getAuthor().getViewNode(), viewItem);
+			for (ViewNode pplNode: SUBFEEDS) {
+				if (pplNode.getSourceUrl().equals(viewItem.getAuthor().getViewNode().getSourceUrl())) {
+					starter.startViewItemActivity(pplNode, viewItem);
+					break;
+				}
+			}
         }
 	}
 }
