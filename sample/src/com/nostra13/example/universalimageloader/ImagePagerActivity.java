@@ -24,14 +24,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.text.Html;
-import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -48,7 +44,6 @@ import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.wzw.ic.mvc.ViewItem;
-import com.wzw.ic.mvc.root.RootViewNode;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -82,7 +77,16 @@ public class ImagePagerActivity extends BaseActivity {
 
 		pager = (ViewPager) findViewById(R.id.ic_pagerview);
 //		pager.setOffscreenPageLimit(3);
-		pager.setAdapter(new ImagePagerAdapter());
+		final PagerAdapter pagerAdapter = new ImagePagerAdapter();
+		pager.setAdapter(pagerAdapter);
+		pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener () {
+			@Override
+		    public void onPageSelected(int position) {
+				if (parentModel.supportPaging() && position >= pagerAdapter.getCount() - 5) {
+					new GetDataTask(parentModel, pagerAdapter, null).execute(false);
+				}
+			}
+		});
 		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
 		
 		setFullscreen(true);
@@ -98,7 +102,7 @@ public class ImagePagerActivity extends BaseActivity {
 		switch (item.getItemId()) {
 			case R.id.item_hearts_toggle:
 			{
-				ViewItem viewItem = model.getViewItems().get(pager.getCurrentItem());
+				ViewItem viewItem = parentModel.getViewItems().get(pager.getCurrentItem());
 				viewItem.setHeartsOn(!viewItem.isHeartsOn());
 				if (viewItem.isHeartsOn()) {
 					IcDatabase.getInstance().addViewItemToHearts(viewItem);
@@ -110,7 +114,7 @@ public class ImagePagerActivity extends BaseActivity {
 			}
 			case R.id.item_set_wallpaper:
 			{
-				ViewItem viewItem = model.getViewItems().get(pager.getCurrentItem());
+				ViewItem viewItem = parentModel.getViewItems().get(pager.getCurrentItem());
 				WallpaperAlarmReceiver.setWallpaper(this, viewItem.getImageUrl());
 				return true;
 			}
@@ -124,7 +128,7 @@ public class ImagePagerActivity extends BaseActivity {
 		if (null == menu)
 			return;
 		
-		ViewItem viewItem = model.getViewItems().get(pager.getCurrentItem());
+		ViewItem viewItem = parentModel.getViewItems().get(pager.getCurrentItem());
 		
 		MenuItem heartsItem = menu.findItem(R.id.item_hearts_toggle);
 		heartsItem.setVisible(true);

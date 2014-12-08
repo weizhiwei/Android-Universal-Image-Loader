@@ -89,12 +89,24 @@ public class ViewItemPagerActivity extends BaseActivity {
 		
 		pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
 //		pager.setOffscreenPageLimit(3);
-//		pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener () {
-//			@Override
-//		    public void onPageSelected(int position) {
-//		    }
-//		});
-		pager.setAdapter(new ViewItemPagerAdapter());
+		final PagerAdapter pagerAdapter = new ViewItemPagerAdapter();
+		pager.setAdapter(pagerAdapter);
+		pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener () {
+			@Override
+		    public void onPageSelected(int position) {
+				if (parentModel.supportPaging() && position >= pagerAdapter.getCount() - 5) {
+					new GetDataTask(parentModel, pagerAdapter, new GetDataTask.GetDataTaskFinishedListener() {
+							@Override
+							public void onGetDataTaskFinished(ViewNode model) {
+								if (Build.VERSION.SDK_INT >= 11) {
+									ActionBar actionBar = getActionBar();
+									initActionBar(actionBar);
+								}
+							}
+						}).execute(false);
+				}
+		    }
+		});
 		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
 		// trigger a initial update of page 0
 		myViewItem = null;
@@ -157,7 +169,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			}
 	    };
 	    
-	    for (int i = 0; i < parentModel.getViewItems().size(); i++) {
+	    for (int i = actionBar.getTabCount(); i < parentModel.getViewItems().size(); ++i) {
 	    	ViewItem viewItem = parentModel.getViewItems().get(i);
 	    	final Tab tab = actionBar.newTab();
             tab.setTabListener(tabListener);
@@ -675,66 +687,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 					displayedImages.add(imageUri);
 				}
 			}
-		}
-	}
-
-	private class GetDataTaskFinished implements GetDataTaskFinishedListener {
-		
-		@Override
-		public void onGetDataTaskFinished(ViewNode model) {
-//			if (position == pager.getCurrentItem()) {
-//				updateMenu(model);
-//			}
-		}
-	}
-	
-	private interface GetDataTaskFinishedListener {
-		public void onGetDataTaskFinished(ViewNode model);
-	}
-	
-	private static class GetDataTask extends AsyncTask<Object, Void, Void> {
-
-		protected ViewNode model;
-		protected SwipeRefreshLayout swipeRefreshLayout;
-		protected BaseAdapter itemAdapter;
-		protected GetDataTaskFinishedListener listener;
-		
-		public GetDataTask(ViewNode model,
-				SwipeRefreshLayout swipeRefreshLayout,
-				BaseAdapter itemAdapter,
-				GetDataTaskFinishedListener listener) {
-			this.model = model;
-			this.swipeRefreshLayout = swipeRefreshLayout;
-			this.itemAdapter = itemAdapter;
-			this.listener = listener;
-		}
-		
-		@Override
-		protected void onPreExecute() {
-			swipeRefreshLayout.setRefreshing(true);
-		}
-		
-		@Override
-		protected Void doInBackground(Object... params) {
-			// Simulates a background job.
-			boolean reload = (Boolean) params[0];
-			if (reload) {
-				model.reload();
-			} else {
-				model.loadOneMorePage();
-			}
-			return null;
-		}
-
-		@Override
-		protected void onPostExecute(Void result) {
-			swipeRefreshLayout.setRefreshing(false);
-        	itemAdapter.notifyDataSetChanged();
-			if (null != listener) {
-				listener.onGetDataTaskFinished(model);
-			}
-			// Call onRefreshComplete when the list has been refreshed.
-			super.onPostExecute(result);
 		}
 	}
 	
