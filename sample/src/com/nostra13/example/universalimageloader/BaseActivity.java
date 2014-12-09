@@ -74,7 +74,6 @@ public abstract class BaseActivity extends Activity implements ViewNode.ViewItem
 			ActionBar actionBar = getActionBar();
 
 //			actionBar.setDisplayHomeAsUpEnabled(true);
-//			actionBar.setDisplayShowHomeEnabled(false);
 //			actionBar.setDisplayShowTitleEnabled(false);
 		}
 	}

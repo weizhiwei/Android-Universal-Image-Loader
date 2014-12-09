@@ -47,7 +47,7 @@ public class RootViewNode extends ViewNode {
 		ViewItem feeds = new ViewItem("People",  "feeds", null, ViewItem.VIEW_TYPE_GRID, new FeedsViewNode());
 		feeds.setViewItemImageResId(R.drawable.ic_user);
 		
-		this.viewItems = Arrays.asList(stream, feeds, gallery);
+		this.viewItems = Arrays.asList(stream, feeds);
 	}
 	
 	public static RootViewNode getInstance() {
