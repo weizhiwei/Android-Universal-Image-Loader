@@ -183,13 +183,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 	    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 	}
 	
-	protected void setActionBarSelection(ActionBar actionBar, int position) {
-		if (parentModel.getViewItems().size() <= 1) {
-			return;
-		}
-		actionBar.selectTab(actionBar.getTabAt(position));
-	}
-	
 	private class ViewItemPagerAdapter extends PagerAdapter {
 		
 		ViewItemPagerAdapter() {
@@ -222,7 +215,9 @@ public class ViewItemPagerActivity extends BaseActivity {
 	        
 	        if (Build.VERSION.SDK_INT >= 11) {
 				ActionBar actionBar = getActionBar();
-				setActionBarSelection(actionBar, position);
+				if (parentModel.getViewItems().size() > 1) {
+					actionBar.selectTab(actionBar.getTabAt(position));
+				}
 	        }
 	        
 	        updateCurrentPage();
@@ -252,7 +247,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				if (viewItem.getInitialZoomLevel() > 0 && viewItem.getInitialZoomLevel() <= 3) {
 					((GridView) absListView).setNumColumns(viewItem.getInitialZoomLevel());
 				}
-				((StickyGridHeadersGridView)absListView).setAreHeadersSticky(false);
+//				((StickyGridHeadersGridView)absListView).setAreHeadersSticky(false);
 //				((StickyGridHeadersGridView)absListView).setOnHeaderClickListener(
 //						new OnHeaderClickListener () {
 //							@Override
