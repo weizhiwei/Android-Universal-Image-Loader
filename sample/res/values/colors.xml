@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--Theme Common-->
+    <color name="actionbar_dark_grey">#303030</color>
+    <color name="actionbar_selected">#262626</color>
+</resources>

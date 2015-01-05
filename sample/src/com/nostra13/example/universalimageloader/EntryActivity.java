@@ -95,7 +95,9 @@ public class EntryActivity extends ViewItemPagerActivity {
 		actionBar.setDisplayShowHomeEnabled(false);
 		setHasEmbeddedTabs(actionBar, true);
 		super.initActionBar(actionBar);
+		actionBar.getTabAt(0).setText(null);
 		actionBar.getTabAt(0).setIcon(R.drawable.ic_pictures);
+		actionBar.getTabAt(1).setText(null);
 		actionBar.getTabAt(1).setIcon(R.drawable.ic_user);
 	}
 	

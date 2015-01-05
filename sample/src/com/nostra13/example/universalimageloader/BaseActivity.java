@@ -74,7 +74,7 @@ public abstract class BaseActivity extends Activity implements ViewNode.ViewItem
 			ActionBar actionBar = getActionBar();
 
 //			actionBar.setDisplayHomeAsUpEnabled(true);
-//			actionBar.setDisplayShowTitleEnabled(false);
+			actionBar.setDisplayShowTitleEnabled(false);
 		}
 	}
 		
@@ -298,18 +298,18 @@ public abstract class BaseActivity extends Activity implements ViewNode.ViewItem
 		if (!TextUtils.isEmpty(viewItem.getLabel())) {
 			String LINK = labelLinkOn ? "<a href=\"%s\">%s</a>" : "%2$s";
 			String FONT = String.format(bigFont ? "<big><b>%s</b></big>" : "%s", LINK);
-			story += String.format(FONT, viewItem.getNodeUrl(), Html.escapeHtml(viewItem.getLabel()));
+			story += String.format(FONT, viewItem.getNodeUrl(), TextUtils.htmlEncode(viewItem.getLabel()));
 		}
 		String authorName = (viewItem.getAuthor() == null ? null : viewItem.getAuthor().getLabel());
 		if (!TextUtils.isEmpty(authorName)) {
 			String FONT = String.format(bigFont ? "<big>%s</big>" : "%s", "<i>%s</i>");
-			story += String.format(" by " + FONT, Html.escapeHtml(authorName));
+			story += String.format(" by " + FONT, TextUtils.htmlEncode(authorName));
 		}
 		if (needStory && !TextUtils.isEmpty(viewItem.getStory())) {
 			if (!TextUtils.isEmpty(story)) {
 				story += "<br/><br/>";
 			}
-			story += Html.escapeHtml(viewItem.getStory());
+			story += TextUtils.htmlEncode(viewItem.getStory());
 		}
 		
 		SpannableString ss = null;
