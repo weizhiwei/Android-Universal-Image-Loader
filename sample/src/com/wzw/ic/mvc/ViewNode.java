@@ -60,7 +60,7 @@ public class ViewNode extends IcObject {
 		return headers;
 	}
 	
-	public int getHeaderViewResId() {
+	public int getHeaderViewResId(int header) {
 		return 0;
 	}
 	

@@ -123,17 +123,15 @@ public class ViewItemPagerActivity extends BaseActivity {
 	private void updateCurrentPage() {
         if (model.supportReloading() && model.getViewItems().isEmpty()) {
         	View contentView = (View) pager.findViewWithTag(pager.getCurrentItem());
-        	SwipeRefreshLayout swipeRefreshLayout = null;
+        	SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
 			AbsListView absListView = null;
 			BaseAdapter itemAdapter = null;
         	switch (myViewItem.getViewType()) {
 			case ViewItem.VIEW_TYPE_LIST:
-				swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_listview_swiperefresh);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = (BaseAdapter) absListView.getAdapter();
 				break;
 			case ViewItem.VIEW_TYPE_GRID:
-				swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_gridview_swiperefresh);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
 				itemAdapter = (BaseAdapter) absListView.getAdapter();
 				break;
@@ -234,19 +232,16 @@ public class ViewItemPagerActivity extends BaseActivity {
 			final ViewNode childModel = viewItem.getViewNode();
 			
 			View contentView = null;
-			final SwipeRefreshLayout swipeRefreshLayout;
 			AbsListView absListView = null;
 			final BaseAdapter itemAdapter;
 			switch (viewItem.getViewType()) {
 			case ViewItem.VIEW_TYPE_LIST:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
-				swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_listview_swiperefresh);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(childModel);
 				break;
 			case ViewItem.VIEW_TYPE_GRID:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
-				swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_gridview_swiperefresh);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
 				itemAdapter = new GridItemAdapter(childModel, (GridView) absListView);
 				if (viewItem.getInitialZoomLevel() > 0 && viewItem.getInitialZoomLevel() <= 3) {
@@ -266,10 +261,11 @@ public class ViewItemPagerActivity extends BaseActivity {
 //						});
 				break;
 			default:
-				swipeRefreshLayout = null;
 				itemAdapter = null;
 				break;
 			}
+			
+			final SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
 			
 			assert contentView != null;
 			if (null == contentView || null == swipeRefreshLayout || null == absListView) {
@@ -535,7 +531,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		public View getHeaderView(final int position, View convertView, ViewGroup parent) {
 			final HeaderViewHolder holder;
 	        if (convertView == null) {
-	            convertView = getLayoutInflater().inflate(model.getHeaderViewResId(), parent, false);
+	            convertView = getLayoutInflater().inflate(model.getHeaderViewResId(position), parent, false);
 	            holder = model.createHolderFromHeaderView(convertView);
 	            convertView.setTag(holder);
 	        } else {

@@ -134,7 +134,7 @@ public class FeedsViewNode extends ViewNode {
 	}
 	
 	@Override
-	public int getHeaderViewResId() {
+	public int getHeaderViewResId(int header) {
 		return R.layout.header;
 	}
 	
