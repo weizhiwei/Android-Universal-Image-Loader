@@ -7,9 +7,11 @@ import android.view.View;
 
 public class ViewNode extends IcObject {
 	protected String sourceUrl;
-	protected List<ViewItem> viewItems;
-	protected List<ViewNodeAction> actions;
-	protected List<Integer> headers;
+	
+	protected List<ViewItem> viewItems, viewItemsCopy;
+	protected List<ViewNodeAction> actions, actionsCopy;
+	protected List<Integer> headers, headersCopy;
+	protected boolean isDetached = false;
 	
 	public ViewNode(String sourceUrl) {
 		this.sourceUrl = sourceUrl;
@@ -21,7 +23,25 @@ public class ViewNode extends IcObject {
 	public ViewNode(String sourceUrl, List<ViewItem> viewItems) {
 		this.sourceUrl = sourceUrl;
 		this.viewItems = viewItems;
+		this.headers = new ArrayList<Integer>();
 		this.actions = new ArrayList<ViewNodeAction>();
+	}
+	
+	public void detach() {
+		viewItemsCopy = new ArrayList<ViewItem>();
+		viewItemsCopy.addAll(viewItems);
+		headersCopy = new ArrayList<Integer>();
+		headersCopy.addAll(headers);
+		actionsCopy = new ArrayList<ViewNodeAction>();
+		actionsCopy.addAll(actions);
+		isDetached = true;
+	}
+	
+	public void attach() {
+		isDetached = false;
+		viewItemsCopy = null;
+		headersCopy = null;
+		actionsCopy = null;
 	}
 	
 	public String getSourceUrl() {
@@ -29,11 +49,15 @@ public class ViewNode extends IcObject {
 	}
 	
 	public List<ViewItem> getViewItems() {
-		return viewItems;
+		return isDetached ? viewItemsCopy : viewItems;
+	}
+	
+	public List<Integer> getHeaders() {
+		return isDetached ? headersCopy : headers;
 	}
 	
 	public List<ViewNodeAction> getActions() {
-		return actions;
+		return isDetached ? actionsCopy : actions;
 	}
 	
 	public boolean supportReloading() {
@@ -55,11 +79,7 @@ public class ViewNode extends IcObject {
 	public Object onAction(ViewNodeAction action) {
 		return null;
 	}
-	
-	public List<Integer> getHeaders() {
-		return headers;
-	}
-	
+		
 	public int getHeaderViewResId(int header) {
 		return 0;
 	}

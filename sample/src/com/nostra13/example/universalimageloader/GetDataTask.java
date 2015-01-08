@@ -39,6 +39,7 @@ class GetDataTask extends AsyncTask<Object, Void, Void> {
 	
 	@Override
 	protected void onPreExecute() {
+		model.detach();
 		if (null != swipeRefreshLayout) {
 			swipeRefreshLayout.setRefreshing(true);
 		}
@@ -57,10 +58,13 @@ class GetDataTask extends AsyncTask<Object, Void, Void> {
 	}
 
 	@Override
+	protected void onCancelled(Void result) {
+		onPostExecute(result);
+	}
+	
+	@Override
 	protected void onPostExecute(Void result) {
-		if (null != swipeRefreshLayout) {
-			swipeRefreshLayout.setRefreshing(false);
-		}
+		model.attach();
 		if (null != itemAdapter) {
 			itemAdapter.notifyDataSetChanged();
 		}
@@ -70,7 +74,8 @@ class GetDataTask extends AsyncTask<Object, Void, Void> {
 		if (null != listener) {
 			listener.onGetDataTaskFinished(model);
 		}
-		// Call onRefreshComplete when the list has been refreshed.
-		super.onPostExecute(result);
+		if (null != swipeRefreshLayout) {
+			swipeRefreshLayout.setRefreshing(false);
+		}
 	}
 }
