@@ -28,11 +28,11 @@ public class ViewNode extends IcObject {
 	}
 	
 	public void detach() {
-		viewItemsCopy = new ArrayList<ViewItem>();
+		viewItemsCopy = new ArrayList<ViewItem>(viewItems.size());
 		viewItemsCopy.addAll(viewItems);
-		headersCopy = new ArrayList<Integer>();
+		headersCopy = new ArrayList<Integer>(headers.size());
 		headersCopy.addAll(headers);
-		actionsCopy = new ArrayList<ViewNodeAction>();
+		actionsCopy = new ArrayList<ViewNodeAction>(actions.size());
 		actionsCopy.addAll(actions);
 		isDetached = true;
 	}

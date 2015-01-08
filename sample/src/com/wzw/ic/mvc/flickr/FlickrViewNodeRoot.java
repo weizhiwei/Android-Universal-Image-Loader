@@ -12,7 +12,6 @@ public class FlickrViewNodeRoot extends FlickrViewNode implements ViewNodeRoot {
 		ViewItem viewItemInterestingness = new ViewItem("Interestingness", "interestingness", FLICKR_ICON, ViewItem.VIEW_TYPE_GRID, new FlickrViewNodeInterestingness());
 		viewItemInterestingness.setInitialZoomLevel(1);
 		viewItems.add(viewItemInterestingness);
-		stream = viewItemInterestingness;
 		ViewItem viewItemCommons = new ViewItem("Commons", "commons", FLICKR_ICON, ViewItem.VIEW_TYPE_GRID, new FlickrViewNodeCommons());
 		viewItems.add(viewItemCommons);
 		ViewItem viewItemGalleries = new ViewItem("Galleries", "https://www.flickr.com/photos/66956608@N06/galleries/", FLICKR_ICON, ViewItem.VIEW_TYPE_GRID, new FlickrViewNodePeopleGalleries("66956608@N06"));
@@ -27,6 +26,8 @@ public class FlickrViewNodeRoot extends FlickrViewNode implements ViewNodeRoot {
 		ViewItem viewItemAwj = new ViewItem("Alex WJ", "https://www.flickr.com/people/85310965@N08/", "http://farm8.staticflickr.com/7443/buddyicons/85310965@N08.jpg", ViewItem.VIEW_TYPE_GRID, new FlickrViewNodePeoplePhotosets("85310965@N08"));
 		viewItemAwj.setInitialZoomLevel(2);
 		viewItems.add(viewItemAwj);
+
+		stream = viewItemGalleries;
 	}
 
 	@Override

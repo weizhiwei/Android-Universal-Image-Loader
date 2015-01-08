@@ -3,6 +3,10 @@ package com.nostra13.example.universalimageloader;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
+
+import org.lucasr.twowayview.widget.SpannableGridLayoutManager;
+import org.lucasr.twowayview.widget.TwoWayView;
 
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
@@ -17,8 +21,10 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
+import android.support.v7.widget.RecyclerView;
 import android.text.SpannableString;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -31,6 +37,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -128,6 +135,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			BaseAdapter itemAdapter = null;
         	switch (myViewItem.getViewType()) {
 			case ViewItem.VIEW_TYPE_LIST:
+			case ViewItem.VIEW_TYPE_CARD_LIST:
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = (BaseAdapter) absListView.getAdapter();
 				break;
@@ -236,6 +244,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			final BaseAdapter itemAdapter;
 			switch (viewItem.getViewType()) {
 			case ViewItem.VIEW_TYPE_LIST:
+			case ViewItem.VIEW_TYPE_CARD_LIST:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(childModel);
@@ -605,6 +614,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 	private static class ListViewHolder {
 		TextView text;
 		ImageView image;
+		TwoWayView spannableGrid;
 	}
 	
 	private class ListItemAdapter extends BaseAdapter {
@@ -618,12 +628,17 @@ public class ViewItemPagerActivity extends BaseActivity {
 		
 		@Override
 		public int getCount() {
-			return null == model.getViewItems() ? 0 : model.getViewItems().size();
+			if (null != model.getHeaders()) {
+				return model.getHeaders().size();
+			} else {
+				return null == model.getViewItems() ? 0 : model.getViewItems().size();
+			}
 		}
 
 		@Override
 		public Object getItem(int position) {
-			return null == model.getViewItems() ? null : model.getViewItems().get(position);
+//			return null == model.getViewItems() ? null : model.getViewItems().get(position);
+			return null;
 		}
 
 		@Override
@@ -636,39 +651,157 @@ public class ViewItemPagerActivity extends BaseActivity {
 			View view = convertView;
 			final ListViewHolder holder;
 			if (convertView == null) {
-				view = getLayoutInflater().inflate(R.layout.item_list_image, parent, false);
 				holder = new ListViewHolder();
-				holder.text = (TextView) view.findViewById(R.id.text);
-				holder.image = (ImageView) view.findViewById(R.id.image);
+				switch (myViewItem.getViewType()) {
+				case ViewItem.VIEW_TYPE_LIST:
+					view = getLayoutInflater().inflate(R.layout.item_list_image, parent, false);
+					holder.text = (TextView) view.findViewById(R.id.text);
+					holder.image = (ImageView) view.findViewById(R.id.image);
+					break;
+				case ViewItem.VIEW_TYPE_CARD_LIST:
+					view = getLayoutInflater().inflate(R.layout.item_spannable_grid, parent, false);
+					holder.spannableGrid = (TwoWayView) view.findViewById(R.id.ic_spannable_grid);
+					break;
+				}
 				view.setTag(holder);
 			} else {
 				holder = (ListViewHolder) view.getTag();
 			}
-
-			final ViewItem viewItem = model.getViewItems().get(position);
 			
-			holder.text.setText(viewItem.getLabel());
-
-			switch (viewItem.getViewItemType()) {
-			case ViewItem.VIEW_ITEM_TYPE_COLOR:
-				holder.image.setBackgroundColor(viewItem.getViewItemColor());
-				break;
-			case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
-				holder.image.setImageResource(viewItem.getViewItemImageResId());
-				break;
-			case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
-				if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-					imageLoader.displayImage(viewItem.getImageUrl(), holder.image, listOptions, animateFirstListener);
+			if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_LIST) {
+				
+				final ViewItem viewItem = model.getViewItems().get(position);
+				
+				holder.text.setText(viewItem.getLabel());
+	
+				switch (viewItem.getViewItemType()) {
+				case ViewItem.VIEW_ITEM_TYPE_COLOR:
+					holder.image.setBackgroundColor(viewItem.getViewItemColor());
+					break;
+				case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
+					holder.image.setImageResource(viewItem.getViewItemImageResId());
+					break;
+				case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
+					if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+						imageLoader.displayImage(viewItem.getImageUrl(), holder.image, listOptions, animateFirstListener);
+					}
+					break;
+				default:
+					break;
 				}
-				break;
-			default:
-				break;
+			} else if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_CARD_LIST) {
+//				holder.spannableGrid.setHasFixedSize(true);
+				final TwoWayView spannableGrid = holder.spannableGrid;
+				
+				final int type = model.getHeaders().get(position) == 1 ? 0 : 1;
+				int o = 0;
+				for (int i = 0; i < position; ++i) {
+					o += model.getHeaders().get(i);
+				}
+				final int offset = o;
+				
+				spannableGrid.setLayoutParams(new ListView.LayoutParams(
+						ListView.LayoutParams.FILL_PARENT, spannableGrid.getWidth()));
+				
+				holder.spannableGrid.setAdapter(new RecyclerView.Adapter<SimpleViewHolder> () {
+					
+					@Override
+					public int getItemCount() {
+						if (type == 0) {
+							return 1;
+						} else {
+							return 6;
+						}
+					}
+
+					@Override
+					public void onBindViewHolder(final SimpleViewHolder holder, int position) {
+						final View itemView = holder.itemView;
+						final org.lucasr.twowayview.widget.SpannableGridLayoutManager.LayoutParams lp =
+			                    (SpannableGridLayoutManager.LayoutParams) itemView.getLayoutParams();
+
+						final int colSpan = type == 0 ? 3 : (position == 0 ? 2 : 1);
+			            final int rowSpan = type == 0 ? 3 : (position == 0 ? 2 : 1);
+
+			            if (lp.rowSpan != rowSpan || lp.colSpan != colSpan) {
+			                lp.rowSpan = rowSpan;
+			                lp.colSpan = colSpan;
+			                itemView.setLayoutParams(lp);
+			            }
+			            
+			            ViewItem viewItem = model.getViewItems().get(offset + position);
+			            switch (viewItem.getViewItemType()) {
+						case ViewItem.VIEW_ITEM_TYPE_COLOR:
+							itemView.setBackgroundColor(viewItem.getViewItemColor());
+							holder.imageView.setVisibility(View.GONE);
+							holder.progressBar.setVisibility(View.GONE);
+							break;
+						case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
+							holder.imageView.setVisibility(View.VISIBLE);
+							holder.imageView.setImageResource(viewItem.getViewItemImageResId());
+							holder.progressBar.setVisibility(View.GONE);
+							break;
+						case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
+							if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+								holder.imageView.setVisibility(View.VISIBLE);
+								imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, gridOptions, new SimpleImageLoadingListener() {
+														 @Override
+														 public void onLoadingStarted(String imageUri, View view) {
+															 holder.progressBar.setProgress(0);
+															 holder.progressBar.setVisibility(View.VISIBLE);
+														 }
+
+														 @Override
+														 public void onLoadingFailed(String imageUri, View view,
+																 FailReason failReason) {
+															 holder.progressBar.setVisibility(View.GONE);
+														 }
+
+														 @Override
+														 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+															holder.progressBar.setVisibility(View.GONE);
+														 }
+													 }, new ImageLoadingProgressListener() {
+														 @Override
+														 public void onProgressUpdate(String imageUri, View view, int current,
+																 int total) {
+															 holder.progressBar.setProgress(Math.round(100.0f * current / total));
+														 }
+													 }
+								);
+							}
+							break;
+						default:
+							break;
+						}
+					}
+
+					@Override
+					public SimpleViewHolder onCreateViewHolder(ViewGroup parent, int arg1) {
+						final View view = getLayoutInflater().inflate(R.layout.item_grid_image, parent, false);
+				        return new SimpleViewHolder(view);
+					}
+					
+				});
 			}
 			
 			return view;
 		}
 	}
 
+	private static class SimpleViewHolder extends RecyclerView.ViewHolder {
+		ImageView imageView;
+		ProgressBar progressBar;
+		TextView text;
+
+        public SimpleViewHolder(View view) {
+            super(view);
+            imageView = (ImageView) view.findViewById(R.id.image);
+			progressBar = (ProgressBar) view.findViewById(R.id.progress);
+			text = (TextView) view.findViewById(R.id.text);
+        }
+    }
+	
 	private static class AnimateFirstDisplayListener extends SimpleImageLoadingListener {
 
 		static final List<String> displayedImages = Collections.synchronizedList(new LinkedList<String>());
