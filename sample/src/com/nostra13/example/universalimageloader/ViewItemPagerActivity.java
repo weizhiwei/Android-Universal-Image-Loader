@@ -247,7 +247,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			case ViewItem.VIEW_TYPE_CARD_LIST:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
-				itemAdapter = new ListItemAdapter(childModel);
+				itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
 				break;
 			case ViewItem.VIEW_TYPE_GRID:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
@@ -615,17 +615,36 @@ public class ViewItemPagerActivity extends BaseActivity {
 		TextView text;
 		ImageView image;
 		TwoWayView spannableGrid;
-	}
+        ProgressBar progressBar;
+    }
 	
 	private class ListItemAdapter extends BaseAdapter {
 
 		private ViewNode model;
+        private int viewType;
+        private ListView listView;
 		private ImageLoadingListener animateFirstListener = new AnimateFirstDisplayListener();
 		
-		public ListItemAdapter(ViewNode model) {
-			this.model = model;
+		public ListItemAdapter(ViewNode model, int viewType, ListView listView) {
+            this.model = model;
+            this.viewType = viewType;
+            this.listView = listView;
 		}
-		
+
+        @Override
+        public int getViewTypeCount() {
+            return 2;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            if (null != model.getHeaders()) {
+                return model.getHeaders().get(position) == 1 ? 0 : 1;
+            } else {
+                return 0;
+            }
+        }
+
 		@Override
 		public int getCount() {
 			if (null != model.getHeaders()) {
@@ -652,22 +671,35 @@ public class ViewItemPagerActivity extends BaseActivity {
 			final ListViewHolder holder;
 			if (convertView == null) {
 				holder = new ListViewHolder();
-				switch (myViewItem.getViewType()) {
+				switch (viewType) {
 				case ViewItem.VIEW_TYPE_LIST:
 					view = getLayoutInflater().inflate(R.layout.item_list_image, parent, false);
 					holder.text = (TextView) view.findViewById(R.id.text);
 					holder.image = (ImageView) view.findViewById(R.id.image);
 					break;
 				case ViewItem.VIEW_TYPE_CARD_LIST:
-					view = getLayoutInflater().inflate(R.layout.item_spannable_grid, parent, false);
-					holder.spannableGrid = (TwoWayView) view.findViewById(R.id.ic_spannable_grid);
-					break;
+                    switch (getItemViewType(position)) {
+                        case 0:
+                            view = getLayoutInflater().inflate(R.layout.item_grid_image, parent, false);
+                            holder.image = (ImageView) view.findViewById(R.id.image);
+                            holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
+                            holder.text = (TextView) view.findViewById(R.id.text);
+                            break;
+                        case 1:
+                            view = getLayoutInflater().inflate(R.layout.item_spannable_grid, parent, false);
+                            holder.spannableGrid = (TwoWayView) view.findViewById(R.id.ic_spannable_grid);
+                            break;
+                        default:
+                            break;
+                    }
+                default:
+                    break;
 				}
 				view.setTag(holder);
 			} else {
 				holder = (ListViewHolder) view.getTag();
 			}
-			
+
 			if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_LIST) {
 				
 				final ViewItem viewItem = model.getViewItems().get(position);
@@ -690,99 +722,147 @@ public class ViewItemPagerActivity extends BaseActivity {
 					break;
 				}
 			} else if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_CARD_LIST) {
-//				holder.spannableGrid.setHasFixedSize(true);
-				final TwoWayView spannableGrid = holder.spannableGrid;
-				
-				final int type = model.getHeaders().get(position) == 1 ? 0 : 1;
-				int o = 0;
+
+                int o = 0;
 				for (int i = 0; i < position; ++i) {
 					o += model.getHeaders().get(i);
 				}
 				final int offset = o;
-				
-				spannableGrid.setLayoutParams(new ListView.LayoutParams(
-						ListView.LayoutParams.FILL_PARENT, spannableGrid.getWidth()));
-				
-				holder.spannableGrid.setAdapter(new RecyclerView.Adapter<SimpleViewHolder> () {
-					
-					@Override
-					public int getItemCount() {
-						if (type == 0) {
-							return 1;
-						} else {
-							return 6;
-						}
-					}
 
-					@Override
-					public void onBindViewHolder(final SimpleViewHolder holder, int position) {
-						final View itemView = holder.itemView;
-						final org.lucasr.twowayview.widget.SpannableGridLayoutManager.LayoutParams lp =
-			                    (SpannableGridLayoutManager.LayoutParams) itemView.getLayoutParams();
+                if (0 == getItemViewType(position)) {
 
-						final int colSpan = type == 0 ? 3 : (position == 0 ? 2 : 1);
-			            final int rowSpan = type == 0 ? 3 : (position == 0 ? 2 : 1);
+                    final ViewItem viewItem = model.getViewItems().get(offset);
+                    view.setLayoutParams(new ListView.LayoutParams(
+                            ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
 
-			            if (lp.rowSpan != rowSpan || lp.colSpan != colSpan) {
-			                lp.rowSpan = rowSpan;
-			                lp.colSpan = colSpan;
-			                itemView.setLayoutParams(lp);
-			            }
-			            
-			            ViewItem viewItem = model.getViewItems().get(offset + position);
-			            switch (viewItem.getViewItemType()) {
-						case ViewItem.VIEW_ITEM_TYPE_COLOR:
-							itemView.setBackgroundColor(viewItem.getViewItemColor());
-							holder.imageView.setVisibility(View.GONE);
-							holder.progressBar.setVisibility(View.GONE);
-							break;
-						case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
-							holder.imageView.setVisibility(View.VISIBLE);
-							holder.imageView.setImageResource(viewItem.getViewItemImageResId());
-							holder.progressBar.setVisibility(View.GONE);
-							break;
-						case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
-							if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-								holder.imageView.setVisibility(View.VISIBLE);
-								imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, gridOptions, new SimpleImageLoadingListener() {
-														 @Override
-														 public void onLoadingStarted(String imageUri, View view) {
-															 holder.progressBar.setProgress(0);
-															 holder.progressBar.setVisibility(View.VISIBLE);
-														 }
+                    switch (viewItem.getViewItemType()) {
+                        case ViewItem.VIEW_ITEM_TYPE_COLOR:
+                            view.setBackgroundColor(viewItem.getViewItemColor());
+                            holder.image.setVisibility(View.GONE);
+                            holder.progressBar.setVisibility(View.GONE);
+                            break;
+                        case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
+                            holder.image.setVisibility(View.VISIBLE);
+                            holder.image.setImageResource(viewItem.getViewItemImageResId());
+                            holder.progressBar.setVisibility(View.GONE);
+                            break;
+                        case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
+                            if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+                                holder.image.setVisibility(View.VISIBLE);
+                                imageLoader.displayImage(viewItem.getImageUrl(), holder.image, gridOptions, new SimpleImageLoadingListener() {
+                                            @Override
+                                            public void onLoadingStarted(String imageUri, View view) {
+                                                holder.progressBar.setProgress(0);
+                                                holder.progressBar.setVisibility(View.VISIBLE);
+                                            }
 
-														 @Override
-														 public void onLoadingFailed(String imageUri, View view,
-																 FailReason failReason) {
-															 holder.progressBar.setVisibility(View.GONE);
-														 }
+                                            @Override
+                                            public void onLoadingFailed(String imageUri, View view,
+                                                                        FailReason failReason) {
+                                                holder.progressBar.setVisibility(View.GONE);
+                                            }
 
-														 @Override
-														 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-															holder.progressBar.setVisibility(View.GONE);
-														 }
-													 }, new ImageLoadingProgressListener() {
-														 @Override
-														 public void onProgressUpdate(String imageUri, View view, int current,
-																 int total) {
-															 holder.progressBar.setProgress(Math.round(100.0f * current / total));
-														 }
-													 }
-								);
-							}
-							break;
-						default:
-							break;
-						}
-					}
+                                            @Override
+                                            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                                                holder.progressBar.setVisibility(View.GONE);
+                                            }
+                                        }, new ImageLoadingProgressListener() {
+                                            @Override
+                                            public void onProgressUpdate(String imageUri, View view, int current,
+                                                                         int total) {
+                                                holder.progressBar.setProgress(Math.round(100.0f * current / total));
+                                            }
+                                        }
+                                );
+                            }
+                            break;
+                        default:
+                            break;
+                    }
 
-					@Override
-					public SimpleViewHolder onCreateViewHolder(ViewGroup parent, int arg1) {
-						final View view = getLayoutInflater().inflate(R.layout.item_grid_image, parent, false);
-				        return new SimpleViewHolder(view);
-					}
-					
-				});
+                } else {
+
+                    holder.spannableGrid.setHasFixedSize(true);
+                    holder.spannableGrid.setLayoutParams(new ListView.LayoutParams(
+                            ListView.LayoutParams.FILL_PARENT, listView.getWidth()));
+
+                    holder.spannableGrid.setAdapter(new RecyclerView.Adapter<SimpleViewHolder>() {
+
+                        @Override
+                        public int getItemCount() {
+                            return 6;
+                        }
+
+                        @Override
+                        public void onBindViewHolder(final SimpleViewHolder holder, int position) {
+                            final View itemView = holder.itemView;
+                            final SpannableGridLayoutManager.LayoutParams lp =
+                                    (SpannableGridLayoutManager.LayoutParams) itemView.getLayoutParams();
+
+                            final int colSpan = (position == 0 ? 2 : 1);
+                            final int rowSpan = (position == 0 ? 2 : 1);
+
+                            if (lp.rowSpan != rowSpan || lp.colSpan != colSpan) {
+                                lp.rowSpan = rowSpan;
+                                lp.colSpan = colSpan;
+                                itemView.setLayoutParams(lp);
+                            }
+
+                            final ViewItem viewItem = model.getViewItems().get(offset + position);
+                            switch (viewItem.getViewItemType()) {
+                                case ViewItem.VIEW_ITEM_TYPE_COLOR:
+                                    itemView.setBackgroundColor(viewItem.getViewItemColor());
+                                    holder.imageView.setVisibility(View.GONE);
+                                    holder.progressBar.setVisibility(View.GONE);
+                                    break;
+                                case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
+                                    holder.imageView.setVisibility(View.VISIBLE);
+                                    holder.imageView.setImageResource(viewItem.getViewItemImageResId());
+                                    holder.progressBar.setVisibility(View.GONE);
+                                    break;
+                                case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
+                                    if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+                                        holder.imageView.setVisibility(View.VISIBLE);
+                                        imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, gridOptions, new SimpleImageLoadingListener() {
+                                                    @Override
+                                                    public void onLoadingStarted(String imageUri, View view) {
+                                                        holder.progressBar.setProgress(0);
+                                                        holder.progressBar.setVisibility(View.VISIBLE);
+                                                    }
+
+                                                    @Override
+                                                    public void onLoadingFailed(String imageUri, View view,
+                                                                                FailReason failReason) {
+                                                        holder.progressBar.setVisibility(View.GONE);
+                                                    }
+
+                                                    @Override
+                                                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                                                        holder.progressBar.setVisibility(View.GONE);
+                                                    }
+                                                }, new ImageLoadingProgressListener() {
+                                                    @Override
+                                                    public void onProgressUpdate(String imageUri, View view, int current,
+                                                                                 int total) {
+                                                        holder.progressBar.setProgress(Math.round(100.0f * current / total));
+                                                    }
+                                                }
+                                        );
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+
+                        @Override
+                        public SimpleViewHolder onCreateViewHolder(ViewGroup parent, int arg1) {
+                            final View view = getLayoutInflater().inflate(R.layout.item_grid_image, parent, false);
+                            return new SimpleViewHolder(view);
+                        }
+
+                    });
+                }
 			}
 			
 			return view;

@@ -80,7 +80,7 @@ public class StreamViewNode2 extends ViewNode {
 		for (Object subpage: subpageList) {
 			if (null != subpage) {
 				List<ViewItem> subpageViewItems = (List<ViewItem>) subpage;
-				int n = Math.min(subpageViewItems.size(), 8);
+				int n = Math.min(subpageViewItems.size(), 4);
 				for (int i = 0; i < n; ++i) {
 					ViewItem viewItem = subpageViewItems.get(i);
 					if (viewItem.getViewType() == ViewItem.VIEW_TYPE_IMAGE_PAGER) {
