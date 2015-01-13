@@ -18,8 +18,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.nostra13.example.universalimageloader.R;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.wzw.ic.mvc.HeaderViewHolder;
@@ -174,26 +176,15 @@ public class FeedsViewNode extends ViewNode {
         	if (!TextUtils.isEmpty(viewItem.getAuthor().getImageUrl())) {
         		((FeedsHeaderViewHolder)holder).imageView.setVisibility(View.VISIBLE);
         		ImageLoader.getInstance().displayImage(viewItem.getAuthor().getImageUrl(),
-        				((FeedsHeaderViewHolder)holder).imageView, null, new SimpleImageLoadingListener() {
-										 @Override
-										 public void onLoadingStarted(String imageUri, View view) {
-										 }
-
-										 @Override
-										 public void onLoadingFailed(String imageUri, View view,
-												 FailReason failReason) {
-										 }
-
-										 @Override
-										 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-										 }
-									 }, new ImageLoadingProgressListener() {
-										 @Override
-										 public void onProgressUpdate(String imageUri, View view, int current,
-												 int total) {
-										 }
-									 }
-				);
+        				((FeedsHeaderViewHolder)holder).imageView, new DisplayImageOptions.Builder()
+                                .showImageOnLoading(R.drawable.ic_stub)
+                                .showImageForEmptyUri(R.drawable.ic_empty)
+                                .showImageOnFail(R.drawable.ic_error)
+                                .cacheInMemory(true)
+                                .cacheOnDisk(true)
+                                .considerExifParams(true)
+                                .displayer(new RoundedBitmapDisplayer(((FeedsHeaderViewHolder)holder).imageView.getWidth()/2))
+                                .build());
 			}
         }
 	}

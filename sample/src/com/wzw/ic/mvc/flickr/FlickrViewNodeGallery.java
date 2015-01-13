@@ -64,7 +64,7 @@ public class FlickrViewNodeGallery extends FlickrViewNode {
 			pageViewItems = new ArrayList<ViewItem> (photoList.size());
 			
 			for (Photo photo: photoList) {
-				ViewItem viewItem = new ViewItem(photo.getTitle(), photo.getUrl(), photo.getLargeUrl(), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
+				ViewItem viewItem = new ViewItem(photo.getTitle(), photo.getUrl(), photo.getMediumUrl(), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
 				viewItem.setOrigin(FLICKR_NAME);
 				viewItem.setStory(photo.getDescription());
 				viewItem.setPostedDate(photo.getDatePosted());

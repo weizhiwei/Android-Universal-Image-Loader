@@ -688,6 +688,9 @@ public class ViewItemPagerActivity extends BaseActivity {
                         case 1:
                             view = getLayoutInflater().inflate(R.layout.item_spannable_grid, parent, false);
                             holder.spannableGrid = (TwoWayView) view.findViewById(R.id.ic_spannable_grid);
+                            holder.spannableGrid.setLayoutParams(new ListView.LayoutParams(
+                                    ListView.LayoutParams.FILL_PARENT, listView.getWidth()));
+                            holder.spannableGrid.setHasFixedSize(true);
                             break;
                         default:
                             break;
@@ -781,16 +784,30 @@ public class ViewItemPagerActivity extends BaseActivity {
                     }
 
                 } else {
+                    final int albumPicCount = model.getHeaders().get(position);
+                    final int hash = Math.abs(model.getViewItems().get(offset).hashCode());
 
-                    holder.spannableGrid.setHasFixedSize(true);
-                    holder.spannableGrid.setLayoutParams(new ListView.LayoutParams(
-                            ListView.LayoutParams.FILL_PARENT, listView.getWidth()));
-
-                    holder.spannableGrid.setAdapter(new RecyclerView.Adapter<SimpleViewHolder>() {
+                    RecyclerView.Adapter<SimpleViewHolder> adapter = new RecyclerView.Adapter<SimpleViewHolder>() {
 
                         @Override
                         public int getItemCount() {
-                            return 6;
+                            final int[] ITEM_COUNT_FOR_LARGE_ALBUMS = {4, 5, 6, 9};
+                            switch (albumPicCount) {
+                                case 2:
+                                    return 2;
+                                case 3:
+                                    return 3;
+                                case 4:
+                                    return 4;
+                                case 5:
+                                    return 5;
+                                case 6:
+                                case 7:
+                                case 8:
+                                    return 6;
+                                default:
+                                    return ITEM_COUNT_FOR_LARGE_ALBUMS[hash%ITEM_COUNT_FOR_LARGE_ALBUMS.length];
+                            }
                         }
 
                         @Override
@@ -799,14 +816,14 @@ public class ViewItemPagerActivity extends BaseActivity {
                             final SpannableGridLayoutManager.LayoutParams lp =
                                     (SpannableGridLayoutManager.LayoutParams) itemView.getLayoutParams();
 
-                            final int colSpan = (position == 0 ? 2 : 1);
-                            final int rowSpan = (position == 0 ? 2 : 1);
+                            final int[] SPANS = generateColRowSpans(getItemCount(), hash);
 
-                            if (lp.rowSpan != rowSpan || lp.colSpan != colSpan) {
-                                lp.rowSpan = rowSpan;
-                                lp.colSpan = colSpan;
-                                itemView.setLayoutParams(lp);
-                            }
+                            int colSpan = SPANS[position*2];
+                            int rowSpan = SPANS[position*2+1];
+
+                            lp.rowSpan = rowSpan;
+                            lp.colSpan = colSpan;
+                            itemView.setLayoutParams(lp);
 
                             final ViewItem viewItem = model.getViewItems().get(offset + position);
                             switch (viewItem.getViewItemType()) {
@@ -861,7 +878,9 @@ public class ViewItemPagerActivity extends BaseActivity {
                             return new SimpleViewHolder(view);
                         }
 
-                    });
+                    };
+                    holder.spannableGrid.setAdapter(adapter);
+                    adapter.notifyDataSetChanged();
                 }
 			}
 			
@@ -960,4 +979,32 @@ public class ViewItemPagerActivity extends BaseActivity {
 					(gridView.getNumColumns() == 3 ? (circular ? 1 : 3) : gridView.getNumColumns() + 1));
 		}
 	}
+
+    private final int[] generateColRowSpans(int itemCount, int hash) {
+        final int[][][] SPANS = new int[][][] {
+                {}, // 0
+                {}, // 1
+                {
+                        {6, 3, 6, 3},
+                }, // 2
+                {
+                        {6, 3, 3, 3, 3, 3}
+                }, // 3
+                {
+                        {3, 3, 3, 3, 3, 3, 3, 3}, {6, 4, 2, 2, 2, 2, 2, 2}, {4, 4, 2, 4, 4, 2, 2, 2}
+                }, // 4
+                {
+                        {4, 2, 2, 4, 2, 4, 2, 2, 4, 2}
+                }, // 5
+                {
+                        {4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}
+                }, // 6
+                {}, // 7
+                {}, // 8
+                {
+                        {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}
+                }, // 9
+        };
+        return SPANS[itemCount][hash%SPANS[itemCount].length];
+    }
 }

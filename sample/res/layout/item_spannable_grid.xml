@@ -24,5 +24,5 @@
     android:orientation="vertical"
     android:scrollbars="none"
     app:twowayview_layoutManager="SpannableGridLayoutManager"
-    app:twowayview_numColumns="3"
-    app:twowayview_numRows="3" />
+    app:twowayview_numColumns="6"
+    app:twowayview_numRows="6" />
