@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import org.lucasr.twowayview.ItemClickSupport;
+import org.lucasr.twowayview.widget.DividerItemDecoration;
 import org.lucasr.twowayview.widget.SpannableGridLayoutManager;
 import org.lucasr.twowayview.widget.TwoWayView;
 
@@ -14,6 +16,7 @@ import android.app.FragmentTransaction;
 import android.database.DataSetObserver;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -656,8 +659,15 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		@Override
 		public Object getItem(int position) {
-//			return null == model.getViewItems() ? null : model.getViewItems().get(position);
-			return null;
+            if (null != model.getHeaders()) {
+                int o = 0;
+                for (int i = 0; i < position; ++i) {
+                    o += model.getHeaders().get(i);
+                }
+                return null == model.getViewItems() ? null : model.getViewItems().get(o);
+            } else {
+                return null == model.getViewItems() ? null : model.getViewItems().get(position);
+            }
 		}
 
 		@Override
@@ -691,6 +701,8 @@ public class ViewItemPagerActivity extends BaseActivity {
                             holder.spannableGrid.setLayoutParams(new ListView.LayoutParams(
                                     ListView.LayoutParams.FILL_PARENT, listView.getWidth()));
                             holder.spannableGrid.setHasFixedSize(true);
+                            holder.spannableGrid.addItemDecoration(new DividerItemDecoration(
+                                    getResources().getDrawable(R.drawable.divider)));
                             break;
                         default:
                             break;
@@ -881,6 +893,17 @@ public class ViewItemPagerActivity extends BaseActivity {
                     };
                     holder.spannableGrid.setAdapter(adapter);
                     adapter.notifyDataSetChanged();
+
+                    final ItemClickSupport itemClick = ItemClickSupport.addTo(holder.spannableGrid);
+
+                    itemClick.setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(RecyclerView parent, View child, int position, long id) {
+                            // drill down
+                            model.onViewItemClicked(
+                                    (ViewItem)model.getViewItems().get(offset + position), ViewItemPagerActivity.this);
+                        }
+                    });
                 }
 			}
 			
@@ -981,23 +1004,25 @@ public class ViewItemPagerActivity extends BaseActivity {
 	}
 
     private final int[] generateColRowSpans(int itemCount, int hash) {
-        final int[][][] SPANS = new int[][][] {
+        final int[][][] SPANS = {
                 {}, // 0
                 {}, // 1
                 {
-                        {6, 3, 6, 3},
+                        {6, 3, 6, 3}, {3, 6, 3, 6}
                 }, // 2
                 {
-                        {6, 3, 3, 3, 3, 3}
+                        {6, 3, 3, 3, 3, 3}, {3, 6, 3, 3, 3, 3}
                 }, // 3
                 {
-                        {3, 3, 3, 3, 3, 3, 3, 3}, {6, 4, 2, 2, 2, 2, 2, 2}, {4, 4, 2, 4, 4, 2, 2, 2}
+                        {3, 3, 3, 3, 3, 3, 3, 3}, {6, 4, 2, 2, 2, 2, 2, 2}, {4, 6, 2, 2, 2, 2, 2, 2},
+                        {4, 4, 2, 4, 4, 2, 2, 2}
                 }, // 4
                 {
                         {4, 2, 2, 4, 2, 4, 2, 2, 4, 2}
                 }, // 5
                 {
-                        {4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}
+                        {4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, {2, 2, 4, 4, 2, 2, 2, 2, 2, 2, 2, 2},
+                        {2, 2, 2, 2, 2, 2, 4, 4, 2, 2, 2, 2}, {2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 2, 2}
                 }, // 6
                 {}, // 7
                 {}, // 8

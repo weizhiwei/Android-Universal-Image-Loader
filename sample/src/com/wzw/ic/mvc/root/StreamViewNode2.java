@@ -241,15 +241,4 @@ public class StreamViewNode2 extends ViewNode {
 			}
 		}
 	}
-	
-	@Override
-	public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {
-		if (!TextUtils.isEmpty(viewItem.getOrigin())) {
-			ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
-			if (null != originViewItem) {
-				ViewNode streamNode = ((ViewNodeRoot)originViewItem.getViewNode()).getStream().getViewNode();
-				starter.startViewItemActivity(streamNode, viewItem);
-			}
-		}
-	}
 }
