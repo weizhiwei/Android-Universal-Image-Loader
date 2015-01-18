@@ -15,14 +15,27 @@
    limitations under the License.
 -->
 
-<org.lucasr.twowayview.widget.TwoWayView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/ic_spannable_grid"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:scrollbars="none"
-    app:twowayview_layoutManager="SpannableGridLayoutManager"
-    app:twowayview_numColumns="6"
-    app:twowayview_numRows="6" />
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ic_frame_layout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <org.lucasr.twowayview.widget.TwoWayView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/ic_spannable_grid"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:scrollbars="none"
+        app:twowayview_layoutManager="SpannableGridLayoutManager"
+        app:twowayview_numColumns="6"
+        app:twowayview_numRows="6" />
+
+
+    <include
+        layout="@layout/title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom" />
+
+</FrameLayout>

@@ -224,7 +224,7 @@ shareIntent.setType("image/*");
 			final ViewItem viewItem = parentModel.getViewItems().get(position);
 			viewItem.setHeartsOn(IcDatabase.getInstance().isViewItemInHearts(viewItem));
 			
-			SpannableString text = buildPictureText(viewItem, true, true, true, true);
+			SpannableString text = buildPictureText(viewItem, true, true, true, true, true);
 			if (null != text) {
 				textView.setText(text);
 				textView.setMovementMethod(LinkMovementMethod.getInstance());
