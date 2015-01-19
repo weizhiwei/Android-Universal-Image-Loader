@@ -39,8 +39,10 @@ public class FlickrViewNodePeoplePhotos extends FlickrViewNode {
 		Flickr f = new Flickr(FLICKR_API_KEY);
 		PeopleInterface peopleInterface = f.getPeopleInterface();
 		PhotoList photoList = null;
-		try {
+        User owner = null;
+        try {
 			photoList = peopleInterface.getPublicPhotos(sourceUrl, EXTRAS, 30, newPageNo);
+            owner = peopleInterface.getInfo(sourceUrl);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -67,7 +69,6 @@ public class FlickrViewNodePeoplePhotos extends FlickrViewNode {
 				ViewItem viewItem = new ViewItem(photo.getTitle(), photo.getUrl(), photo.getLargeUrl(), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
 				viewItem.setOrigin(FLICKR_NAME);
 				viewItem.setStory(photo.getDescription());
-				User owner = photo.getOwner();
 				if (null != owner) {
 					ViewItem ownerItem = new ViewItem(owner.getUsername(), owner.getPhotosurl(), owner.getBuddyIconUrl(), ViewItem.VIEW_TYPE_GRID, new FlickrViewNodePeoplePhotosets(owner.getId()));
 					ownerItem.setOrigin(FLICKR_NAME);

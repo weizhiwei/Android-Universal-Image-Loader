@@ -70,6 +70,7 @@ public class FlickrViewNodeGallery extends FlickrViewNode {
 				viewItem.setPostedDate(photo.getDatePosted());
 				User owner = photo.getOwner();
 				if (null != owner) {
+
 					ViewItem ownerItem = new ViewItem(owner.getUsername(), owner.getPhotosurl(), owner.getBuddyIconUrl(), ViewItem.VIEW_TYPE_GRID, new FlickrViewNodePeoplePhotosets(owner.getId()));
 					ownerItem.setInitialZoomLevel(2);
 					ownerItem.setOrigin(FLICKR_NAME);

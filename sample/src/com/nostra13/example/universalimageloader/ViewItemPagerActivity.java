@@ -38,6 +38,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -45,6 +46,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
@@ -491,7 +493,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				break;
 			}
 
-			SpannableString text = buildPictureText(viewItem, false, false, false, false);
+			SpannableString text = buildPictureText(viewItem, true, false, false, false, false);
 			if (null != text && gridView.getNumColumns() < 3) {
 				holder.text.setVisibility(View.VISIBLE);
 				holder.text.setText(text);
@@ -619,6 +621,9 @@ public class ViewItemPagerActivity extends BaseActivity {
 		ImageView image;
 		TwoWayView spannableGrid;
         ProgressBar progressBar;
+        FrameLayout frameLayout;
+        ImageView authorIcon;
+        TextView titleText;
     }
 	
 	private class ListItemAdapter extends BaseAdapter {
@@ -694,11 +699,16 @@ public class ViewItemPagerActivity extends BaseActivity {
                             holder.image = (ImageView) view.findViewById(R.id.image);
                             holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
                             holder.text = (TextView) view.findViewById(R.id.text);
+                            holder.authorIcon = (ImageView) view.findViewById(R.id.author_icon);
+                            holder.titleText = (TextView) view.findViewById(R.id.title_text);
                             break;
                         case 1:
                             view = getLayoutInflater().inflate(R.layout.item_spannable_grid, parent, false);
+                            holder.frameLayout = (FrameLayout) view.findViewById(R.id.ic_frame_layout);
                             holder.spannableGrid = (TwoWayView) view.findViewById(R.id.ic_spannable_grid);
-                            holder.spannableGrid.setLayoutParams(new ListView.LayoutParams(
+                            holder.authorIcon = (ImageView) view.findViewById(R.id.author_icon);
+                            holder.titleText = (TextView) view.findViewById(R.id.title_text);
+                            holder.frameLayout.setLayoutParams(new ListView.LayoutParams(
                                     ListView.LayoutParams.FILL_PARENT, listView.getWidth()));
                             holder.spannableGrid.setHasFixedSize(true);
                             holder.spannableGrid.addItemDecoration(new DividerItemDecoration(
@@ -744,11 +754,40 @@ public class ViewItemPagerActivity extends BaseActivity {
 				}
 				final int offset = o;
 
+                final ViewItem viewItem = model.getViewItems().get(offset);
+
+                holder.authorIcon.setVisibility(View.GONE);
+                if (null != viewItem.getAuthor()) {
+                    if (!TextUtils.isEmpty(viewItem.getAuthor().getImageUrl())) {
+                        holder.authorIcon.setVisibility(View.VISIBLE);
+                        ImageLoader.getInstance().displayImage(viewItem.getAuthor().getImageUrl(),
+                                holder.authorIcon, new DisplayImageOptions.Builder()
+                                        .showImageOnLoading(R.drawable.ic_stub)
+                                        .showImageForEmptyUri(R.drawable.ic_empty)
+                                        .showImageOnFail(R.drawable.ic_error)
+                                        .cacheInMemory(true)
+                                        .cacheOnDisk(true)
+                                        .considerExifParams(true)
+                                        .displayer(new RoundedBitmapDisplayer(holder.authorIcon.getWidth()/2))
+                                        .build());
+                    }
+                }
+
+                SpannableString text = buildPictureText(viewItem, false, false, false, false, false);
+                if (null != text) {
+                    holder.titleText.setVisibility(View.VISIBLE);
+                    holder.titleText.setText(text);
+//				holder.text.setMovementMethod(LinkMovementMethod.getInstance());
+                } else {
+                    holder.titleText.setVisibility(View.GONE);
+                }
+
                 if (0 == getItemViewType(position)) {
 
-                    final ViewItem viewItem = model.getViewItems().get(offset);
                     view.setLayoutParams(new ListView.LayoutParams(
                             ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
+
+                    holder.text.setVisibility(View.GONE);
 
                     switch (viewItem.getViewItemType()) {
                         case ViewItem.VIEW_ITEM_TYPE_COLOR:
@@ -838,6 +877,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                             itemView.setLayoutParams(lp);
 
                             final ViewItem viewItem = model.getViewItems().get(offset + position);
+                            holder.text.setVisibility(View.GONE);
                             switch (viewItem.getViewItemType()) {
                                 case ViewItem.VIEW_ITEM_TYPE_COLOR:
                                     itemView.setBackgroundColor(viewItem.getViewItemColor());

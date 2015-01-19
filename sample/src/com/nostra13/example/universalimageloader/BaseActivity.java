@@ -293,7 +293,7 @@ public abstract class BaseActivity extends Activity implements ViewNode.ViewItem
 		        PackageManager.DONT_KILL_APP);
 	}
 	
-	protected SpannableString buildPictureText(final ViewItem viewItem, boolean needStory, boolean bigFont, boolean labelLinkOn, boolean ownerLinkOn) {
+	protected SpannableString buildPictureText(final ViewItem viewItem, boolean needAuthor, boolean needStory, boolean bigFont, boolean labelLinkOn, boolean ownerLinkOn) {
 		String story = "";
 		if (!TextUtils.isEmpty(viewItem.getLabel())) {
 			String LINK = labelLinkOn ? "<a href=\"%s\">%s</a>" : "%2$s";
@@ -301,7 +301,7 @@ public abstract class BaseActivity extends Activity implements ViewNode.ViewItem
 			story += String.format(FONT, viewItem.getNodeUrl(), TextUtils.htmlEncode(viewItem.getLabel()));
 		}
 		String authorName = (viewItem.getAuthor() == null ? null : viewItem.getAuthor().getLabel());
-		if (!TextUtils.isEmpty(authorName)) {
+		if (needAuthor && !TextUtils.isEmpty(authorName)) {
 			String FONT = String.format(bigFont ? "<big>%s</big>" : "%s", "<i>%s</i>");
 			story += String.format(" by " + FONT, TextUtils.htmlEncode(authorName));
 		}
