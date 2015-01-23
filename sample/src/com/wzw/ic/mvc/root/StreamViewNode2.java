@@ -120,15 +120,17 @@ public class StreamViewNode2 extends ViewNode {
 		}
 		
 		List<Object> subpageList2 = Arrays.asList(subpages2);
-		for (Object subpage2: subpageList2) {
+        for (Object subpage2: subpageList2) {
 			if (null != subpage2) {
 				picViewItems.add((List<ViewItem>) subpage2);
 			}
 		}
-		
+
+        Collections.shuffle(picViewItems);
+
 		List<ViewItem> pageViewItems = new ArrayList<ViewItem> ();
 		List<Integer> pageHeaders = new ArrayList<Integer> ();
-		for (List<ViewItem> subpageViewItems: picViewItems) {
+        for (List<ViewItem> subpageViewItems: picViewItems) {
 			pageViewItems.addAll(subpageViewItems);
 			pageHeaders.add(subpageViewItems.size());
 		}

@@ -6,8 +6,8 @@
 
     <ImageView
         android:id="@+id/author_icon"
-        android:layout_width="62dp"
-        android:layout_height="62dp"
+        android:layout_width="@dimen/author_icon_dimen"
+        android:layout_height="@dimen/author_icon_dimen"
         android:padding="3dp"
         android:layout_alignParentLeft="true"
         android:adjustViewBounds="true"
@@ -19,7 +19,7 @@
     <TextView
         android:id="@+id/title_text"
         android:layout_width="fill_parent"
-        android:layout_height="62dp"
+        android:layout_height="@dimen/author_icon_dimen"
         android:padding="3dp"
         android:layout_alignParentRight="true"
         android:gravity="center_vertical"

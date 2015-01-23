@@ -61,7 +61,7 @@ import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 
 public class ViewItemPagerActivity extends BaseActivity {
-	DisplayImageOptions gridOptions, listOptions;
+	DisplayImageOptions gridOptions, listOptions, authorIconOptions;
 	ViewPager pager;
 	
 	@Override
@@ -80,7 +80,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		assert bundle != null;
 
 		gridOptions = new DisplayImageOptions.Builder()
-			.showImageOnLoading(R.drawable.ic_stub)
+//			.showImageOnLoading(R.drawable.ic_stub)
 			.showImageForEmptyUri(R.drawable.ic_empty)
 			.showImageOnFail(R.drawable.ic_error)
 			.cacheInMemory(true)
@@ -98,7 +98,17 @@ public class ViewItemPagerActivity extends BaseActivity {
 			.considerExifParams(true)
 			.displayer(new RoundedBitmapDisplayer(20))
 			.build();
-		
+
+        authorIconOptions = new DisplayImageOptions.Builder()
+                .showImageOnLoading(R.drawable.ic_stub)
+                .showImageForEmptyUri(R.drawable.ic_empty)
+                .showImageOnFail(R.drawable.ic_error)
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+                .considerExifParams(true)
+                .displayer(new RoundedBitmapDisplayer(getResources().getDimensionPixelSize(R.dimen.author_icon_dimen)/2))
+                .build();
+
 		pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
 //		pager.setOffscreenPageLimit(3);
 		final PagerAdapter pagerAdapter = new ViewItemPagerAdapter();
@@ -711,8 +721,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                             holder.frameLayout.setLayoutParams(new ListView.LayoutParams(
                                     ListView.LayoutParams.FILL_PARENT, listView.getWidth()));
                             holder.spannableGrid.setHasFixedSize(true);
-                            holder.spannableGrid.addItemDecoration(new DividerItemDecoration(
-                                    getResources().getDrawable(R.drawable.divider)));
                             break;
                         default:
                             break;
@@ -761,23 +769,28 @@ public class ViewItemPagerActivity extends BaseActivity {
                     if (!TextUtils.isEmpty(viewItem.getAuthor().getImageUrl())) {
                         holder.authorIcon.setVisibility(View.VISIBLE);
                         ImageLoader.getInstance().displayImage(viewItem.getAuthor().getImageUrl(),
-                                holder.authorIcon, new DisplayImageOptions.Builder()
-                                        .showImageOnLoading(R.drawable.ic_stub)
-                                        .showImageForEmptyUri(R.drawable.ic_empty)
-                                        .showImageOnFail(R.drawable.ic_error)
-                                        .cacheInMemory(true)
-                                        .cacheOnDisk(true)
-                                        .considerExifParams(true)
-                                        .displayer(new RoundedBitmapDisplayer(holder.authorIcon.getWidth()/2))
-                                        .build());
+                                holder.authorIcon, authorIconOptions);
+                        holder.authorIcon.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+
+                            }
+                        });
                     }
                 }
 
-                SpannableString text = buildPictureText(viewItem, false, false, false, false, false);
+                SpannableString text = buildPictureText(viewItem, false, false, false, true, false);
                 if (null != text) {
                     holder.titleText.setVisibility(View.VISIBLE);
                     holder.titleText.setText(text);
 //				holder.text.setMovementMethod(LinkMovementMethod.getInstance());
+                    holder.titleText.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                        }
+                    });
+
                 } else {
                     holder.titleText.setVisibility(View.GONE);
                 }

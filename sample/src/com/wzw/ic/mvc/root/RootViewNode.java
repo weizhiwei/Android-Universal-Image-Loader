@@ -39,18 +39,18 @@ public class RootViewNode extends ViewNode {
 		gallery = new ViewItem("Gallery", "gallery", null, ViewItem.VIEW_TYPE_GRID, new ViewNode("", Arrays.asList(
 				moko, flickr, ng)));
 		gallery.setViewItemImageResId(R.drawable.ic_gallery);
-		
-		ViewItem stream = new ViewItem("Pictures", "stream", null, ViewItem.VIEW_TYPE_GRID, new StreamViewNode(gallery));
-		stream.setInitialZoomLevel(1);
-		stream.setViewItemImageResId(R.drawable.ic_pictures);
-		
-		ViewItem feeds = new ViewItem("People",  "feeds", null, ViewItem.VIEW_TYPE_GRID, new FeedsViewNode());
+
+        ViewItem stream = new ViewItem("Stream", "stream", null, ViewItem.VIEW_TYPE_CARD_LIST, new StreamViewNode2(gallery));
+        stream.setViewItemImageResId(R.drawable.ic_pictures);
+
+        ViewItem feeds = new ViewItem("People",  "feeds", null, ViewItem.VIEW_TYPE_GRID, new FeedsViewNode());
 		feeds.setViewItemImageResId(R.drawable.ic_user);
-		
-		ViewItem test = new ViewItem("", "test", null, ViewItem.VIEW_TYPE_CARD_LIST, new StreamViewNode2(gallery));
-		test.setViewItemImageResId(R.drawable.ic_pictures);
-		
-		this.viewItems = Arrays.asList(stream, feeds, test);
+
+        ViewItem domain = new ViewItem("", "domain", null, ViewItem.VIEW_TYPE_GRID, new StreamViewNode(gallery));
+        domain.setInitialZoomLevel(1);
+        domain.setViewItemImageResId(R.drawable.ic_pictures);
+
+        this.viewItems = Arrays.asList(stream, feeds, domain);
 	}
 	
 	public static RootViewNode getInstance() {
