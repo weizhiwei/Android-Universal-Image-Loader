@@ -40,13 +40,13 @@ public class RootViewNode extends ViewNode {
 				moko, flickr, ng)));
 		gallery.setViewItemImageResId(R.drawable.ic_gallery);
 
-        ViewItem stream = new ViewItem("Stream", "stream", null, ViewItem.VIEW_TYPE_CARD_LIST, new StreamViewNode2(gallery));
+        ViewItem stream = new ViewItem("Explore", "stream", null, ViewItem.VIEW_TYPE_CARD_LIST, new StreamViewNode2(gallery));
         stream.setViewItemImageResId(R.drawable.ic_pictures);
 
-        ViewItem feeds = new ViewItem("People",  "feeds", null, ViewItem.VIEW_TYPE_GRID, new FeedsViewNode());
+        ViewItem feeds = new ViewItem("Following",  "feeds", null, ViewItem.VIEW_TYPE_CARD_LIST, new FeedsViewNode());
 		feeds.setViewItemImageResId(R.drawable.ic_user);
 
-        ViewItem domain = new ViewItem("", "domain", null, ViewItem.VIEW_TYPE_GRID, new StreamViewNode(gallery));
+        ViewItem domain = new ViewItem("Favourites", "domain", null, ViewItem.VIEW_TYPE_GRID, new StreamViewNode(gallery));
         domain.setInitialZoomLevel(1);
         domain.setViewItemImageResId(R.drawable.ic_pictures);
 
