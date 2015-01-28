@@ -34,10 +34,4 @@
         android:ellipsize="marquee"
         android:textSize="14sp" />
 
-    <include
-        layout="@layout/title"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom" />
-
 </FrameLayout>

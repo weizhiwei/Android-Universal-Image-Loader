@@ -27,7 +27,7 @@ public class FlickrViewNodeRoot extends FlickrViewNode implements ViewNodeRoot {
 		viewItemAwj.setInitialZoomLevel(2);
 		viewItems.add(viewItemAwj);
 
-		stream = viewItemGalleries;
+		stream = viewItemInterestingness;
 	}
 
 	@Override

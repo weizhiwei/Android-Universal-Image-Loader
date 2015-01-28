@@ -27,8 +27,8 @@
         android:padding="10dp">
     <ImageView
         android:id="@+id/image"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/author_icon_dimen"
+        android:layout_height="@dimen/author_icon_dimen"
 		android:layout_alignParentLeft="true"
         android:adjustViewBounds="true"
         android:contentDescription="@string/descr_image"

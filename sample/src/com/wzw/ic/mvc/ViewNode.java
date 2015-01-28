@@ -80,7 +80,7 @@ public class ViewNode extends IcObject {
 		return null;
 	}
 		
-	public int getHeaderViewResId(int header) {
+	public int getHeaderViewResId(int header, int itemViewType /* card type */) {
 		return 0;
 	}
 	
@@ -97,13 +97,5 @@ public class ViewNode extends IcObject {
 	
 	public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {
 		starter.startViewItemActivity(this, viewItem);
-	}
-	
-	public void onHeaderClicked(int header, ViewItemActivityStarter starter) {
-		
-	}
-	
-	public void onFooterClicked(int footer, ViewItemActivityStarter starter) {
-		
 	}
 }

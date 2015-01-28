@@ -129,7 +129,7 @@ public class StreamViewNode extends ViewNode {
 	}
 	
 	@Override
-	public int getHeaderViewResId(int header) {
+	public int getHeaderViewResId(int header, int itemViewType /* card type */) {
 		return R.layout.header;
 	}
 	
@@ -182,7 +182,6 @@ public class StreamViewNode extends ViewNode {
 		}
     }
 	
-	@Override
 	public void onHeaderClicked(int header, ViewItemActivityStarter starter) {
 		int n = 0;
 		for (int i = 0; i < header; ++i) {
@@ -198,7 +197,6 @@ public class StreamViewNode extends ViewNode {
 		}
 	}
 	
-	@Override
 	public void onFooterClicked(int footer, ViewItemActivityStarter starter) {
 		int n = 0;
 		for (int i = 0; i < footer; ++i) {

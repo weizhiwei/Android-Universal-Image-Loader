@@ -41,6 +41,7 @@ import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -80,7 +81,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		assert bundle != null;
 
 		gridOptions = new DisplayImageOptions.Builder()
-//			.showImageOnLoading(R.drawable.ic_stub)
+			.showImageOnLoading(R.drawable.ic_stub)
 			.showImageForEmptyUri(R.drawable.ic_empty)
 			.showImageOnFail(R.drawable.ic_error)
 			.cacheInMemory(true)
@@ -546,51 +547,15 @@ public class ViewItemPagerActivity extends BaseActivity {
 			return null;
 		}
 		
-		private int randomColorForHeader(int header) {
-			final int[] COLORS = {Color.GREEN, Color.LTGRAY, Color.CYAN};
-			return COLORS[header*314159%COLORS.length];
-		}
-		
 		@Override
 		public View getHeaderView(final int position, View convertView, ViewGroup parent) {
 			final HeaderViewHolder holder;
 	        if (convertView == null) {
-	            convertView = getLayoutInflater().inflate(model.getHeaderViewResId(position), parent, false);
+	            convertView = getLayoutInflater().inflate(model.getHeaderViewResId(position, 0), parent, false);
 	            holder = model.createHolderFromHeaderView(convertView);
 	            convertView.setTag(holder);
 	        } else {
 	            holder = (HeaderViewHolder)convertView.getTag();
-	        }
-	        
-	        if (null != holder.footer) {
-	        	holder.footer.setVisibility(position == 0 ? View.GONE : View.VISIBLE);
-	        	if (position > 0) {
-	        		((TextView)holder.footer).setText("See more");
-	        		holder.footer.setBackgroundColor(randomColorForHeader(position-1));
-	        		holder.footer.setOnClickListener(new View.OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							model.onFooterClicked(position-1, ViewItemPagerActivity.this);
-						}
-	        		});
-	        	}
-	        }
-	        if (null != holder.divider) {
-	        	holder.divider.setVisibility((position == 0 || position >= model.getHeaders().size())
-	        			? View.GONE : View.VISIBLE);
-	        }
-	        if (null != holder.header) {
-	        	holder.header.setVisibility(position >= model.getHeaders().size() ? View.GONE : View.VISIBLE);
-	        	if (position < model.getHeaders().size()) {
-	        		holder.header.setBackgroundColor(randomColorForHeader(position));
-	        		model.updateHeaderView(convertView, holder, position);
-	        		holder.header.setOnClickListener(new View.OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							model.onHeaderClicked(position, ViewItemPagerActivity.this);
-						}
-					});
-	        	}
 	        }
 	        
 	        return convertView;
@@ -629,11 +594,10 @@ public class ViewItemPagerActivity extends BaseActivity {
 	private static class ListViewHolder {
 		TextView text;
 		ImageView image;
-		TwoWayView spannableGrid;
         ProgressBar progressBar;
-        FrameLayout frameLayout;
-        ImageView authorIcon;
-        TextView titleText;
+		TwoWayView spannableGrid;
+
+        HeaderViewHolder headerViewHolder;
     }
 	
 	private class ListItemAdapter extends BaseAdapter {
@@ -703,31 +667,66 @@ public class ViewItemPagerActivity extends BaseActivity {
 					holder.image = (ImageView) view.findViewById(R.id.image);
 					break;
 				case ViewItem.VIEW_TYPE_CARD_LIST:
-                    switch (getItemViewType(position)) {
+                    int itemViewType = getItemViewType(position);
+
+                    switch (itemViewType) {
                         case 0:
                             view = getLayoutInflater().inflate(R.layout.item_grid_image, parent, false);
                             holder.image = (ImageView) view.findViewById(R.id.image);
                             holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
                             holder.text = (TextView) view.findViewById(R.id.text);
-                            holder.authorIcon = (ImageView) view.findViewById(R.id.author_icon);
-                            holder.titleText = (TextView) view.findViewById(R.id.title_text);
                             break;
                         case 1:
                             view = getLayoutInflater().inflate(R.layout.item_spannable_grid, parent, false);
-                            holder.frameLayout = (FrameLayout) view.findViewById(R.id.ic_frame_layout);
                             holder.spannableGrid = (TwoWayView) view.findViewById(R.id.ic_spannable_grid);
-                            holder.authorIcon = (ImageView) view.findViewById(R.id.author_icon);
-                            holder.titleText = (TextView) view.findViewById(R.id.title_text);
-                            holder.frameLayout.setLayoutParams(new ListView.LayoutParams(
-                                    ListView.LayoutParams.FILL_PARENT, listView.getWidth()));
                             holder.spannableGrid.setHasFixedSize(true);
                             break;
                         default:
                             break;
                     }
-                default:
+
+                    holder.headerViewHolder = model.createHolderFromHeaderView(
+                            getLayoutInflater().inflate(model.getHeaderViewResId(position, itemViewType), parent, false)
+                    );
+
+                    LinearLayout cardView = new LinearLayout(ViewItemPagerActivity.this);
+                    cardView.setLayoutParams(new ListView.LayoutParams(
+                            ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
+                    cardView.setBackgroundColor(randomColorForHeader(position));
+                    cardView.setOrientation(LinearLayout.VERTICAL);
+
+                    if (null != holder.headerViewHolder.header.getParent()) {
+                        ((ViewGroup) holder.headerViewHolder.header.getParent()).removeView(holder.headerViewHolder.header);
+                    }
+                    cardView.addView(holder.headerViewHolder.header);
+                    if (null != view.getParent()) {
+                        ((ViewGroup) view.getParent()).removeView(view);
+                    }
+                    switch (itemViewType) {
+                        case 0:
+                            view.setLayoutParams(new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+                            ));
+                            break;
+                        case 1:
+                            view.setLayoutParams(new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT, listView.getWidth()
+                            ));
+                            break;
+                        default:
+                            break;
+                    }
+                    cardView.addView(view);
+                    if (null != holder.headerViewHolder.footer.getParent()) {
+                        ((ViewGroup) holder.headerViewHolder.footer.getParent()).removeView(holder.headerViewHolder.footer);
+                    }
+                    cardView.addView(holder.headerViewHolder.footer);
+
+                    view = cardView;
+                    default:
                     break;
 				}
+
 				view.setTag(holder);
 			} else {
 				holder = (ListViewHolder) view.getTag();
@@ -756,6 +755,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 				}
 			} else if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_CARD_LIST) {
 
+                model.updateHeaderView(view, holder.headerViewHolder, position);
+
                 int o = 0;
 				for (int i = 0; i < position; ++i) {
 					o += model.getHeaders().get(i);
@@ -764,42 +765,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
                 final ViewItem viewItem = model.getViewItems().get(offset);
 
-                holder.authorIcon.setVisibility(View.GONE);
-                if (null != viewItem.getAuthor()) {
-                    if (!TextUtils.isEmpty(viewItem.getAuthor().getImageUrl())) {
-                        holder.authorIcon.setVisibility(View.VISIBLE);
-                        ImageLoader.getInstance().displayImage(viewItem.getAuthor().getImageUrl(),
-                                holder.authorIcon, authorIconOptions);
-                        holder.authorIcon.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-
-                            }
-                        });
-                    }
-                }
-
-                SpannableString text = buildPictureText(viewItem, false, false, false, true, false);
-                if (null != text) {
-                    holder.titleText.setVisibility(View.VISIBLE);
-                    holder.titleText.setText(text);
-//				holder.text.setMovementMethod(LinkMovementMethod.getInstance());
-                    holder.titleText.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-
-                        }
-                    });
-
-                } else {
-                    holder.titleText.setVisibility(View.GONE);
-                }
-
                 if (0 == getItemViewType(position)) {
-
-                    view.setLayoutParams(new ListView.LayoutParams(
-                            ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
-
                     holder.text.setVisibility(View.GONE);
 
                     switch (viewItem.getViewItemType()) {
@@ -1056,7 +1022,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		}
 	}
 
-    private final int[] generateColRowSpans(int itemCount, int hash) {
+    private static final int[] generateColRowSpans(int itemCount, int hash) {
         final int[][][] SPANS = {
                 {}, // 0
                 {}, // 1
@@ -1084,5 +1050,10 @@ public class ViewItemPagerActivity extends BaseActivity {
                 }, // 9
         };
         return SPANS[itemCount][hash%SPANS[itemCount].length];
+    }
+
+    private static int randomColorForHeader(int header) {
+        final int[] COLORS = {Color.GREEN, Color.LTGRAY, Color.CYAN};
+        return COLORS[header*314159%COLORS.length];
     }
 }
