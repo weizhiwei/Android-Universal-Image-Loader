@@ -692,7 +692,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                     LinearLayout cardView = new LinearLayout(ViewItemPagerActivity.this);
                     cardView.setLayoutParams(new ListView.LayoutParams(
                             ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
-                    cardView.setBackgroundColor(randomColorForHeader(position));
                     cardView.setOrientation(LinearLayout.VERTICAL);
 
                     if (null != holder.headerViewHolder.header.getParent()) {
@@ -764,6 +763,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 				final int offset = o;
 
                 final ViewItem viewItem = model.getViewItems().get(offset);
+
+                view.setBackgroundColor(randomColorForHeader(Math.abs(viewItem.hashCode())));
 
                 if (0 == getItemViewType(position)) {
                     holder.text.setVisibility(View.GONE);
@@ -1053,7 +1054,7 @@ public class ViewItemPagerActivity extends BaseActivity {
     }
 
     private static int randomColorForHeader(int header) {
-        final int[] COLORS = {Color.GREEN, Color.LTGRAY, Color.CYAN};
-        return COLORS[header*314159%COLORS.length];
+        final int[] COLORS = {0xFF3D3629, 0xFF5C483D, 0xFF5C583D, 0xFF2C3D29, 0xFF3D5C3D, 0xFF6A7A52, 0xFFB8B37A, 0xFFD6D68F};
+        return COLORS[header%COLORS.length];
     }
 }
