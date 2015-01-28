@@ -176,14 +176,15 @@ public class FeedsViewNode extends ViewNode {
         	if (!TextUtils.isEmpty(viewItem.getAuthor().getImageUrl())) {
         		((FeedsHeaderViewHolder)holder).imageView.setVisibility(View.VISIBLE);
         		ImageLoader.getInstance().displayImage(viewItem.getAuthor().getImageUrl(),
-        				((FeedsHeaderViewHolder)holder).imageView, new DisplayImageOptions.Builder()
+        				((FeedsHeaderViewHolder)holder).imageView,
+                                new DisplayImageOptions.Builder()
                                 .showImageOnLoading(R.drawable.ic_stub)
                                 .showImageForEmptyUri(R.drawable.ic_empty)
                                 .showImageOnFail(R.drawable.ic_error)
                                 .cacheInMemory(true)
                                 .cacheOnDisk(true)
                                 .considerExifParams(true)
-                                .displayer(new RoundedBitmapDisplayer(((FeedsHeaderViewHolder)holder).imageView.getWidth()/2))
+                                .displayer(new RoundedBitmapDisplayer(((FeedsHeaderViewHolder)holder).imageView.getLayoutParams().width/2))
                                 .build());
 			}
         }
