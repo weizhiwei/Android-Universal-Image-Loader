@@ -64,10 +64,10 @@ public abstract class MokoViewNode extends ViewNode {
 		List<ViewItem> pageViewItems = null;
 		Document doc = null;
 		int newPageNo = reload ? 1 : pageNo + 1;
-		
+
 		try {
 			doc = Jsoup
-					.connect(String.format(sourceUrl, newPageNo))
+					.connect(String.format(sourceUrl, perturbPageNo(newPageNo, reload)))
 					.cookie(LOGIN_KEY_COOKIE, null == getLoginKey() ? "" : getLoginKey())
 					.get();
 		} catch (IOException e) {

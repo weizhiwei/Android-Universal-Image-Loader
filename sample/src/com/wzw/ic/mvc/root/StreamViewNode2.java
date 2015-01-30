@@ -126,7 +126,7 @@ public class StreamViewNode2 extends ViewNode {
 			}
 		}
 
-        Collections.shuffle(picViewItems);
+//        Collections.shuffle(picViewItems);
 
 		List<ViewItem> pageViewItems = new ArrayList<ViewItem> ();
 		List<Integer> pageHeaders = new ArrayList<Integer> ();
