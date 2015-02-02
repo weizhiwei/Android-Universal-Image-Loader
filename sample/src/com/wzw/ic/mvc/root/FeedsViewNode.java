@@ -27,18 +27,18 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
-import com.wzw.ic.mvc.flickr.FlickrViewNodePeoplePhotos;
+import com.wzw.ic.mvc.flickr.FlickrViewNodePeopleFeeds;
 import com.wzw.ic.mvc.moko.MokoViewNodeUser;
 
 public class FeedsViewNode extends ViewNode {
 
 	protected int pageNo;
 	protected final ViewNode[] SUBFEEDS = new ViewNode[] {
-		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "davei1314") + "%d.html"),
-		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "zhangqunyun") + "%d.html"),
-		new FlickrViewNodePeoplePhotos("67764677@N07"),
-		new FlickrViewNodePeoplePhotos("70058109@N06"),
-		new FlickrViewNodePeoplePhotos("85310965@N08"),
+//		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "davei1314") + "%d.html"),
+//		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "zhangqunyun") + "%d.html"),
+		new FlickrViewNodePeopleFeeds("67764677@N07"),
+		new FlickrViewNodePeopleFeeds("70058109@N06"),
+		new FlickrViewNodePeopleFeeds("85310965@N08"),
 	};
     protected final Object[] subpages;
 
@@ -98,9 +98,7 @@ public class FeedsViewNode extends ViewNode {
         }
 
         final List<ViewItem> albumViewItems = new ArrayList<ViewItem> ();
-        boolean addedAlbumViewItemCountInLastIteration;
-        do {
-            addedAlbumViewItemCountInLastIteration = false;
+        while (true) {
             int index = -1;
             Date date = new Date(0);
             for (int i = 0; i < subpages.length; ++i) {
@@ -114,12 +112,18 @@ public class FeedsViewNode extends ViewNode {
                 }
             }
 
-            if (index != -1) {
+            if (index == -1) { // nothing to add
+                break;
+            } else {
                 List<ViewItem> subpageViewItems = (List<ViewItem>) subpages[index];
                 albumViewItems.add(subpageViewItems.remove(0));
-                addedAlbumViewItemCountInLastIteration = true;
+                if (albumViewItems.size() > 5 ||
+                    subpageViewItems.isEmpty()) {
+                    // if we have exhausted any list, we need to stop to do a reload, in order to maintain the getPostedDate order
+                    break;
+                }
             }
-        } while (addedAlbumViewItemCountInLastIteration && albumViewItems.size() <= 5);
+        }
 
         int albumCount = 0;
         for (ViewItem viewItem: albumViewItems) {

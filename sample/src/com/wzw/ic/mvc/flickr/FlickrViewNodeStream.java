@@ -20,7 +20,7 @@ import java.util.List;
 
 public class FlickrViewNodeStream extends FlickrViewNodeInterestingness {
 
-    private static final int MAX_PAGES = 20;
+    private static final int MAX_PAGES = 17;
     private Integer[] randomPageNumbers = new Integer[MAX_PAGES];
 
     public FlickrViewNodeStream() {
