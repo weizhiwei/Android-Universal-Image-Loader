@@ -26,6 +26,7 @@ public class StreamViewNode2 extends ViewNode {
 
 	protected int pageNo;
 	protected final ViewNode[] SUBSTREAMS;
+    protected final Object[] subpages;
 
 	public StreamViewNode2(ViewItem gallery) {
 		super("stream");
@@ -34,7 +35,8 @@ public class StreamViewNode2 extends ViewNode {
 		for (int i = 0; i < galleryViewItems.size(); ++i) {
 			SUBSTREAMS[i] = ((ViewNodeRoot)galleryViewItems.get(i).getViewNode()).getStream().getViewNode();
 		}
-	}
+        subpages = new Object[SUBSTREAMS.length];
+    }
 
 	@Override
 	public boolean supportReloading() {
@@ -48,36 +50,45 @@ public class StreamViewNode2 extends ViewNode {
 	
 	private List<ViewItem> doLoad(final boolean reload) {
 		int newPageNo = reload ? 0 : pageNo + 1;
-		
-		final Object[] subpages = new Object[SUBSTREAMS.length];
-		final CountDownLatch latch = new CountDownLatch(SUBSTREAMS.length);
-		for (int i = 0; i < SUBSTREAMS.length; ++i) {
-			final int index = i;
-			new Thread(new Runnable () {
 
-				@Override
-				public void run() {
-					ViewNode node = SUBSTREAMS[index];
-					List<ViewItem> page = reload ? node.reload() : node.loadOneMorePage();
-					subpages[index] = page;
-					latch.countDown();
-				}
-				
-			}).run();
-		}
-		
-		try {
-			latch.await();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		List<Object> subpageList = Arrays.asList(subpages);
-		
+        boolean needToDoLoad = true;
+        if (!reload) {
+            for (Object subpage: Arrays.asList(subpages)) {
+                if (null != subpage && !((List<ViewItem>) subpage).isEmpty()) {
+                    needToDoLoad = false;
+                    break;
+                }
+            }
+        }
+
+        if (needToDoLoad) {
+            final CountDownLatch latch = new CountDownLatch(SUBSTREAMS.length);
+            for (int i = 0; i < SUBSTREAMS.length; ++i) {
+                final int index = i;
+                new Thread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        ViewNode node = SUBSTREAMS[index];
+                        List<ViewItem> page = reload ? node.reload() : node.loadOneMorePage();
+                        subpages[index] = page;
+                        latch.countDown();
+                    }
+
+                }).run();
+            }
+
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
 		List<List<ViewItem>> picViewItems = new ArrayList<List<ViewItem>> ();
 		final List<ViewItem> albumViewItems = new ArrayList<ViewItem> ();
-		for (Object subpage: subpageList) {
+		for (Object subpage: Arrays.asList(subpages)) {
 			if (null != subpage) {
 				List<ViewItem> subpageViewItems = (List<ViewItem>) subpage;
 				int n = Math.min(subpageViewItems.size(), 4);
@@ -91,6 +102,9 @@ public class StreamViewNode2 extends ViewNode {
 						albumViewItems.add(viewItem);
 					}
 				}
+                for (int i = 0; i < n; ++i) {
+                    subpageViewItems.remove(0); // pop out all the used items
+                }
 			}
 		}
 		

@@ -40,9 +40,11 @@ public class FeedsViewNode extends ViewNode {
 		new FlickrViewNodePeoplePhotos("70058109@N06"),
 		new FlickrViewNodePeoplePhotos("85310965@N08"),
 	};
+    protected final Object[] subpages;
 
 	public FeedsViewNode() {
 		super("feeds");
+        subpages = new Object[SUBFEEDS.length];
 	}
 
 	@Override
@@ -57,72 +59,124 @@ public class FeedsViewNode extends ViewNode {
 	
 	private List<ViewItem> doLoad(final boolean reload) {
 		int newPageNo = reload ? 0 : pageNo + 1;
-		
-		final Object[] subpages = new Object[SUBFEEDS.length];
-		final CountDownLatch latch = new CountDownLatch(SUBFEEDS.length);
-		for (int i = 0; i < SUBFEEDS.length; ++i) {
-			final int index = i;
-			new Thread(new Runnable () {
 
-				@Override
-				public void run() {
-					ViewNode node = SUBFEEDS[index];
-					List<ViewItem> page = reload ? node.reload() : node.loadOneMorePage();
-					subpages[index] = page;
-					latch.countDown();
-				}
-				
-			}).run();
-		}
-		
-		try {
-			latch.await();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		List<Object> subpageList = Arrays.asList(subpages);
-		Collections.sort(subpageList, new Comparator<Object>() {
-			@Override
-			public int compare(Object lhs, Object rhs) {
-				List<ViewItem> l = (List<ViewItem>) lhs,
-								r = (List<ViewItem>) rhs;
-				if (null != l && !l.isEmpty() &&
-					null != r && !r.isEmpty()) {
-					return r.get(0).getPostedDate().compareTo(
-							l.get(0).getPostedDate());
-				}
-				return 0;
-			}
-		});
-		
-		List<ViewItem> pageViewItems = new ArrayList<ViewItem> ();
-		List<Integer> pageHeaders = new ArrayList<Integer> ();
-		for (Object subpage: subpageList) {
-			if (null != subpage) {
-				List<ViewItem> subpageViewItems = (List<ViewItem>) subpage;
-				int n = Math.min(subpageViewItems.size(), 9);
-				for (int i = 0; i < n; ++i) {
-					pageViewItems.add(subpageViewItems.get(i));
-				}
-				if (n > 0) {
-					pageHeaders.add(n);
-				}
-			}
-		}
-				
-		if (null != pageViewItems && pageViewItems.size() > 0) {
-			pageNo = newPageNo;
-			if (reload) {
-				viewItems.clear();
-				headers.clear();
-			}
-			viewItems.addAll(pageViewItems);
-			headers.addAll(pageHeaders);
-		}
-		
-		return pageViewItems;
+        int needToDoLoadCount = SUBFEEDS.length;
+        if (!reload) {
+            needToDoLoadCount = 0;
+            for (Object subpage: Arrays.asList(subpages)) {
+                if (null == subpage || ((List<ViewItem>) subpage).isEmpty()) {
+                    ++needToDoLoadCount;
+                }
+            }
+        }
+
+        if (needToDoLoadCount > 0) {
+
+            final CountDownLatch latch = new CountDownLatch(needToDoLoadCount);
+            for (int i = 0; i < SUBFEEDS.length; ++i) {
+                if (null == subpages[i] || ((List<ViewItem>) subpages[i]).isEmpty()) {
+                    final int index = i;
+                    new Thread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            ViewNode node = SUBFEEDS[index];
+                            List<ViewItem> page = reload ? node.reload() : node.loadOneMorePage();
+                            subpages[index] = page;
+                            latch.countDown();
+                        }
+                    }).run();
+                }
+            }
+
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+        final List<ViewItem> albumViewItems = new ArrayList<ViewItem> ();
+        boolean addedAlbumViewItemCountInLastIteration;
+        do {
+            addedAlbumViewItemCountInLastIteration = false;
+            int index = -1;
+            Date date = new Date(0);
+            for (int i = 0; i < subpages.length; ++i) {
+                List<ViewItem> subpageViewItems = (List<ViewItem>) subpages[i];
+                if (null != subpageViewItems && !subpageViewItems.isEmpty()) {
+                    if (null != subpageViewItems.get(0).getPostedDate() &&
+                            subpageViewItems.get(0).getPostedDate().after(date)) {
+                        date = subpageViewItems.get(0).getPostedDate();
+                        index = i;
+                    }
+                }
+            }
+
+            if (index != -1) {
+                List<ViewItem> subpageViewItems = (List<ViewItem>) subpages[index];
+                albumViewItems.add(subpageViewItems.remove(0));
+                addedAlbumViewItemCountInLastIteration = true;
+            }
+        } while (addedAlbumViewItemCountInLastIteration && albumViewItems.size() <= 5);
+
+        int albumCount = 0;
+        for (ViewItem viewItem: albumViewItems) {
+            if (viewItem.getViewType() != ViewItem.VIEW_TYPE_IMAGE_PAGER) {
+                ++albumCount;
+            }
+        }
+
+        // unfold albums
+        final Object[] subpages2 = new Object[albumViewItems.size()];
+        final CountDownLatch latch2 = new CountDownLatch(albumCount);
+        for (int i = 0; i < albumViewItems.size(); ++i) {
+            final ViewItem viewItem = albumViewItems.get(i);
+            if (viewItem.getViewType() == ViewItem.VIEW_TYPE_IMAGE_PAGER) {
+                List<ViewItem> page = new ArrayList<ViewItem> (1);
+                page.add(viewItem);
+                subpages2[i] = page;
+            } else {
+                final int index = i;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        subpages2[index] = viewItem.getViewNode().reload();
+                        latch2.countDown();
+                    }
+                }).run();
+            }
+        }
+
+        try {
+            latch2.await();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        List<ViewItem> pageViewItems = new ArrayList<ViewItem> ();
+        List<Integer> pageHeaders = new ArrayList<Integer> ();
+        for (Object subpage: Arrays.asList(subpages2)) {
+            if (null != subpage) {
+                List<ViewItem> subpageViewItems = (List<ViewItem>) subpage;
+                pageViewItems.addAll(subpageViewItems);
+                pageHeaders.add(subpageViewItems.size());
+            }
+        }
+
+        if (null != pageViewItems && pageViewItems.size() > 0) {
+            pageNo = newPageNo;
+            if (reload) {
+                viewItems.clear();
+                headers.clear();
+            }
+            viewItems.addAll(pageViewItems);
+            headers.addAll(pageHeaders);
+        }
+
+        return pageViewItems;
 	}
 	
 	@Override
@@ -132,7 +186,7 @@ public class FeedsViewNode extends ViewNode {
 
 	@Override
 	public boolean supportPaging() {
-		return false;
+		return true;
 	}
 	
 	@Override
