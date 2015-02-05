@@ -8,6 +8,7 @@ import java.util.List;
 public class FlickrViewNodePeopleFeeds extends FlickrViewNodePeoplePhotos {
 
     private static final int COMPACT_TIME_INTERVAL_IN_MILLISECONDS = 1000*3600; // 1 hr
+    private List<ViewItem> leftoverViewItems = new ArrayList<ViewItem>();
 
     public FlickrViewNodePeopleFeeds(String sourceUrl) {
         super(sourceUrl);
@@ -20,7 +21,14 @@ public class FlickrViewNodePeopleFeeds extends FlickrViewNodePeoplePhotos {
 
     @Override
     public List<ViewItem> loadOneMorePage() {
-        return compactViewItems(super.loadOneMorePage());
+        List<ViewItem> results = super.loadOneMorePage();
+        if (null == results || results.isEmpty()) {
+            return results;
+        }
+        List<ViewItem> all = new ArrayList<ViewItem>(leftoverViewItems.size() + results.size());
+        all.addAll(leftoverViewItems);
+        all.addAll(results);
+        return compactViewItems(all);
     }
 
     private List<ViewItem> compactViewItems(List<ViewItem> results) {
@@ -30,31 +38,42 @@ public class FlickrViewNodePeopleFeeds extends FlickrViewNodePeoplePhotos {
 
         List<ViewItem> compacted = new ArrayList<ViewItem>();
         int runHead = 0;
-        for (int i = 0; i < results.size(); ++i) {
-            ViewItem viewItem = results.get(i);
-            ViewItem head = results.get(runHead);
 
-            if (viewItem.getPostedDate().getTime()
-                - head.getPostedDate().getTime() >
-                COMPACT_TIME_INTERVAL_IN_MILLISECONDS) {
-                List<ViewItem> viewItems = new ArrayList<ViewItem>(i - runHead);
-                for (int j = runHead; j < i; ++j) {
-                    viewItems.add(results.get(j));
+        while (true) {
+            for (int i = 0; i < results.size(); ++i) {
+                ViewItem viewItem = results.get(i);
+                ViewItem head = results.get(runHead);
+
+                if ((head.getPostedDate().getTime() - viewItem.getPostedDate().getTime()) >
+                        COMPACT_TIME_INTERVAL_IN_MILLISECONDS) {
+                    List<ViewItem> viewItems = new ArrayList<ViewItem>(i - runHead);
+                    for (int j = runHead; j < i; ++j) {
+                        viewItems.add(results.get(j));
+                    }
+                    ViewItem album = new ViewItem(null, null, null, ViewItem.VIEW_TYPE_GRID,
+                            new FlickrViewNodePeopleFeed(null, viewItems));
+                    album.setPostedDate(head.getPostedDate());
+                    compacted.add(album);
+                    runHead = i;
                 }
-                ViewItem album = new ViewItem(null, null, null, ViewItem.VIEW_TYPE_GRID, new FlickrViewNodePeopleFeed(null, viewItems));
-                album.setPostedDate(head.getPostedDate());
-                compacted.add(album);
-                runHead = i;
             }
+
+            if (!compacted.isEmpty()) {
+                break;
+            }
+
+            List<ViewItem> nextPage = super.loadOneMorePage();
+            if (null == nextPage || nextPage.isEmpty()) {
+                break;
+            }
+
+            results.addAll(nextPage);
         }
-        // close it
-        List<ViewItem> viewItems = new ArrayList<ViewItem>(results.size() - runHead);
-        for (int j = runHead; j < results.size(); ++j) {
-            viewItems.add(results.get(j));
+
+        leftoverViewItems.clear();
+        for (int i = runHead; i < results.size(); ++i) {
+            leftoverViewItems.add(results.get(i));
         }
-        ViewItem album = new ViewItem(null, null, null, ViewItem.VIEW_TYPE_GRID, new FlickrViewNodePeopleFeed(null, viewItems));
-        album.setPostedDate(results.get(runHead).getPostedDate());
-        compacted.add(album);
 
         return compacted;
     }
