@@ -1,6 +1,7 @@
 package com.wzw.ic.mvc.moko;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.jsoup.nodes.Document;
@@ -60,7 +61,7 @@ public class MokoViewNodeRoot extends MokoViewNode implements ViewNodeRoot {
 	}
 
 	@Override
-	public ViewItem getStream() {
-		return stream;
+	public List<ViewItem> getStream() {
+		return Arrays.asList(stream);
 	}
 }

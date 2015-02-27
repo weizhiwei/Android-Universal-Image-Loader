@@ -11,6 +11,7 @@ import org.json.JSONException;
 import com.googlecode.flickrjandroid.Flickr;
 import com.googlecode.flickrjandroid.FlickrException;
 import com.googlecode.flickrjandroid.interestingness.InterestingnessInterface;
+import com.googlecode.flickrjandroid.people.PeopleInterface;
 import com.googlecode.flickrjandroid.people.User;
 import com.googlecode.flickrjandroid.photos.Photo;
 import com.googlecode.flickrjandroid.photos.PhotoList;
@@ -25,10 +26,11 @@ public class FlickrViewNodeInterestingness extends FlickrViewNode {
 		int newPageNo = reload ? 1 : pageNo + 1;
 		
 		Flickr f = new Flickr(FLICKR_API_KEY);
-		InterestingnessInterface interestingnessInterface = f.getInterestingnessInterface();
+        PeopleInterface peopleInterface = f.getPeopleInterface();
+        InterestingnessInterface interestingnessInterface = f.getInterestingnessInterface();
 		PhotoList photoList = null;
 		try {
-			photoList = interestingnessInterface.getList((String)null, EXTRAS, 30, perturbPageNo(newPageNo, reload));
+			photoList = interestingnessInterface.getList((String)null, EXTRAS, 12, perturbPageNo(newPageNo, reload));
 		} catch (InvalidKeyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -63,6 +65,20 @@ public class FlickrViewNodeInterestingness extends FlickrViewNode {
 				viewItem.setPostedDate(photo.getDatePosted());
 				User owner = photo.getOwner();
 				if (null != owner) {
+                    try {
+                        owner = peopleInterface.getInfo(owner.getId());
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (FlickrException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+                if (null != owner) {
 					ViewItem ownerItem = new ViewItem(owner.getUsername(), owner.getPhotosurl(), owner.getBuddyIconUrl(), ViewItem.VIEW_TYPE_GRID, new FlickrViewNodePeoplePhotosets(owner.getId()));
 					ownerItem.setOrigin(FLICKR_NAME);
 					ownerItem.setInitialZoomLevel(2);

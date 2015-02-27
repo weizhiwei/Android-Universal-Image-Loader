@@ -37,7 +37,10 @@ public class RootViewNode extends ViewNode {
 		ng.setViewItemImageResId(R.drawable.ngraphic);
 		
 		gallery = new ViewItem("Gallery", "gallery", null, ViewItem.VIEW_TYPE_GRID, new ViewNode("", Arrays.asList(
-				moko, flickr, ng)));
+//				moko,
+              flickr
+//              ng,
+                )));
 		gallery.setViewItemImageResId(R.drawable.ic_gallery);
 
         ViewItem stream = new ViewItem("Explore", "stream", null, ViewItem.VIEW_TYPE_CARD_LIST, new StreamViewNode2(gallery));

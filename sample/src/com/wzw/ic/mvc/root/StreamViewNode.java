@@ -30,9 +30,17 @@ public class StreamViewNode extends ViewNode {
 	public StreamViewNode(ViewItem gallery) {
 		super("stream");
 		List<ViewItem> galleryViewItems = gallery.getViewNode().getViewItems();
-		SUBSTREAMS = new ViewNode[galleryViewItems.size()];
+        int substreamCount = 0;
+        for (int i = 0; i < galleryViewItems.size(); ++i) {
+            substreamCount += ((ViewNodeRoot)galleryViewItems.get(i).getViewNode()).getStream().size();
+        }
+		SUBSTREAMS = new ViewNode[substreamCount];
+        int k = 0;
 		for (int i = 0; i < galleryViewItems.size(); ++i) {
-			SUBSTREAMS[i] = ((ViewNodeRoot)galleryViewItems.get(i).getViewNode()).getStream().getViewNode();
+            List<ViewItem> substreams = ((ViewNodeRoot)galleryViewItems.get(i).getViewNode()).getStream();
+            for (ViewItem substream: substreams) {
+                SUBSTREAMS[k++] = substream.getViewNode();
+            }
 		}
 	}
 
@@ -197,29 +205,29 @@ public class StreamViewNode extends ViewNode {
 		}
 	}
 	
-	public void onFooterClicked(int footer, ViewItemActivityStarter starter) {
-		int n = 0;
-		for (int i = 0; i < footer; ++i) {
-			n += headers.get(i);
-		}
-		ViewItem viewItem = viewItems.get(n);
-		if (!TextUtils.isEmpty(viewItem.getOrigin())) {
-			ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
-			if (null != originViewItem) {
-				starter.startViewItemActivity(originViewItem.getViewNode(),
-						((ViewNodeRoot)originViewItem.getViewNode()).getStream());
-			}
-		}
-	}
-	
-	@Override
-	public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {
-		if (!TextUtils.isEmpty(viewItem.getOrigin())) {
-			ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
-			if (null != originViewItem) {
-				ViewNode streamNode = ((ViewNodeRoot)originViewItem.getViewNode()).getStream().getViewNode();
-				starter.startViewItemActivity(streamNode, viewItem);
-			}
-		}
-	}
+//	public void onFooterClicked(int footer, ViewItemActivityStarter starter) {
+//		int n = 0;
+//		for (int i = 0; i < footer; ++i) {
+//			n += headers.get(i);
+//		}
+//		ViewItem viewItem = viewItems.get(n);
+//		if (!TextUtils.isEmpty(viewItem.getOrigin())) {
+//			ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
+//			if (null != originViewItem) {
+//				starter.startViewItemActivity(originViewItem.getViewNode(),
+//						((ViewNodeRoot)originViewItem.getViewNode()).getStream());
+//			}
+//		}
+//	}
+//
+//	@Override
+//	public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {
+//		if (!TextUtils.isEmpty(viewItem.getOrigin())) {
+//			ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
+//			if (null != originViewItem) {
+//				ViewNode streamNode = ((ViewNodeRoot)originViewItem.getViewNode()).getStream().getViewNode();
+//				starter.startViewItemActivity(streamNode, viewItem);
+//			}
+//		}
+//	}
 }

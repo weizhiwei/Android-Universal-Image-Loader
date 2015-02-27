@@ -1,5 +1,7 @@
 package com.wzw.ic.mvc;
 
+import java.util.List;
+
 public interface ViewNodeRoot {
-	public ViewItem getStream();
+	public List<ViewItem> getStream();
 }

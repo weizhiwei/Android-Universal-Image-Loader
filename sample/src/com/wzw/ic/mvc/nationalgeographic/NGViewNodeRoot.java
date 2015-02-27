@@ -1,5 +1,6 @@
 package com.wzw.ic.mvc.nationalgeographic;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.jsoup.nodes.Document;
@@ -33,7 +34,7 @@ public class NGViewNodeRoot extends NGViewNode implements ViewNodeRoot {
 	}
 
 	@Override
-	public ViewItem getStream() {
-		return stream;
+	public List<ViewItem> getStream() {
+		return Arrays.asList(stream);
 	}
 }

@@ -36,7 +36,7 @@ public class FeedsViewNode extends ViewNode {
 	protected final ViewNode[] SUBFEEDS = new ViewNode[] {
 //		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "davei1314") + "%d.html"),
 //		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "zhangqunyun") + "%d.html"),
-		new FlickrViewNodePeopleFeeds("67764677@N07"),
+//		new FlickrViewNodePeopleFeeds("67764677@N07"),
 		new FlickrViewNodePeopleFeeds("70058109@N06"),
 		new FlickrViewNodePeopleFeeds("85310965@N08"),
 	};
@@ -214,16 +214,16 @@ public class FeedsViewNode extends ViewNode {
 		String caption = "";
 		String authorName = (viewItem.getAuthor() == null ? null : viewItem.getAuthor().getLabel());
 		if (!TextUtils.isEmpty(authorName)) {
-			caption += String.format("<b>%s</b>", authorName);
+			caption += String.format(
+                    "<b>%s</b> posted %d picture%s", authorName, headers.get(position), headers.get(position) > 1 ? "s" : "");
 		}
 		if (null != viewItem.getPostedDate()) {
 			if (!TextUtils.isEmpty(caption)) {
 				caption += "<br/>";
 			}
-			caption += ("last updated: "
-					+ DateUtils.getRelativeTimeSpanString(
+			caption += DateUtils.getRelativeTimeSpanString(
 							viewItem.getPostedDate().getTime(), (new Date()).getTime(),
-							DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE));
+							DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE);
 		}
 		if (!TextUtils.isEmpty(caption)) {
 			((FeedsHeaderViewHolder)holder).textView.setText(new SpannableString(Html.fromHtml(caption)));

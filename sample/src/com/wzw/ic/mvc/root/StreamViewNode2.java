@@ -17,6 +17,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.nostra13.example.universalimageloader.R;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
@@ -30,11 +33,19 @@ public class StreamViewNode2 extends ViewNode {
 
 	public StreamViewNode2(ViewItem gallery) {
 		super("stream");
-		List<ViewItem> galleryViewItems = gallery.getViewNode().getViewItems();
-		SUBSTREAMS = new ViewNode[galleryViewItems.size()];
-		for (int i = 0; i < galleryViewItems.size(); ++i) {
-			SUBSTREAMS[i] = ((ViewNodeRoot)galleryViewItems.get(i).getViewNode()).getStream().getViewNode();
-		}
+        List<ViewItem> galleryViewItems = gallery.getViewNode().getViewItems();
+        int substreamCount = 0;
+        for (int i = 0; i < galleryViewItems.size(); ++i) {
+            substreamCount += ((ViewNodeRoot)galleryViewItems.get(i).getViewNode()).getStream().size();
+        }
+        SUBSTREAMS = new ViewNode[substreamCount];
+        int k = 0;
+        for (int i = 0; i < galleryViewItems.size(); ++i) {
+            List<ViewItem> substreams = ((ViewNodeRoot)galleryViewItems.get(i).getViewNode()).getStream();
+            for (ViewItem substream: substreams) {
+                SUBSTREAMS[k++] = substream.getViewNode();
+            }
+        }
         subpages = new Object[SUBSTREAMS.length];
     }
 
@@ -190,28 +201,38 @@ public class StreamViewNode2 extends ViewNode {
 		}
 		ViewItem viewItem = viewItems.get(n);
 		String caption = "";
-		ViewItem originViewItem = null;
-		if (!TextUtils.isEmpty(viewItem.getOrigin())) {
-			originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
-			caption += String.format("<b>%s</b>", viewItem.getOrigin());
-		}
+        String authorName = (viewItem.getAuthor() == null ? null : viewItem.getAuthor().getLabel());
+        if (!TextUtils.isEmpty(authorName)) {
+            caption += String.format(
+                    "<b>%s</b> posted %d picture%s", authorName, headers.get(position), headers.get(position) > 1 ? "s" : "");
+        }
 		if (null != viewItem.getPostedDate()) {
 			if (!TextUtils.isEmpty(caption)) {
 				caption += "<br/>";
 			}
-			caption += ("last updated: "
-					+ DateUtils.getRelativeTimeSpanString(
+			caption += DateUtils.getRelativeTimeSpanString(
 							viewItem.getPostedDate().getTime(), (new Date()).getTime(),
-							DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE));
+							DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE);
 		}
 		if (!TextUtils.isEmpty(caption)) {
 			((StreamHeaderViewHolder)holder).textView.setText(new SpannableString(Html.fromHtml(caption)));
 		}
-		if (null != originViewItem) {
-			((StreamHeaderViewHolder)holder).imageView.setVisibility(View.VISIBLE);
-        	((StreamHeaderViewHolder)holder).imageView.setImageResource(originViewItem.getViewItemImageResId());
-        } else {
-        	((StreamHeaderViewHolder)holder).imageView.setVisibility(View.GONE);
+        ((StreamHeaderViewHolder)holder).imageView.setVisibility(View.GONE);
+        if (null != viewItem.getAuthor()) {
+            if (!TextUtils.isEmpty(viewItem.getAuthor().getImageUrl())) {
+                ((StreamHeaderViewHolder)holder).imageView.setVisibility(View.VISIBLE);
+                ImageLoader.getInstance().displayImage(viewItem.getAuthor().getImageUrl(),
+                        ((StreamHeaderViewHolder)holder).imageView,
+                        new DisplayImageOptions.Builder()
+                                .showImageOnLoading(R.drawable.ic_stub)
+                                .showImageForEmptyUri(R.drawable.ic_empty)
+                                .showImageOnFail(R.drawable.ic_error)
+                                .cacheInMemory(true)
+                                .cacheOnDisk(true)
+                                .considerExifParams(true)
+                                .displayer(new RoundedBitmapDisplayer(((StreamHeaderViewHolder)holder).imageView.getLayoutParams().width/2))
+                                .build());
+            }
         }
 	}
 	
@@ -241,18 +262,18 @@ public class StreamViewNode2 extends ViewNode {
 		}
 	}
 	
-	public void onFooterClicked(int footer, ViewItemActivityStarter starter) {
-		int n = 0;
-		for (int i = 0; i < footer; ++i) {
-			n += headers.get(i);
-		}
-		ViewItem viewItem = viewItems.get(n);
-		if (!TextUtils.isEmpty(viewItem.getOrigin())) {
-			ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
-			if (null != originViewItem) {
-				starter.startViewItemActivity(originViewItem.getViewNode(),
-						((ViewNodeRoot)originViewItem.getViewNode()).getStream());
-			}
-		}
-	}
+//	public void onFooterClicked(int footer, ViewItemActivityStarter starter) {
+//		int n = 0;
+//		for (int i = 0; i < footer; ++i) {
+//			n += headers.get(i);
+//		}
+//		ViewItem viewItem = viewItems.get(n);
+//		if (!TextUtils.isEmpty(viewItem.getOrigin())) {
+//			ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
+//			if (null != originViewItem) {
+//				starter.startViewItemActivity(originViewItem.getViewNode(),
+//						((ViewNodeRoot)originViewItem.getViewNode()).getStream());
+//			}
+//		}
+//	}
 }
