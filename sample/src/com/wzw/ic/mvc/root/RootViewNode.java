@@ -38,8 +38,8 @@ public class RootViewNode extends ViewNode {
 		
 		gallery = new ViewItem("Gallery", "gallery", null, ViewItem.VIEW_TYPE_GRID, new ViewNode("", Arrays.asList(
 //				moko,
-              flickr
-//              ng,
+              flickr,
+              ng
                 )));
 		gallery.setViewItemImageResId(R.drawable.ic_gallery);
 
@@ -53,7 +53,7 @@ public class RootViewNode extends ViewNode {
         domain.setInitialZoomLevel(1);
         domain.setViewItemImageResId(R.drawable.ic_pictures);
 
-        this.viewItems = Arrays.asList(stream, feeds, domain);
+        this.viewItems = Arrays.asList(gallery, feeds);
 	}
 	
 	public static RootViewNode getInstance() {
