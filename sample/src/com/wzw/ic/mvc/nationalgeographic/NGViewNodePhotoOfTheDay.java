@@ -36,7 +36,7 @@ public class NGViewNodePhotoOfTheDay extends NGViewNode {
 				}
 				
 				if (!TextUtils.isEmpty(imgUrl)) {
-					ViewItem viewItem = new ViewItem("", "", "http:" + imgUrl.replace("100x75", "990x742").replace("/overrides/", "/cache/"), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
+					ViewItem viewItem = new ViewItem("", "", "http:" + imgUrl.replace("100x75", "990x742").replace("/overrides/", "/cache/"), ViewItem.VIEW_TYPE_GRID, null);
 					Elements titleElems = elem.select(".photo_info h4");
 					if (null != titleElems && titleElems.size() > 0) {
 						viewItem.setLabel(titleElems.get(0).ownText());
@@ -44,6 +44,7 @@ public class NGViewNodePhotoOfTheDay extends NGViewNode {
 					Elements aElems = elem.select("a");
 					if (null != aElems && aElems.size() > 0) {
 						viewItem.setNodeUrl(URL_PREFIX + aElems.get(0).attr("href"));
+                        viewItem.setViewNode(new NGViewNodePhotoOfTheDayPost(viewItem.getNodeUrl()));
 					}
 					Elements descElems = elem.select(".photo_info p");
 					if (null != descElems && descElems.size() > 1) {

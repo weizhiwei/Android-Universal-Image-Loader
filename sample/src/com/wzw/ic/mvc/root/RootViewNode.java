@@ -53,13 +53,15 @@ public class RootViewNode extends ViewNode {
 
 
         ViewItem albums = new ViewItem("Albums", "stream", null, ViewItem.VIEW_TYPE_CARD_LIST, new StreamViewNode2(
-                new ViewItem(null, null, null, 0, new ViewNode("", Arrays.asList(new ViewItem(null, null, null, 0, new TempViewNode(null)
+                new ViewItem(null, null, null, 0, new ViewNode("", Arrays.asList(new ViewItem(null, null, null, 0, new TempViewNode(new FlickrViewNodePeopleGalleries("66956608@N06"))
         ))))));
 
         ViewItem feeds = new ViewItem("Following", "feeds", null, ViewItem.VIEW_TYPE_CARD_LIST, new FeedsViewNode());
 		feeds.setViewItemImageResId(R.drawable.ic_user);
 
-        ViewItem stories = new ViewItem("Stories", "stories", null, ViewItem.VIEW_TYPE_STORY_LIST, new NGViewNodePhotoOfTheDay());
+        ViewItem stories = new ViewItem("Stories", "stories", null, ViewItem.VIEW_TYPE_STORY_LIST, new StreamViewNode2(
+                new ViewItem(null, null, null, 0, new ViewNode("", Arrays.asList(new ViewItem(null, null, null, 0, new TempViewNode(new NGViewNodePhotoOfTheDay())
+        ))))));
 
         this.viewItems = Arrays.asList(gallery, stream, albums, feeds, stories);
 	}
@@ -84,14 +86,16 @@ public class RootViewNode extends ViewNode {
 
 class TempViewNode extends ViewNode implements ViewNodeRoot {
 
-    public TempViewNode(String sourceUrl) {
-        super(sourceUrl);
+    private ViewNode viewNode;
+    public TempViewNode(ViewNode viewNode) {
+        super(null);
+        this.viewNode = viewNode;
     }
 
     @Override
     public List<ViewItem> getStream() {
         return Arrays.asList(
-                new ViewItem("Albums", "https://www.flickr.com/photos/66956608@N06/galleries/", null, ViewItem.VIEW_TYPE_CARD_LIST, new FlickrViewNodePeopleGalleries("66956608@N06"))
+                new ViewItem(null, null, null, ViewItem.VIEW_TYPE_GRID, viewNode)
         );
     }
 }

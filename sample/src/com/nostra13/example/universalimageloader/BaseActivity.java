@@ -309,7 +309,8 @@ public abstract class BaseActivity extends Activity implements ViewNode.ViewItem
 			if (!TextUtils.isEmpty(story)) {
 				story += "<br/><br/>";
 			}
-			story += TextUtils.htmlEncode(viewItem.getStory());
+//			story += TextUtils.htmlEncode(viewItem.getStory());
+            story += viewItem.getStory();
 		}
 		
 		SpannableString ss = null;

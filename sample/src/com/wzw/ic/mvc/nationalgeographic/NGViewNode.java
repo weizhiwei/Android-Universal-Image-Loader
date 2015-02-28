@@ -17,6 +17,7 @@ public abstract class NGViewNode extends ViewNode {
 	
 	public NGViewNode(String sourceUrl) {
 		super(sourceUrl);
+        supportPaging = false;
 	}
 	protected int pageNo;
 	protected boolean supportPaging;
