@@ -27,6 +27,7 @@ import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.widget.RecyclerView;
 import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -45,6 +46,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -152,6 +154,7 @@ public class ViewItemPagerActivity extends BaseActivity {
         	switch (myViewItem.getViewType()) {
 			case ViewItem.VIEW_TYPE_LIST:
 			case ViewItem.VIEW_TYPE_CARD_LIST:
+            case ViewItem.VIEW_TYPE_STORY_LIST:
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = (BaseAdapter) absListView.getAdapter();
 				break;
@@ -260,7 +263,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 			final BaseAdapter itemAdapter;
 			switch (viewItem.getViewType()) {
 			case ViewItem.VIEW_TYPE_LIST:
-			case ViewItem.VIEW_TYPE_CARD_LIST:
+            case ViewItem.VIEW_TYPE_CARD_LIST:
+            case ViewItem.VIEW_TYPE_STORY_LIST:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
@@ -620,7 +624,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
         @Override
         public int getItemViewType(int position) {
-            if (null != model.getHeaders()) {
+            if (null != model.getHeaders() && !model.getHeaders().isEmpty()) {
                 return model.getHeaders().get(position) == 1 ? 0 : 1;
             } else {
                 return 0;
@@ -629,8 +633,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		@Override
 		public int getCount() {
-			if (null != model.getHeaders()) {
-				return model.getHeaders().size();
+			if (null != model.getHeaders() && !model.getHeaders().isEmpty()) {
+                return model.getHeaders().size();
 			} else {
 				return null == model.getViewItems() ? 0 : model.getViewItems().size();
 			}
@@ -638,7 +642,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		@Override
 		public Object getItem(int position) {
-            if (null != model.getHeaders()) {
+            if (null != model.getHeaders() && !model.getHeaders().isEmpty()) {
                 int o = 0;
                 for (int i = 0; i < position; ++i) {
                     o += model.getHeaders().get(i);
@@ -666,6 +670,15 @@ public class ViewItemPagerActivity extends BaseActivity {
 					holder.text = (TextView) view.findViewById(R.id.text);
 					holder.image = (ImageView) view.findViewById(R.id.image);
 					break;
+                case ViewItem.VIEW_TYPE_STORY_LIST:
+                    view = getLayoutInflater().inflate(R.layout.item_pager_image, parent, false);
+                    holder.progressBar = (ProgressBar) view.findViewById(R.id.loading);
+                    holder.image = (ImageView) view.findViewById(R.id.image);
+                    holder.text = (TextView) view.findViewById(R.id.story);
+
+                    view.setLayoutParams(new ListView.LayoutParams(
+                            ListView.LayoutParams.FILL_PARENT, pager.getHeight()));
+                    break;
 				case ViewItem.VIEW_TYPE_CARD_LIST:
                     int itemViewType = getItemViewType(position);
 
@@ -722,7 +735,8 @@ public class ViewItemPagerActivity extends BaseActivity {
                     cardView.addView(holder.headerViewHolder.footer);
 
                     view = cardView;
-                    default:
+                    break;
+                default:
                     break;
 				}
 
@@ -752,7 +766,59 @@ public class ViewItemPagerActivity extends BaseActivity {
 				default:
 					break;
 				}
-			} else if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_CARD_LIST) {
+			} else if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_STORY_LIST) {
+                final ViewItem viewItem = model.getViewItems().get(position);
+
+                SpannableString text = buildPictureText(viewItem, true, true, true, true, true);
+                holder.text.setText(text);
+                holder.text.setMovementMethod(LinkMovementMethod.getInstance());
+                holder.text.setVisibility(View.VISIBLE);
+
+                switch (viewItem.getViewItemType()) {
+                    case ViewItem.VIEW_ITEM_TYPE_COLOR:
+                        view.setBackgroundColor(viewItem.getViewItemColor());
+                        holder.image.setVisibility(View.GONE);
+                        holder.progressBar.setVisibility(View.GONE);
+                        break;
+                    case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
+                        holder.image.setVisibility(View.VISIBLE);
+                        holder.image.setImageResource(viewItem.getViewItemImageResId());
+                        holder.progressBar.setVisibility(View.GONE);
+                        break;
+                    case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
+                        if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+                            holder.image.setVisibility(View.VISIBLE);
+                            imageLoader.displayImage(viewItem.getImageUrl(), holder.image, gridOptions, new SimpleImageLoadingListener() {
+                                        @Override
+                                        public void onLoadingStarted(String imageUri, View view) {
+                                            holder.progressBar.setProgress(0);
+                                            holder.progressBar.setVisibility(View.VISIBLE);
+                                        }
+
+                                        @Override
+                                        public void onLoadingFailed(String imageUri, View view,
+                                                                    FailReason failReason) {
+                                            holder.progressBar.setVisibility(View.GONE);
+                                        }
+
+                                        @Override
+                                        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                                            holder.progressBar.setVisibility(View.GONE);
+                                        }
+                                    }, new ImageLoadingProgressListener() {
+                                        @Override
+                                        public void onProgressUpdate(String imageUri, View view, int current,
+                                                                     int total) {
+                                            holder.progressBar.setProgress(Math.round(100.0f * current / total));
+                                        }
+                                    }
+                            );
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            } else if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_CARD_LIST) {
 
                 model.updateHeaderView(view, holder.headerViewHolder, position);
 

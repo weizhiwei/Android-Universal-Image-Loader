@@ -14,6 +14,7 @@ import com.wzw.ic.mvc.flickr.FlickrViewNodeStream;
 import com.wzw.ic.mvc.moko.MokoViewNode;
 import com.wzw.ic.mvc.moko.MokoViewNodeRoot;
 import com.wzw.ic.mvc.nationalgeographic.NGViewNode;
+import com.wzw.ic.mvc.nationalgeographic.NGViewNodePhotoOfTheDay;
 import com.wzw.ic.mvc.nationalgeographic.NGViewNodeRoot;
 
 public class RootViewNode extends ViewNode {
@@ -55,10 +56,12 @@ public class RootViewNode extends ViewNode {
                 new ViewItem(null, null, null, 0, new ViewNode("", Arrays.asList(new ViewItem(null, null, null, 0, new TempViewNode(null)
         ))))));
 
-        ViewItem feeds = new ViewItem("Following",  "feeds", null, ViewItem.VIEW_TYPE_CARD_LIST, new FeedsViewNode());
+        ViewItem feeds = new ViewItem("Following", "feeds", null, ViewItem.VIEW_TYPE_CARD_LIST, new FeedsViewNode());
 		feeds.setViewItemImageResId(R.drawable.ic_user);
 
-        this.viewItems = Arrays.asList(gallery, stream, albums, feeds);
+        ViewItem stories = new ViewItem("Stories", "stories", null, ViewItem.VIEW_TYPE_STORY_LIST, new NGViewNodePhotoOfTheDay());
+
+        this.viewItems = Arrays.asList(gallery, stream, albums, feeds, stories);
 	}
 	
 	public static RootViewNode getInstance() {
