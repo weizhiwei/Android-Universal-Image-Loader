@@ -31,7 +31,6 @@ public class FlickrViewNodeRoot extends FlickrViewNode implements ViewNodeRoot {
 
 	@Override
 	public List<ViewItem> getStream() {
-		return Arrays.asList(new ViewItem("", "", FLICKR_ICON, ViewItem.VIEW_TYPE_GRID, new FlickrViewNodeStream()),
-                new ViewItem("Galleries", "https://www.flickr.com/photos/66956608@N06/galleries/", FLICKR_ICON, ViewItem.VIEW_TYPE_CARD_LIST, new FlickrViewNodePeopleGalleries("66956608@N06")));
+		return Arrays.asList(new ViewItem("", "", FLICKR_ICON, ViewItem.VIEW_TYPE_GRID, new FlickrViewNodeStream()));
 	}
 }

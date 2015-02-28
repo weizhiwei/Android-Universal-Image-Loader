@@ -1,12 +1,16 @@
 package com.wzw.ic.mvc.root;
 
 import java.util.Arrays;
+import java.util.List;
 
 import com.nostra13.example.universalimageloader.R;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
+import com.wzw.ic.mvc.ViewNodeRoot;
 import com.wzw.ic.mvc.flickr.FlickrViewNode;
+import com.wzw.ic.mvc.flickr.FlickrViewNodePeopleGalleries;
 import com.wzw.ic.mvc.flickr.FlickrViewNodeRoot;
+import com.wzw.ic.mvc.flickr.FlickrViewNodeStream;
 import com.wzw.ic.mvc.moko.MokoViewNode;
 import com.wzw.ic.mvc.moko.MokoViewNodeRoot;
 import com.wzw.ic.mvc.nationalgeographic.NGViewNode;
@@ -43,17 +47,18 @@ public class RootViewNode extends ViewNode {
                 )));
 		gallery.setViewItemImageResId(R.drawable.ic_gallery);
 
-        ViewItem stream = new ViewItem("Explore", "stream", null, ViewItem.VIEW_TYPE_CARD_LIST, new StreamViewNode2(gallery));
+        ViewItem stream = new ViewItem("Interestingness", "stream", null, ViewItem.VIEW_TYPE_CARD_LIST, new StreamViewNode2(gallery));
         stream.setViewItemImageResId(R.drawable.ic_pictures);
+
+
+        ViewItem albums = new ViewItem("Albums", "stream", null, ViewItem.VIEW_TYPE_CARD_LIST, new StreamViewNode2(
+                new ViewItem(null, null, null, 0, new ViewNode("", Arrays.asList(new ViewItem(null, null, null, 0, new TempViewNode(null)
+        ))))));
 
         ViewItem feeds = new ViewItem("Following",  "feeds", null, ViewItem.VIEW_TYPE_CARD_LIST, new FeedsViewNode());
 		feeds.setViewItemImageResId(R.drawable.ic_user);
 
-        ViewItem domain = new ViewItem("Favourites", "domain", null, ViewItem.VIEW_TYPE_GRID, new StreamViewNode(gallery));
-        domain.setInitialZoomLevel(1);
-        domain.setViewItemImageResId(R.drawable.ic_pictures);
-
-        this.viewItems = Arrays.asList(gallery, feeds);
+        this.viewItems = Arrays.asList(gallery, stream, albums, feeds);
 	}
 	
 	public static RootViewNode getInstance() {
@@ -72,4 +77,18 @@ public class RootViewNode extends ViewNode {
 	public ViewItem getGalleryViewItem() {
 		return gallery;
 	}
+}
+
+class TempViewNode extends ViewNode implements ViewNodeRoot {
+
+    public TempViewNode(String sourceUrl) {
+        super(sourceUrl);
+    }
+
+    @Override
+    public List<ViewItem> getStream() {
+        return Arrays.asList(
+                new ViewItem("Albums", "https://www.flickr.com/photos/66956608@N06/galleries/", null, ViewItem.VIEW_TYPE_CARD_LIST, new FlickrViewNodePeopleGalleries("66956608@N06"))
+        );
+    }
 }

@@ -35,6 +35,6 @@ public class NGViewNodeRoot extends NGViewNode implements ViewNodeRoot {
 
 	@Override
 	public List<ViewItem> getStream() {
-		return Arrays.asList(stream);
+		return Arrays.asList();
 	}
 }
