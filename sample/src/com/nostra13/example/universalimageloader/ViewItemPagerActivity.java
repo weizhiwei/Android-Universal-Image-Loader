@@ -508,7 +508,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				break;
 			}
 
-			SpannableString text = buildPictureText(viewItem, true, false, false, false, false);
+			SpannableString text = buildPictureText(viewItem, true, true, false, false, false, false);
 			if (null != text && gridView.getNumColumns() < 3) {
 				holder.text.setVisibility(View.VISIBLE);
 				holder.text.setText(text);
@@ -671,35 +671,15 @@ public class ViewItemPagerActivity extends BaseActivity {
 					holder.image = (ImageView) view.findViewById(R.id.image);
 					break;
                 case ViewItem.VIEW_TYPE_STORY_LIST:
-                    view = getLayoutInflater().inflate(R.layout.item_pager_image, parent, false);
-                    holder.progressBar = (ProgressBar) view.findViewById(R.id.loading);
+                    view = getLayoutInflater().inflate(R.layout.item_story_view, parent, false);
+                    holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
                     holder.image = (ImageView) view.findViewById(R.id.image);
                     holder.text = (TextView) view.findViewById(R.id.story);
-
-                    view.setLayoutParams(new ListView.LayoutParams(
-                            ListView.LayoutParams.FILL_PARENT, pager.getHeight()));
-                    break;
-				case ViewItem.VIEW_TYPE_CARD_LIST:
-                    int itemViewType = getItemViewType(position);
-
-                    switch (itemViewType) {
-                        case 0:
-                            view = getLayoutInflater().inflate(R.layout.item_grid_image, parent, false);
-                            holder.image = (ImageView) view.findViewById(R.id.image);
-                            holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
-                            holder.text = (TextView) view.findViewById(R.id.text);
-                            break;
-                        case 1:
-                            view = getLayoutInflater().inflate(R.layout.item_spannable_grid, parent, false);
-                            holder.spannableGrid = (TwoWayView) view.findViewById(R.id.ic_spannable_grid);
-                            holder.spannableGrid.setHasFixedSize(true);
-                            break;
-                        default:
-                            break;
-                    }
-
+                    view.setLayoutParams(new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+                    ));
                     holder.headerViewHolder = model.createHolderFromHeaderView(
-                            getLayoutInflater().inflate(model.getHeaderViewResId(position, itemViewType), parent, false)
+                            getLayoutInflater().inflate(model.getHeaderViewResId(position, getItemViewType(position)), parent, false)
                     );
 
                     LinearLayout cardView = new LinearLayout(ViewItemPagerActivity.this);
@@ -714,19 +694,55 @@ public class ViewItemPagerActivity extends BaseActivity {
                     if (null != view.getParent()) {
                         ((ViewGroup) view.getParent()).removeView(view);
                     }
+                    cardView.addView(view);
+                    if (null != holder.headerViewHolder.footer.getParent()) {
+                        ((ViewGroup) holder.headerViewHolder.footer.getParent()).removeView(holder.headerViewHolder.footer);
+                    }
+                    cardView.addView(holder.headerViewHolder.footer);
+
+                    view = cardView;
+                    break;
+
+				case ViewItem.VIEW_TYPE_CARD_LIST:
+                    int itemViewType = getItemViewType(position);
+
                     switch (itemViewType) {
                         case 0:
+                            view = getLayoutInflater().inflate(R.layout.item_grid_image, parent, false);
+                            holder.image = (ImageView) view.findViewById(R.id.image);
+                            holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
+                            holder.text = (TextView) view.findViewById(R.id.text);
                             view.setLayoutParams(new LinearLayout.LayoutParams(
                                     LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
                             ));
                             break;
                         case 1:
+                            view = getLayoutInflater().inflate(R.layout.item_spannable_grid, parent, false);
+                            holder.spannableGrid = (TwoWayView) view.findViewById(R.id.ic_spannable_grid);
+                            holder.spannableGrid.setHasFixedSize(true);
                             view.setLayoutParams(new LinearLayout.LayoutParams(
                                     LinearLayout.LayoutParams.MATCH_PARENT, listView.getWidth()
                             ));
                             break;
                         default:
                             break;
+                    }
+
+                    holder.headerViewHolder = model.createHolderFromHeaderView(
+                            getLayoutInflater().inflate(model.getHeaderViewResId(position, itemViewType), parent, false)
+                    );
+
+                    cardView = new LinearLayout(ViewItemPagerActivity.this);
+                    cardView.setLayoutParams(new ListView.LayoutParams(
+                            ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
+                    cardView.setOrientation(LinearLayout.VERTICAL);
+
+                    if (null != holder.headerViewHolder.header.getParent()) {
+                        ((ViewGroup) holder.headerViewHolder.header.getParent()).removeView(holder.headerViewHolder.header);
+                    }
+                    cardView.addView(holder.headerViewHolder.header);
+                    if (null != view.getParent()) {
+                        ((ViewGroup) view.getParent()).removeView(view);
                     }
                     cardView.addView(view);
                     if (null != holder.headerViewHolder.footer.getParent()) {
@@ -767,9 +783,13 @@ public class ViewItemPagerActivity extends BaseActivity {
 					break;
 				}
 			} else if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_STORY_LIST) {
+                model.updateHeaderView(view, holder.headerViewHolder, position);
+
                 final ViewItem viewItem = model.getViewItems().get(position);
 
-                SpannableString text = buildPictureText(viewItem, true, true, true, true, true);
+                view.setBackgroundColor(randomColorForHeader(Math.abs(viewItem.hashCode())));
+
+                SpannableString text = buildPictureText(viewItem, false, false, true, true, true, false);
                 holder.text.setText(text);
                 holder.text.setMovementMethod(LinkMovementMethod.getInstance());
                 holder.text.setVisibility(View.VISIBLE);

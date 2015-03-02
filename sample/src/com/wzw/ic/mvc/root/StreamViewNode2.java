@@ -201,19 +201,24 @@ public class StreamViewNode2 extends ViewNode {
 		}
 		ViewItem viewItem = viewItems.get(n);
 		String caption = "";
+        if (!TextUtils.isEmpty(viewItem.getLabel())) {
+            caption += String.format("<b>%s</b>", viewItem.getLabel());
+        }
         String authorName = (viewItem.getAuthor() == null ? null : viewItem.getAuthor().getLabel());
         if (!TextUtils.isEmpty(authorName)) {
-            caption += String.format(
-                    "<b>%s</b> posted %d picture%s", authorName, headers.get(position), headers.get(position) > 1 ? "s" : "");
-        }
-		if (null != viewItem.getPostedDate()) {
-			if (!TextUtils.isEmpty(caption)) {
-				caption += "<br/>";
+            if (!TextUtils.isEmpty(caption)) {
+				caption += "<br/>  ";
 			}
-			caption += DateUtils.getRelativeTimeSpanString(
-							viewItem.getPostedDate().getTime(), (new Date()).getTime(),
-							DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE);
-		}
+            caption += String.format("by <i>%s</i>", authorName);
+        }
+//		if (null != viewItem.getPostedDate()) {
+//			if (!TextUtils.isEmpty(caption)) {
+//				caption += "<br/>  ";
+//			}
+//			caption += DateUtils.getRelativeTimeSpanString(
+//							viewItem.getPostedDate().getTime(), (new Date()).getTime(),
+//							DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE);
+//		}
 		if (!TextUtils.isEmpty(caption)) {
 			((StreamHeaderViewHolder)holder).textView.setText(new SpannableString(Html.fromHtml(caption)));
 		}

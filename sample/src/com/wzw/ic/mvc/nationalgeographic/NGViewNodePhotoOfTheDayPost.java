@@ -4,15 +4,21 @@ import android.text.TextUtils;
 
 import com.wzw.ic.mvc.ViewItem;
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class NGViewNodePhotoOfTheDayPost extends NGViewNode {
+
+    static final Pattern AUTHOR_PATTERN = Pattern.compile(".*Photograph by ([^,]+),.*");
 
 	public NGViewNodePhotoOfTheDayPost(String sourceUrl) {
         super(sourceUrl);
@@ -39,10 +45,40 @@ public class NGViewNodePhotoOfTheDayPost extends NGViewNode {
                             viewItem.setLabel(titleElems.get(0).ownText());
                         }
 
-                        Elements authorElems = elem.select("p.credit a");
+                        Elements authorElems = elem.select("p.credit");
                         if (null != authorElems && authorElems.size() > 0) {
-                            ViewItem authorItem = new ViewItem(authorElems.get(0).ownText(), authorElems.get(0).attr("href"), "", ViewItem.VIEW_TYPE_GRID, null);
-                            viewItem.setAuthor(authorItem);
+                            Matcher m = AUTHOR_PATTERN.matcher(authorElems.get(0).text());
+                            if (m.matches()) {
+                                ViewItem authorItem = new ViewItem(m.group(1), null,
+                                        "http://media-members.nationalgeographic.com/static-media/images/css_images/nationalGeographic_default_avatar.jpg", ViewItem.VIEW_TYPE_GRID, null);
+                                viewItem.setAuthor(authorItem);
+
+                                Elements authorLinkElems = authorElems.select("a");
+                                if (null != authorLinkElems && authorLinkElems.size() > 0) {
+                                    authorItem.setNodeUrl(authorLinkElems.get(0).attr("href"));
+                                    Document doc = null;
+                                    try {
+                                        doc = Jsoup
+                                                .connect(authorItem.getNodeUrl())
+                                                .get();
+                                    } catch (IOException e) {
+                                        // TODO Auto-generated catch block
+                                        e.printStackTrace();
+                                    }
+                                    if (doc != null) {
+                                        Elements avatarElems = doc.select("div.avatar img");
+                                        if (null != avatarElems && avatarElems.size() > 0) {
+                                            String avatarUrl = avatarElems.get(0).attr("src");
+                                            if (!TextUtils.isEmpty(avatarUrl)) {
+                                                if (avatarUrl.startsWith("//")) {
+                                                    avatarUrl = "http:" + avatarUrl;
+                                                }
+                                                authorItem.setImageUrl(avatarUrl);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
 
 //                        Elements pubDateElems = elem.select("p.publication_time");
@@ -54,9 +90,12 @@ public class NGViewNodePhotoOfTheDayPost extends NGViewNode {
                         Elements descElems = elem.select("p:not([class], :has(em:only-child))");
                         if (null != descElems && descElems.size() > 0) {
                             StringBuilder sb = new StringBuilder();
+                            int i = 0;
                             for (Element e: descElems) {
+                                if (0 != i++) {
+                                    sb.append("<br/><br/>");
+                                }
                                 sb.append(e.ownText());
-                                sb.append("<br/><br/>");
                             }
                             viewItem.setStory(sb.toString());
                         }

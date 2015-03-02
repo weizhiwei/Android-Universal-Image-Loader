@@ -293,9 +293,9 @@ public abstract class BaseActivity extends Activity implements ViewNode.ViewItem
 		        PackageManager.DONT_KILL_APP);
 	}
 	
-	protected SpannableString buildPictureText(final ViewItem viewItem, boolean needAuthor, boolean needStory, boolean bigFont, boolean labelLinkOn, boolean ownerLinkOn) {
+	protected SpannableString buildPictureText(final ViewItem viewItem, boolean needTitle, boolean needAuthor, boolean needStory, boolean bigFont, boolean labelLinkOn, boolean ownerLinkOn) {
 		String story = "";
-		if (!TextUtils.isEmpty(viewItem.getLabel())) {
+		if (needTitle && !TextUtils.isEmpty(viewItem.getLabel())) {
 			String LINK = labelLinkOn ? "<a href=\"%s\">%s</a>" : "%2$s";
 			String FONT = String.format(bigFont ? "<big><b>%s</b></big>" : "%s", LINK);
 			story += String.format(FONT, viewItem.getNodeUrl(), TextUtils.htmlEncode(viewItem.getLabel()));
@@ -316,7 +316,7 @@ public abstract class BaseActivity extends Activity implements ViewNode.ViewItem
 		SpannableString ss = null;
 		if (!TextUtils.isEmpty(story)) {
 			ss = new SpannableString(Html.fromHtml(story));
-			if (ownerLinkOn && !TextUtils.isEmpty(authorName)) {
+			if (needAuthor && ownerLinkOn && !TextUtils.isEmpty(authorName)) {
 				int start = ss.toString().indexOf("by " + authorName) + 3;
 				int end = start + authorName.length();
 				ss.setSpan(new ClickableSpan () {
