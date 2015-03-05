@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 
 public class NGViewNodePhotoOfTheDayPost extends NGViewNode {
 
-    static final Pattern AUTHOR_PATTERN = Pattern.compile(".*Photograph by ([^,]+),.*");
+    static final Pattern AUTHOR_PATTERN = Pattern.compile(".*Photograph by ([^,]+).*");
 
 	public NGViewNodePhotoOfTheDayPost(String sourceUrl) {
         super(sourceUrl);
@@ -87,7 +87,7 @@ public class NGViewNodePhotoOfTheDayPost extends NGViewNode {
 //                            viewItem.setPostedDate(parsePubDate(pubDateStr));
 //                        }
 
-                        Elements descElems = elem.select("p:not([class], :has(em:only-child))");
+                        Elements descElems = elem.select("p:not([class]):containsOwn( )");
                         if (null != descElems && descElems.size() > 0) {
                             StringBuilder sb = new StringBuilder();
                             int i = 0;
@@ -95,7 +95,7 @@ public class NGViewNodePhotoOfTheDayPost extends NGViewNode {
                                 if (0 != i++) {
                                     sb.append("<br/><br/>");
                                 }
-                                sb.append(e.ownText());
+                                sb.append(e.text());
                             }
                             viewItem.setStory(sb.toString());
                         }
