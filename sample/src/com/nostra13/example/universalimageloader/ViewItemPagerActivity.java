@@ -155,6 +155,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			case ViewItem.VIEW_TYPE_LIST:
 			case ViewItem.VIEW_TYPE_CARD_LIST:
             case ViewItem.VIEW_TYPE_STORY_LIST:
+            case ViewItem.VIEW_TYPE_PLACE_LIST:
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = (BaseAdapter) absListView.getAdapter();
 				break;
@@ -269,6 +270,11 @@ public class ViewItemPagerActivity extends BaseActivity {
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
 				break;
+            case ViewItem.VIEW_TYPE_PLACE_LIST:
+                contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
+                absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
+                itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
+                break;
 			case ViewItem.VIEW_TYPE_GRID:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
@@ -704,6 +710,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     break;
 
 				case ViewItem.VIEW_TYPE_CARD_LIST:
+                case ViewItem.VIEW_TYPE_PLACE_LIST:
                     int itemViewType = getItemViewType(position);
 
                     switch (itemViewType) {
@@ -838,7 +845,8 @@ public class ViewItemPagerActivity extends BaseActivity {
                     default:
                         break;
                 }
-            } else if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_CARD_LIST) {
+            } else if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_CARD_LIST ||
+                    myViewItem.getViewType() == ViewItem.VIEW_TYPE_PLACE_LIST) {
 
                 model.updateHeaderView(view, holder.headerViewHolder, position);
 
@@ -943,7 +951,12 @@ public class ViewItemPagerActivity extends BaseActivity {
                             itemView.setLayoutParams(lp);
 
                             final ViewItem viewItem = model.getViewItems().get(offset + position);
-                            holder.text.setVisibility(View.GONE);
+                            if (!TextUtils.isEmpty(viewItem.getLabel())) {
+                                holder.text.setVisibility(View.VISIBLE);
+                                holder.text.setText(viewItem.getLabel());
+                            } else {
+                                holder.text.setVisibility(View.GONE);
+                            }
                             switch (viewItem.getViewItemType()) {
                                 case ViewItem.VIEW_ITEM_TYPE_COLOR:
                                     itemView.setBackgroundColor(viewItem.getViewItemColor());

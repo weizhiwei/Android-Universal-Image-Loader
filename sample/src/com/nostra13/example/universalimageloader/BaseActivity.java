@@ -263,14 +263,11 @@ public abstract class BaseActivity extends Activity implements ViewNode.ViewItem
 	public void startViewItemActivity(ViewNode parent, ViewItem viewItem) {
 		Intent intent = null;
 		switch (viewItem.getViewType()) {
-		case ViewItem.VIEW_TYPE_GRID:
-		case ViewItem.VIEW_TYPE_LIST:
-			intent = new Intent(this, ViewItemPagerActivity.class);
-			break;
 		case ViewItem.VIEW_TYPE_IMAGE_PAGER:
 			intent = new Intent(this, ImagePagerActivity.class);
 			break;
 		default:
+            intent = new Intent(this, ViewItemPagerActivity.class);
 			break;
 		}
 		if (null != intent) {
