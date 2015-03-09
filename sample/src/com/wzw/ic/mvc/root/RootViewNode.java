@@ -15,6 +15,7 @@ import com.wzw.ic.mvc.moko.MokoViewNodeRoot;
 import com.wzw.ic.mvc.nationalgeographic.NGViewNode;
 import com.wzw.ic.mvc.nationalgeographic.NGViewNodePhotoOfTheDay;
 import com.wzw.ic.mvc.nationalgeographic.NGViewNodeRoot;
+import com.wzw.ic.mvc.panoramio.PanoramioViewNodeSightSeeing;
 
 public class RootViewNode extends ViewNode {
 
@@ -62,9 +63,9 @@ public class RootViewNode extends ViewNode {
                 new ViewItem(null, null, null, 0, new ViewNode("", Arrays.asList(new ViewItem(null, null, null, 0, new TempViewNode(new NGViewNodePhotoOfTheDay())
         ))))));
 
-        ViewItem places = new ViewItem("Explore", "places", null, ViewItem.VIEW_TYPE_PLACE_LIST, new PlacesViewNode());
+        ViewItem places = new ViewItem("Explore", "places", null, ViewItem.VIEW_TYPE_PLACE_LIST, new PlacesViewNode(new ViewNode[] { new PanoramioViewNodeSightSeeing() }));
 
-        this.viewItems = Arrays.asList(gallery, stream, albums, feeds, stories, places);
+        this.viewItems = Arrays.asList(places, gallery, stream, albums, feeds, stories);
 	}
 	
 	public static RootViewNode getInstance() {

@@ -213,7 +213,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		if (parentModel.getViewItems().size() <= 1) {
 			return;
 		}
-		actionBar.selectTab(actionBar.getTabAt(position));
+		actionBar.setSelectedNavigationItem(position);
 	}
 	
 	private class ViewItemPagerAdapter extends PagerAdapter {

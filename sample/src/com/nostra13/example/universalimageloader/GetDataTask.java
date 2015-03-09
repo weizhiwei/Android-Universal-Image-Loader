@@ -7,7 +7,7 @@ import android.widget.BaseAdapter;
 
 import com.wzw.ic.mvc.ViewNode;
 
-class GetDataTask extends AsyncTask<Object, Void, Void> {
+class GetDataTask extends AsyncTask<Object, Integer, Void> {
 
 	public interface GetDataTaskFinishedListener {
 		public void onGetDataTaskFinished(ViewNode model);
@@ -50,12 +50,26 @@ class GetDataTask extends AsyncTask<Object, Void, Void> {
 		// Simulates a background job.
 		boolean reload = (Boolean) params[0];
 		if (reload) {
+            publishProgress(-1);
 			model.reload();
 		} else {
 			model.loadOneMorePage();
 		}
 		return null;
 	}
+
+    @Override
+    protected void onProgressUpdate(Integer... progress) {
+        if (-1 == progress[0]) { // simulates a clear before adding the results
+            model.clearDetachment();
+            if (null != itemAdapter) {
+                itemAdapter.notifyDataSetChanged();
+            }
+            if (null != pagerAdapter) {
+                pagerAdapter.notifyDataSetChanged();
+            }
+        }
+    }
 
 	@Override
 	protected void onCancelled(Void result) {

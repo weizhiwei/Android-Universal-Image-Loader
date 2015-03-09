@@ -36,7 +36,13 @@ public class ViewNode extends IcObject {
 		actionsCopy.addAll(actions);
 		isDetached = true;
 	}
-	
+
+    public void clearDetachment() {
+        viewItemsCopy.clear();
+        headersCopy.clear();
+        actionsCopy.clear();
+    }
+
 	public void attach() {
 		isDetached = false;
 		viewItemsCopy = null;
