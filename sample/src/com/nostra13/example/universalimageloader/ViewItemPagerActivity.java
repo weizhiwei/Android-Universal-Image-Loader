@@ -1,23 +1,9 @@
 package com.nostra13.example.universalimageloader;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-
-import org.lucasr.twowayview.ItemClickSupport;
-import org.lucasr.twowayview.widget.DividerItemDecoration;
-import org.lucasr.twowayview.widget.SpannableGridLayoutManager;
-import org.lucasr.twowayview.widget.TwoWayView;
-
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.FragmentTransaction;
-import android.database.DataSetObserver;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
@@ -28,7 +14,6 @@ import android.support.v7.widget.RecyclerView;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -39,19 +24,20 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.MapFragment;
-
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
@@ -60,10 +46,17 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListe
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.tonicartos.widget.stickygridheaders.StickyGridHeadersBaseAdapter;
 import com.tonicartos.widget.stickygridheaders.StickyGridHeadersGridView;
-import com.tonicartos.widget.stickygridheaders.StickyGridHeadersGridView.OnHeaderClickListener;
 import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
+
+import org.lucasr.twowayview.ItemClickSupport;
+import org.lucasr.twowayview.widget.SpannableGridLayoutManager;
+import org.lucasr.twowayview.widget.TwoWayView;
+
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ViewItemPagerActivity extends BaseActivity {
 	DisplayImageOptions gridOptions, listOptions, authorIconOptions;
@@ -271,17 +264,21 @@ public class ViewItemPagerActivity extends BaseActivity {
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
-                MapFragment mapFragment = (MapFragment) getFragmentManager()
-                        .findFragmentById(R.id.ic_map);
+                MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.ic_map);
                 mapFragment.getView().setVisibility(View.GONE);
 				break;
             case ViewItem.VIEW_TYPE_PLACE_LIST:
                 contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
                 absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
                 itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
-                mapFragment = (MapFragment) getFragmentManager()
-                        .findFragmentById(R.id.ic_map);
+                mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.ic_map);
                 mapFragment.getView().setVisibility(View.VISIBLE);
+                mapFragment.getMapAsync(new OnMapReadyCallback() {
+                    @Override
+                    public void onMapReady(GoogleMap googleMap) {
+                        googleMap.moveCamera(CameraUpdateFactory.newCameraPosition((new CameraPosition.Builder()).target(new LatLng(0, 0)).zoom(0).build()));
+                    }
+                });
                 break;
 			case ViewItem.VIEW_TYPE_GRID:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
