@@ -25,12 +25,17 @@ public class PanoramioViewNodeSightSeeing extends PanoramioViewNode {
 		Elements continentElems = page.select("div.continent");
 		if (null != continentElems && continentElems.size() > 0) {
 			viewItems = new ArrayList<ViewItem>();
-			for (Element elem: continentElems) {
+            headers.clear();
+            for (Element elem: continentElems) {
                 Elements titleElems = elem.select("h3");
 				String continentName = null;
 				if (null != titleElems && titleElems.size() > 0) {
                     continentName = titleElems.get(0).text();
 				}
+
+                if (continentName.equals("Antarctica")) {
+                    continue;
+                }
 
                 Elements placeElems = elem.select("li a");
                 for (Element placeElem: placeElems) {
@@ -42,4 +47,9 @@ public class PanoramioViewNodeSightSeeing extends PanoramioViewNode {
 		}
 		return viewItems;
 	}
+
+    @Override
+    public List<ViewItem> loadOneMorePage() {
+        return null;
+    }
 }

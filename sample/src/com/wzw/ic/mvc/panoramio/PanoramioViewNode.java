@@ -47,9 +47,9 @@ public abstract class PanoramioViewNode extends ViewNode {
 			pageViewItems = extractViewItemsFromPage(doc);
 			if (null != pageViewItems && pageViewItems.size() > 0) {
 				pageNo = newPageNo;
-				if (reload) {
-					viewItems.clear();
-				}
+                if (reload) {
+                    viewItems.clear();
+                }
 				viewItems.addAll(pageViewItems);
 			}
 		}

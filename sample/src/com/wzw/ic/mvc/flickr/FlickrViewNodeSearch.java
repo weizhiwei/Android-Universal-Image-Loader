@@ -19,6 +19,7 @@ import java.util.List;
 public class FlickrViewNodeSearch extends FlickrViewNode {
 	protected int pageNo;
     protected SearchParameters searchParams;
+    protected int perPage;
 
 	public FlickrViewNodeSearch(String sourceUrl) {
 		super(sourceUrl);
@@ -28,10 +29,16 @@ public class FlickrViewNodeSearch extends FlickrViewNode {
         searchParams.setSort(SearchParameters.RELEVANCE);
         searchParams.setHasGeo(true);
         searchParams.setExtras(EXTRAS);
+
+        perPage = 30;
 	}
 
     public SearchParameters getSearchParameters() {
         return searchParams;
+    }
+
+    public void setPerPage(int perPage) {
+        this.perPage = perPage;
     }
 
 	@Override
@@ -52,7 +59,7 @@ public class FlickrViewNodeSearch extends FlickrViewNode {
         PhotosInterface photosInterface = f.getPhotosInterface();
         PhotoList photoList = null;
 		try {
-			photoList = photosInterface.search(searchParams, 30, newPageNo);
+			photoList = photosInterface.search(searchParams, perPage, newPageNo);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
