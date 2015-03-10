@@ -48,6 +48,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.MapFragment;
+
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -269,11 +271,17 @@ public class ViewItemPagerActivity extends BaseActivity {
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
+                MapFragment mapFragment = (MapFragment) getFragmentManager()
+                        .findFragmentById(R.id.ic_map);
+                mapFragment.getView().setVisibility(View.GONE);
 				break;
             case ViewItem.VIEW_TYPE_PLACE_LIST:
                 contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
                 absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
                 itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
+                mapFragment = (MapFragment) getFragmentManager()
+                        .findFragmentById(R.id.ic_map);
+                mapFragment.getView().setVisibility(View.VISIBLE);
                 break;
 			case ViewItem.VIEW_TYPE_GRID:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
