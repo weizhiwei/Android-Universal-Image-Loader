@@ -33,6 +33,8 @@ import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -61,11 +63,13 @@ import java.util.List;
 public class ViewItemPagerActivity extends BaseActivity {
 	DisplayImageOptions gridOptions, listOptions, authorIconOptions;
 	ViewPager pager;
-	
+    MapView mapView;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.ac_view_item_pager);
+
+        setContentView(R.layout.ac_view_item_pager);
 		
 		setModelFromIntent();
 		
@@ -130,16 +134,52 @@ public class ViewItemPagerActivity extends BaseActivity {
 		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
 		// trigger a initial update of page 0
 		myViewItem = null;
+
+        MapsInitializer.initialize(this);
+        mapView = new MapView(this);
+        mapView.onCreate(savedInstanceState);
 	}
 	
-//	@Override
-//	public void onResume() {
-//		super.onResume();
-//		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
-//		// trigger a initial update of page 0
-//		myViewItem = null;
-//	}
-	
+	@Override
+	public void onResume() {
+		super.onResume();
+        if (null != mapView) {
+            mapView.onResume();
+        }
+	}
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (null != mapView) {
+            mapView.onPause();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (null != mapView) {
+            mapView.onDestroy();
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (null != mapView) {
+            mapView.onSaveInstanceState(outState);
+        }
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        if (null != mapView) {
+            mapView.onLowMemory();
+        }
+    }
+
 	private void updateCurrentPage() {
         if (model.supportReloading() && model.getViewItems().isEmpty()) {
         	View contentView = (View) pager.findViewWithTag(pager.getCurrentItem());
@@ -264,16 +304,18 @@ public class ViewItemPagerActivity extends BaseActivity {
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
-                MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.ic_map);
-                mapFragment.getView().setVisibility(View.GONE);
-				break;
+                break;
             case ViewItem.VIEW_TYPE_PLACE_LIST:
-                contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
+                contentView = getLayoutInflater().inflate(R.layout.ac_place_list, view, false);
                 absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
                 itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
-                mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.ic_map);
-                mapFragment.getView().setVisibility(View.VISIBLE);
-                mapFragment.getMapAsync(new OnMapReadyCallback() {
+                ViewGroup container = (ViewGroup) contentView.findViewById(R.id.ic_mapcontainer);
+                if (null != mapView.getParent()) {
+                    ((ViewGroup) mapView.getParent()).removeView(mapView);
+                }
+                container.addView(mapView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewItemPagerActivity.this.getResources().getDimensionPixelSize(R.dimen.map_view_height)));
+                mapView.getMapAsync(new OnMapReadyCallback() {
                     @Override
                     public void onMapReady(GoogleMap googleMap) {
                         googleMap.moveCamera(CameraUpdateFactory.newCameraPosition((new CameraPosition.Builder()).target(new LatLng(0, 0)).zoom(0).build()));
