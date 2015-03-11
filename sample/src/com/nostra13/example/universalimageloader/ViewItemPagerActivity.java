@@ -313,14 +313,15 @@ public class ViewItemPagerActivity extends BaseActivity {
                 if (null != mapView.getParent()) {
                     ((ViewGroup) mapView.getParent()).removeView(mapView);
                 }
-                container.addView(mapView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewItemPagerActivity.this.getResources().getDimensionPixelSize(R.dimen.map_view_height)));
+                container.addView(mapView, 1, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewItemPagerActivity.this.getResources().getDimensionPixelSize(R.dimen.map_view_height))); // after address bar
                 mapView.getMapAsync(new OnMapReadyCallback() {
                     @Override
                     public void onMapReady(GoogleMap googleMap) {
                         googleMap.moveCamera(CameraUpdateFactory.newCameraPosition((new CameraPosition.Builder()).target(new LatLng(0, 0)).zoom(0).build()));
                     }
                 });
+//                ((ListView) absListView).setDividerHeight(0);
                 break;
 			case ViewItem.VIEW_TYPE_GRID:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
@@ -728,32 +729,32 @@ public class ViewItemPagerActivity extends BaseActivity {
                     holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
                     holder.image = (ImageView) view.findViewById(R.id.image);
                     holder.text = (TextView) view.findViewById(R.id.story);
-                    view.setLayoutParams(new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
-                    ));
-                    holder.headerViewHolder = model.createHolderFromHeaderView(
-                            getLayoutInflater().inflate(model.getHeaderViewResId(position, getItemViewType(position)), parent, false)
-                    );
 
-                    LinearLayout cardView = new LinearLayout(ViewItemPagerActivity.this);
-                    cardView.setLayoutParams(new ListView.LayoutParams(
-                            ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
-                    cardView.setOrientation(LinearLayout.VERTICAL);
+                    if (model.getHeaderViewResId(position, getItemViewType(position)) > 0) {
+                        holder.headerViewHolder = model.createHolderFromHeaderView(
+                                getLayoutInflater().inflate(model.getHeaderViewResId(position, getItemViewType(position)), parent, false)
+                        );
 
-                    if (null != holder.headerViewHolder.header.getParent()) {
-                        ((ViewGroup) holder.headerViewHolder.header.getParent()).removeView(holder.headerViewHolder.header);
-                    }
-                    cardView.addView(holder.headerViewHolder.header);
-                    if (null != view.getParent()) {
-                        ((ViewGroup) view.getParent()).removeView(view);
-                    }
-                    cardView.addView(view);
-                    if (null != holder.headerViewHolder.footer.getParent()) {
-                        ((ViewGroup) holder.headerViewHolder.footer.getParent()).removeView(holder.headerViewHolder.footer);
-                    }
-                    cardView.addView(holder.headerViewHolder.footer);
+                        LinearLayout cardView = new LinearLayout(ViewItemPagerActivity.this);
+                        cardView.setLayoutParams(new ListView.LayoutParams(
+                                ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
+                        cardView.setOrientation(LinearLayout.VERTICAL);
 
-                    view = cardView;
+                        if (null != holder.headerViewHolder.header.getParent()) {
+                            ((ViewGroup) holder.headerViewHolder.header.getParent()).removeView(holder.headerViewHolder.header);
+                        }
+                        cardView.addView(holder.headerViewHolder.header);
+                        if (null != view.getParent()) {
+                            ((ViewGroup) view.getParent()).removeView(view);
+                        }
+                        cardView.addView(view);
+                        if (null != holder.headerViewHolder.footer.getParent()) {
+                            ((ViewGroup) holder.headerViewHolder.footer.getParent()).removeView(holder.headerViewHolder.footer);
+                        }
+                        cardView.addView(holder.headerViewHolder.footer);
+
+                        view = cardView;
+                    }
                     break;
 
 				case ViewItem.VIEW_TYPE_CARD_LIST:
@@ -766,45 +767,61 @@ public class ViewItemPagerActivity extends BaseActivity {
                             holder.image = (ImageView) view.findViewById(R.id.image);
                             holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
                             holder.text = (TextView) view.findViewById(R.id.text);
-                            view.setLayoutParams(new LinearLayout.LayoutParams(
-                                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+                            view.setLayoutParams(new AbsListView.LayoutParams(
+                                    AbsListView.LayoutParams.MATCH_PARENT, AbsListView.LayoutParams.WRAP_CONTENT
                             ));
                             break;
                         case 1:
                             view = getLayoutInflater().inflate(R.layout.item_spannable_grid, parent, false);
                             holder.spannableGrid = (TwoWayView) view.findViewById(R.id.ic_spannable_grid);
                             holder.spannableGrid.setHasFixedSize(true);
-                            view.setLayoutParams(new LinearLayout.LayoutParams(
-                                    LinearLayout.LayoutParams.MATCH_PARENT, listView.getWidth()
+                            view.setLayoutParams(new AbsListView.LayoutParams(
+                                    AbsListView.LayoutParams.MATCH_PARENT, listView.getWidth()
                             ));
                             break;
                         default:
                             break;
                     }
 
-                    holder.headerViewHolder = model.createHolderFromHeaderView(
-                            getLayoutInflater().inflate(model.getHeaderViewResId(position, itemViewType), parent, false)
-                    );
+                    if (model.getHeaderViewResId(position, itemViewType) > 0) {
+                        switch (itemViewType) {
+                            case 0:
+                                view.setLayoutParams(new ListView.LayoutParams(
+                                        ListView.LayoutParams.MATCH_PARENT, ListView.LayoutParams.WRAP_CONTENT
+                                ));
+                                break;
+                            case 1:
+                                view.setLayoutParams(new ListView.LayoutParams(
+                                        ListView.LayoutParams.MATCH_PARENT, listView.getWidth()
+                                ));
+                                break;
+                            default:
+                                break;
+                        }
+                        holder.headerViewHolder = model.createHolderFromHeaderView(
+                                getLayoutInflater().inflate(model.getHeaderViewResId(position, itemViewType), parent, false)
+                        );
 
-                    cardView = new LinearLayout(ViewItemPagerActivity.this);
-                    cardView.setLayoutParams(new ListView.LayoutParams(
-                            ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
-                    cardView.setOrientation(LinearLayout.VERTICAL);
+                        LinearLayout cardView = new LinearLayout(ViewItemPagerActivity.this);
+                        cardView.setLayoutParams(new ListView.LayoutParams(
+                                ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
+                        cardView.setOrientation(LinearLayout.VERTICAL);
 
-                    if (null != holder.headerViewHolder.header.getParent()) {
-                        ((ViewGroup) holder.headerViewHolder.header.getParent()).removeView(holder.headerViewHolder.header);
-                    }
-                    cardView.addView(holder.headerViewHolder.header);
-                    if (null != view.getParent()) {
-                        ((ViewGroup) view.getParent()).removeView(view);
-                    }
-                    cardView.addView(view);
-                    if (null != holder.headerViewHolder.footer.getParent()) {
-                        ((ViewGroup) holder.headerViewHolder.footer.getParent()).removeView(holder.headerViewHolder.footer);
-                    }
-                    cardView.addView(holder.headerViewHolder.footer);
+                        if (null != holder.headerViewHolder.header.getParent()) {
+                            ((ViewGroup) holder.headerViewHolder.header.getParent()).removeView(holder.headerViewHolder.header);
+                        }
+                        cardView.addView(holder.headerViewHolder.header);
+                        if (null != view.getParent()) {
+                            ((ViewGroup) view.getParent()).removeView(view);
+                        }
+                        cardView.addView(view);
+                        if (null != holder.headerViewHolder.footer.getParent()) {
+                            ((ViewGroup) holder.headerViewHolder.footer.getParent()).removeView(holder.headerViewHolder.footer);
+                        }
+                        cardView.addView(holder.headerViewHolder.footer);
 
-                    view = cardView;
+                        view = cardView;
+                    }
                     break;
                 default:
                     break;
