@@ -34,6 +34,8 @@ import android.widget.TextView;
 
 import com.esri.android.map.GraphicsLayer;
 import com.esri.android.map.MapView;
+import com.esri.android.toolkit.map.MapViewHelper;
+import com.esri.core.geometry.Latlon;
 import com.esri.core.geometry.Point;
 import com.esri.core.map.Graphic;
 import com.esri.core.symbol.SimpleMarkerSymbol;
@@ -266,6 +268,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                 final MapView mapView = (MapView) contentView.findViewById(R.id.ic_map);
 
                 mapView.enableWrapAround(true);
+
 //                ((ListView) absListView).setDividerHeight(0);
                 absListView.setOnScrollListener(new AbsListView.OnScrollListener() {
                     @Override
@@ -276,7 +279,8 @@ public class ViewItemPagerActivity extends BaseActivity {
                     @Override
                     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                         if (null != mapView) {
-
+                            MapViewHelper mapViewHelper = new MapViewHelper(mapView);
+                            mapViewHelper.removeAllGraphics();
                             for (int i = firstVisibleItem; i < visibleItemCount; ++i) {
                                 int o = 0;
                                 for (int j = 0; j < i; ++j) {
@@ -286,14 +290,9 @@ public class ViewItemPagerActivity extends BaseActivity {
                                 final int hash = Math.abs(childModel.getViewItems().get(o).hashCode());
                                 int albumPicCount = calcAlbumPicCountForHeader(header, hash);
 
-                                GraphicsLayer layer = new GraphicsLayer();
-                                mapView.addLayer(layer);
                                 for (int j = 0; j < albumPicCount; ++j) {
                                     FlickrViewNodeSearch node = (FlickrViewNodeSearch) childModel.getViewItems().get(o + j).getViewNode();
-                                    SimpleMarkerSymbol simpleMarker = new SimpleMarkerSymbol(Color.RED, 1, SimpleMarkerSymbol.STYLE.CIRCLE);
-                                    Point pointGeometry = new Point(Double.parseDouble(node.getSearchParameters().getLatitude()), Double.parseDouble(node.getSearchParameters().getLongitude()));
-                                    Graphic pointGraphic = new Graphic(pointGeometry, simpleMarker);
-                                    layer.addGraphic(pointGraphic);
+                                    mapViewHelper.addMarkerGraphic(Double.parseDouble(node.getSearchParameters().getLatitude()), Double.parseDouble(node.getSearchParameters().getLongitude()),"a", null, 0, null, false, 0);
                                 }
                             }
                         }
