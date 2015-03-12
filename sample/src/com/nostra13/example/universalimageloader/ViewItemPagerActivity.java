@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.FragmentTransaction;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
@@ -31,14 +32,11 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.MapsInitializer;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.CameraPosition;
+import com.esri.android.map.GraphicsLayer;
+import com.esri.android.map.MapView;
+import com.esri.core.geometry.Point;
+import com.esri.core.map.Graphic;
+import com.esri.core.symbol.SimpleMarkerSymbol;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
@@ -51,6 +49,7 @@ import com.tonicartos.widget.stickygridheaders.StickyGridHeadersGridView;
 import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
+import com.wzw.ic.mvc.flickr.FlickrViewNodeSearch;
 
 import org.lucasr.twowayview.ItemClickSupport;
 import org.lucasr.twowayview.widget.SpannableGridLayoutManager;
@@ -63,7 +62,6 @@ import java.util.List;
 public class ViewItemPagerActivity extends BaseActivity {
 	DisplayImageOptions gridOptions, listOptions, authorIconOptions;
 	ViewPager pager;
-    MapView mapView;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -134,51 +132,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
 		// trigger a initial update of page 0
 		myViewItem = null;
-
-        MapsInitializer.initialize(this);
-        mapView = new MapView(this);
-        mapView.onCreate(savedInstanceState);
 	}
-	
-	@Override
-	public void onResume() {
-		super.onResume();
-        if (null != mapView) {
-            mapView.onResume();
-        }
-	}
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (null != mapView) {
-            mapView.onPause();
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (null != mapView) {
-            mapView.onDestroy();
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (null != mapView) {
-            mapView.onSaveInstanceState(outState);
-        }
-    }
-
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-        if (null != mapView) {
-            mapView.onLowMemory();
-        }
-    }
 
 	private void updateCurrentPage() {
         if (model.supportReloading() && model.getViewItems().isEmpty()) {
@@ -309,19 +263,42 @@ public class ViewItemPagerActivity extends BaseActivity {
                 contentView = getLayoutInflater().inflate(R.layout.ac_place_list, view, false);
                 absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
                 itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
-                ViewGroup container = (ViewGroup) contentView.findViewById(R.id.ic_mapcontainer);
-                if (null != mapView.getParent()) {
-                    ((ViewGroup) mapView.getParent()).removeView(mapView);
-                }
-                container.addView(mapView, 1, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewItemPagerActivity.this.getResources().getDimensionPixelSize(R.dimen.map_view_height))); // after address bar
-                mapView.getMapAsync(new OnMapReadyCallback() {
+                final MapView mapView = (MapView) contentView.findViewById(R.id.ic_map);
+
+                mapView.enableWrapAround(true);
+//                ((ListView) absListView).setDividerHeight(0);
+                absListView.setOnScrollListener(new AbsListView.OnScrollListener() {
                     @Override
-                    public void onMapReady(GoogleMap googleMap) {
-                        googleMap.moveCamera(CameraUpdateFactory.newCameraPosition((new CameraPosition.Builder()).target(new LatLng(0, 0)).zoom(0).build()));
+                    public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+                    }
+
+                    @Override
+                    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                        if (null != mapView) {
+
+                            for (int i = firstVisibleItem; i < visibleItemCount; ++i) {
+                                int o = 0;
+                                for (int j = 0; j < i; ++j) {
+                                    o += childModel.getHeaders().get(j);
+                                }
+                                final int header = childModel.getHeaders().get(i);
+                                final int hash = Math.abs(childModel.getViewItems().get(o).hashCode());
+                                int albumPicCount = calcAlbumPicCountForHeader(header, hash);
+
+                                GraphicsLayer layer = new GraphicsLayer();
+                                mapView.addLayer(layer);
+                                for (int j = 0; j < albumPicCount; ++j) {
+                                    FlickrViewNodeSearch node = (FlickrViewNodeSearch) childModel.getViewItems().get(o + j).getViewNode();
+                                    SimpleMarkerSymbol simpleMarker = new SimpleMarkerSymbol(Color.RED, 1, SimpleMarkerSymbol.STYLE.CIRCLE);
+                                    Point pointGeometry = new Point(Double.parseDouble(node.getSearchParameters().getLatitude()), Double.parseDouble(node.getSearchParameters().getLongitude()));
+                                    Graphic pointGraphic = new Graphic(pointGeometry, simpleMarker);
+                                    layer.addGraphic(pointGraphic);
+                                }
+                            }
+                        }
                     }
                 });
-//                ((ListView) absListView).setDividerHeight(0);
                 break;
 			case ViewItem.VIEW_TYPE_GRID:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
@@ -980,23 +957,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
                         @Override
                         public int getItemCount() {
-                            final int[] ITEM_COUNT_FOR_LARGE_ALBUMS = {4, 5, 6, 9};
-                            switch (albumPicCount) {
-                                case 2:
-                                    return 2;
-                                case 3:
-                                    return 3;
-                                case 4:
-                                    return 4;
-                                case 5:
-                                    return 5;
-                                case 6:
-                                case 7:
-                                case 8:
-                                    return 6;
-                                default:
-                                    return ITEM_COUNT_FOR_LARGE_ALBUMS[hash%ITEM_COUNT_FOR_LARGE_ALBUMS.length];
-                            }
+                            return calcAlbumPicCountForHeader(albumPicCount, hash);
                         }
 
                         @Override
@@ -1219,5 +1180,25 @@ public class ViewItemPagerActivity extends BaseActivity {
     private static int randomColorForHeader(int header) {
         final int[] COLORS = {0xFF3D3629, 0xFF5C483D, 0xFF5C583D, 0xFF2C3D29, 0xFF3D5C3D, 0xFF6A7A52, 0xFFB8B37A, 0xFFD6D68F};
         return COLORS[header%COLORS.length];
+    }
+
+    private static int calcAlbumPicCountForHeader(int albumPicCount, int hash) {
+        final int[] ITEM_COUNT_FOR_LARGE_ALBUMS = {4, 5, 6, 9};
+        switch (albumPicCount) {
+            case 2:
+                return 2;
+            case 3:
+                return 3;
+            case 4:
+                return 4;
+            case 5:
+                return 5;
+            case 6:
+            case 7:
+            case 8:
+                return 6;
+            default:
+                return ITEM_COUNT_FOR_LARGE_ALBUMS[hash%ITEM_COUNT_FOR_LARGE_ALBUMS.length];
+        }
     }
 }

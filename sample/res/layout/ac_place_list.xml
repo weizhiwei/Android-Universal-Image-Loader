@@ -16,10 +16,12 @@
         android:textSize="20sp"
         android:textStyle="bold"/>
 
-    <!--<com.google.android.gms.maps.MapView-->
-            <!--android:id="@+id/ic_map"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="150dp" />-->
+    <com.esri.android.map.MapView
+        android:id="@+id/ic_map"
+        android:layout_width="fill_parent"
+        android:layout_height="150dp"
+        mapoptions.MapType="Gray"
+        mapoptions.ZoomLevel="1" />
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/ic_swiperefresh"
