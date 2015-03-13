@@ -51,6 +51,7 @@ import org.lucasr.twowayview.ItemClickSupport;
 import org.lucasr.twowayview.widget.SpannableGridLayoutManager;
 import org.lucasr.twowayview.widget.TwoWayView;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -246,6 +247,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			
 			View contentView = null;
 			AbsListView absListView = null;
+            final List<AbsListView.OnScrollListener> onScrollListeners = new ArrayList<AbsListView.OnScrollListener>();
 			final BaseAdapter itemAdapter;
 			switch (viewItem.getViewType()) {
 			case ViewItem.VIEW_TYPE_LIST:
@@ -283,7 +285,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
                 mapView.enableWrapAround(true);
 //                ((ListView) absListView).setDividerHeight(0);
-                absListView.setOnScrollListener(new AbsListView.OnScrollListener() {
+                onScrollListeners.add(new AbsListView.OnScrollListener() {
                     @Override
                     public void onScrollStateChanged(AbsListView view, int scrollState) {
 
@@ -390,15 +392,38 @@ public class ViewItemPagerActivity extends BaseActivity {
 			});
 			
 			if (childModel.supportPaging()) {
-				absListView.setOnScrollListener(new EndlessScrollListener() {
+				onScrollListeners.add(new EndlessScrollListener() {
 				    @Override
 				    public void onLoadMore(int page, int totalItemsCount) {
 				    	new GetDataTask(childModel, swipeRefreshLayout, itemAdapter, null).execute(false);
 				    }
 			    });
 			}
-			
-			view.addView(contentView, 0);
+
+            absListView.setOnScrollListener(
+                    new AbsListView.OnScrollListener() {
+
+                        @Override
+                        public void onScrollStateChanged(AbsListView view, int scrollState) {
+                            if (null != onScrollListeners) {
+                                for (AbsListView.OnScrollListener onScrollListener: onScrollListeners) {
+                                    onScrollListener.onScrollStateChanged(view, scrollState);
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                            if (null != onScrollListeners) {
+                                for (AbsListView.OnScrollListener onScrollListener: onScrollListeners) {
+                                    onScrollListener.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
+                                }
+                            }
+                        }
+                    }
+            );
+
+            view.addView(contentView, 0);
 			
 			return contentView;
 		}

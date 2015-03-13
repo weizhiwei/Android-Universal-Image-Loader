@@ -48,8 +48,8 @@ public class PanoramioViewNodeSightSeeing extends PanoramioViewNode {
 		return viewItems;
 	}
 
-    @Override
-    public List<ViewItem> loadOneMorePage() {
-        return null;
-    }
+//    @Override
+//    public List<ViewItem> loadOneMorePage() {
+//        return null;
+//    }
 }

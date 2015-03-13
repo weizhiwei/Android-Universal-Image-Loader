@@ -101,7 +101,7 @@ public class PlacesViewNode extends ViewNode {
 
                 if (null != subpageHeaders && !subpageHeaders.isEmpty()) {
                     int offset = 0;
-                    int m = Math.min(subpageHeaders.size(), 3);
+                    int m = Math.min(subpageHeaders.size(), 1);
                     for (int j = 0; j < m; ++j) {
                         int header = subpageHeaders.get(j);
                         int n = Math.min(header, 4 + (new Random()).nextInt(6));
@@ -197,6 +197,6 @@ public class PlacesViewNode extends ViewNode {
 
     @Override
     public boolean supportPaging() {
-        return false;
+        return true;
     }
 }
