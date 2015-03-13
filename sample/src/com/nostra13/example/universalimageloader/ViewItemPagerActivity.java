@@ -284,6 +284,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                 });
 
                 mapView.enableWrapAround(true);
+                final MapViewHelper mapViewHelper = new MapViewHelper(mapView);
 //                ((ListView) absListView).setDividerHeight(0);
                 onScrollListeners.add(new AbsListView.OnScrollListener() {
                     @Override
@@ -294,18 +295,16 @@ public class ViewItemPagerActivity extends BaseActivity {
                     @Override
                     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                         if (null != mapView) {
-                            MapViewHelper mapViewHelper = new MapViewHelper(mapView);
-                            mapViewHelper.removeAllGraphics();
-                            for (int i = firstVisibleItem; i < visibleItemCount; ++i) {
+                            for (int i = 0; i < visibleItemCount; ++i) {
                                 int o = 0;
-                                for (int j = 0; j < i; ++j) {
+                                for (int j = 0; j < firstVisibleItem + i; ++j) {
                                     o += childModel.getHeaders().get(j);
                                 }
-                                final int header = childModel.getHeaders().get(i);
+                                final int header = childModel.getHeaders().get(firstVisibleItem + i);
                                 final int hash = Math.abs(childModel.getViewItems().get(o).hashCode());
                                 int albumPicCount = calcAlbumPicCountForHeader(header, hash);
 
-                                for (int j = 0; j < albumPicCount; ++j) {
+                                for (int j = 0; j < 1; ++j) {
                                     FlickrViewNodeSearch node = (FlickrViewNodeSearch) childModel.getViewItems().get(o + j).getViewNode();
                                     mapViewHelper.addMarkerGraphic(Double.parseDouble(node.getSearchParameters().getLatitude()), Double.parseDouble(node.getSearchParameters().getLongitude()), "a", null, 0, null, false, 0);
                                 }
