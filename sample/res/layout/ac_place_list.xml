@@ -3,8 +3,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:id="@+id/ic_mapcontainer">
+        android:orientation="vertical">
 
     <TextView
         android:id="@+id/ic_addressbar"
@@ -16,12 +15,17 @@
         android:textSize="20sp"
         android:textStyle="bold"/>
 
-    <com.esri.android.map.MapView
-        android:id="@+id/ic_map"
-        android:layout_width="fill_parent"
-        android:layout_height="150dp"
-        mapoptions.MapType="Gray"
-        mapoptions.ZoomLevel="1" />
+    <com.nostra13.example.universalimageloader.InterceptableFrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/map_view_height"
+        android:id="@+id/ic_mapcontainer">
+        <com.esri.android.map.MapView
+            android:id="@+id/ic_map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            mapoptions.MapType="Gray"
+            mapoptions.ZoomLevel="1" />
+    </com.nostra13.example.universalimageloader.InterceptableFrameLayout>
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/ic_swiperefresh"

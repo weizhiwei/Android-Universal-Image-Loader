@@ -4,7 +4,6 @@ import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.FragmentTransaction;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
@@ -32,13 +31,8 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.esri.android.map.GraphicsLayer;
 import com.esri.android.map.MapView;
 import com.esri.android.toolkit.map.MapViewHelper;
-import com.esri.core.geometry.Latlon;
-import com.esri.core.geometry.Point;
-import com.esri.core.map.Graphic;
-import com.esri.core.symbol.SimpleMarkerSymbol;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
@@ -67,7 +61,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState);
 
         setContentView(R.layout.ac_view_item_pager);
 		
@@ -206,7 +200,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		}
 		actionBar.setSelectedNavigationItem(position);
 	}
-	
+
 	private class ViewItemPagerAdapter extends PagerAdapter {
 		
 		ViewItemPagerAdapter() {
@@ -267,8 +261,27 @@ public class ViewItemPagerActivity extends BaseActivity {
                 itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
                 final MapView mapView = (MapView) contentView.findViewById(R.id.ic_map);
 
-                mapView.enableWrapAround(true);
+                // fix the mapview in viewpager, horizontal drag problem
+                //
+                InterceptableFrameLayout mapContainer = (InterceptableFrameLayout)contentView.findViewById(R.id.ic_mapcontainer);
+                mapContainer.setOnInterceptTouchListener(new OnInterceptTouchListener() {
+                    @Override
+                    public boolean onInterceptTouch(View v, MotionEvent event) {
+                        switch (event.getAction()) {
+                            case MotionEvent.ACTION_DOWN:
+                            case MotionEvent.ACTION_MOVE:
+                                pager.requestDisallowInterceptTouchEvent(true);
+                                break;
+                            case MotionEvent.ACTION_CANCEL:
+                            case MotionEvent.ACTION_UP:
+                                pager.requestDisallowInterceptTouchEvent(false);
+                                break;
+                        }
+                        return false;
+                    }
+                });
 
+                mapView.enableWrapAround(true);
 //                ((ListView) absListView).setDividerHeight(0);
                 absListView.setOnScrollListener(new AbsListView.OnScrollListener() {
                     @Override
@@ -292,7 +305,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
                                 for (int j = 0; j < albumPicCount; ++j) {
                                     FlickrViewNodeSearch node = (FlickrViewNodeSearch) childModel.getViewItems().get(o + j).getViewNode();
-                                    mapViewHelper.addMarkerGraphic(Double.parseDouble(node.getSearchParameters().getLatitude()), Double.parseDouble(node.getSearchParameters().getLongitude()),"a", null, 0, null, false, 0);
+                                    mapViewHelper.addMarkerGraphic(Double.parseDouble(node.getSearchParameters().getLatitude()), Double.parseDouble(node.getSearchParameters().getLongitude()), "a", null, 0, null, false, 0);
                                 }
                             }
                         }
