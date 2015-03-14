@@ -53,8 +53,11 @@ import org.lucasr.twowayview.widget.TwoWayView;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class ViewItemPagerActivity extends BaseActivity {
 	DisplayImageOptions gridOptions, listOptions, authorIconOptions;
@@ -287,6 +290,10 @@ public class ViewItemPagerActivity extends BaseActivity {
                 final MapViewHelper mapViewHelper = new MapViewHelper(mapView);
 //                ((ListView) absListView).setDividerHeight(0);
                 onScrollListeners.add(new AbsListView.OnScrollListener() {
+
+                    private HashMap<ViewItem, Integer> viewItemOnMap = new HashMap<ViewItem, Integer>();
+                    private int[] variants = new int[3];
+
                     @Override
                     public void onScrollStateChanged(AbsListView view, int scrollState) {
 
@@ -294,22 +301,46 @@ public class ViewItemPagerActivity extends BaseActivity {
 
                     @Override
                     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                        if (null != mapView) {
-                            for (int i = 0; i < visibleItemCount; ++i) {
-                                int o = 0;
-                                for (int j = 0; j < firstVisibleItem + i; ++j) {
-                                    o += childModel.getHeaders().get(j);
-                                }
-                                final int header = childModel.getHeaders().get(firstVisibleItem + i);
-                                final int hash = Math.abs(childModel.getViewItems().get(o).hashCode());
-                                int albumPicCount = calcAlbumPicCountForHeader(header, hash);
 
-                                for (int j = 0; j < 1; ++j) {
-                                    FlickrViewNodeSearch node = (FlickrViewNodeSearch) childModel.getViewItems().get(o + j).getViewNode();
-                                    mapViewHelper.addMarkerGraphic(Double.parseDouble(node.getSearchParameters().getLatitude()), Double.parseDouble(node.getSearchParameters().getLongitude()), "a", null, 0, null, false, 0);
-                                }
+                        if (firstVisibleItem == variants[0] &&
+                            visibleItemCount == variants[1] &&
+                            totalItemCount == variants[2]) {
+                            return;
+                        }
+
+                        variants[0] = firstVisibleItem;
+                        variants[1] = visibleItemCount;
+                        variants[2] = totalItemCount;
+
+                        Set<ViewItem> updateViewItems = new HashSet<ViewItem>();
+                        for (int i = 0; i < visibleItemCount; ++i) {
+                            int o = 0;
+                            for (int j = 0; j < firstVisibleItem + i; ++j) {
+                                o += childModel.getHeaders().get(j);
+                            }
+                            final int header = childModel.getHeaders().get(firstVisibleItem + i);
+                            final int hash = Math.abs(childModel.getViewItems().get(o).hashCode());
+                            int albumPicCount = calcAlbumPicCountForHeader(header, hash);
+//                            int albumPicCount = 1;
+
+                            for (int j = 0; j < albumPicCount; ++j) {
+                                updateViewItems.add(childModel.getViewItems().get(o + j));
                             }
                         }
+
+                        for (ViewItem viewItem: updateViewItems) {
+                            if (!viewItemOnMap.containsKey(viewItem)) {
+                                FlickrViewNodeSearch node = (FlickrViewNodeSearch) viewItem.getViewNode();
+                                int graphicId = mapViewHelper.addMarkerGraphic(Double.parseDouble(node.getSearchParameters().getLatitude()), Double.parseDouble(node.getSearchParameters().getLongitude()), "a", null, 0, null, false, 0);
+                                viewItemOnMap.put(viewItem, graphicId);
+                            }
+                        }
+                        for (ViewItem viewItem: viewItemOnMap.keySet()) {
+                            if (!updateViewItems.contains(viewItem)) {
+                                mapViewHelper.removeGraphic(viewItemOnMap.get(viewItem));
+                            }
+                        }
+                        viewItemOnMap.keySet().retainAll(updateViewItems);
                     }
                 });
                 break;
