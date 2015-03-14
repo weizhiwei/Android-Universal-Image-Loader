@@ -13,8 +13,8 @@
             android:id="@+id/ic_map"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            mapoptions.MapType="Gray"
-            mapoptions.ZoomLevel="1" />
+            mapoptions.MapType="NATIONAL_GEOGRAPHIC"
+            mapoptions.ZoomLevel="0" />
     </com.nostra13.example.universalimageloader.InterceptableFrameLayout>
 
     <android.support.v4.widget.SwipeRefreshLayout

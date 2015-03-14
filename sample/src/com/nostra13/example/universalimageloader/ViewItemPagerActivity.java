@@ -266,7 +266,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                 itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
                 final MapView mapView = (MapView) contentView.findViewById(R.id.ic_map);
 
-                // fix the mapview in viewpager, horizontal drag problem
+                // fix the mapview in viewpager swipe problem
                 //
                 InterceptableFrameLayout mapContainer = (InterceptableFrameLayout)contentView.findViewById(R.id.ic_mapcontainer);
                 mapContainer.setOnInterceptTouchListener(new OnInterceptTouchListener() {
@@ -314,24 +314,16 @@ public class ViewItemPagerActivity extends BaseActivity {
 
                         Set<ViewItem> updateViewItems = new HashSet<ViewItem>();
                         for (int i = 0; i < visibleItemCount; ++i) {
-                            int o = 0;
-                            for (int j = 0; j < firstVisibleItem + i; ++j) {
-                                o += childModel.getHeaders().get(j);
-                            }
-                            final int header = childModel.getHeaders().get(firstVisibleItem + i);
-                            final int hash = Math.abs(childModel.getViewItems().get(o).hashCode());
-                            int albumPicCount = calcAlbumPicCountForHeader(header, hash);
-//                            int albumPicCount = 1;
-
-                            for (int j = 0; j < albumPicCount; ++j) {
-                                updateViewItems.add(childModel.getViewItems().get(o + j));
-                            }
+                            updateViewItems.add(childModel.getHeaderItems().get(firstVisibleItem + i));
                         }
 
                         for (ViewItem viewItem: updateViewItems) {
                             if (!viewItemOnMap.containsKey(viewItem)) {
                                 FlickrViewNodeSearch node = (FlickrViewNodeSearch) viewItem.getViewNode();
-                                int graphicId = mapViewHelper.addMarkerGraphic(Double.parseDouble(node.getSearchParameters().getLatitude()), Double.parseDouble(node.getSearchParameters().getLongitude()), "a", null, 0, null, false, 0);
+                                int graphicId = mapViewHelper.addMarkerGraphic(
+                                        Double.parseDouble(node.getSearchParameters().getLatitude()), Double.parseDouble(node.getSearchParameters().getLongitude()),
+                                        viewItem.getLabel(), null, viewItem.getImageUrl(), null, false, 0);
+
                                 viewItemOnMap.put(viewItem, graphicId);
                             }
                         }
@@ -784,18 +776,22 @@ public class ViewItemPagerActivity extends BaseActivity {
                                 ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
                         cardView.setOrientation(LinearLayout.VERTICAL);
 
-                        if (null != holder.headerViewHolder.header.getParent()) {
-                            ((ViewGroup) holder.headerViewHolder.header.getParent()).removeView(holder.headerViewHolder.header);
+                        if (null != holder.headerViewHolder.header) {
+                            if (null != holder.headerViewHolder.header.getParent()) {
+                                ((ViewGroup) holder.headerViewHolder.header.getParent()).removeView(holder.headerViewHolder.header);
+                            }
+                            cardView.addView(holder.headerViewHolder.header);
                         }
-                        cardView.addView(holder.headerViewHolder.header);
                         if (null != view.getParent()) {
                             ((ViewGroup) view.getParent()).removeView(view);
                         }
                         cardView.addView(view);
-                        if (null != holder.headerViewHolder.footer.getParent()) {
-                            ((ViewGroup) holder.headerViewHolder.footer.getParent()).removeView(holder.headerViewHolder.footer);
+                        if (null != holder.headerViewHolder.footer) {
+                            if (null != holder.headerViewHolder.footer.getParent()) {
+                                ((ViewGroup) holder.headerViewHolder.footer.getParent()).removeView(holder.headerViewHolder.footer);
+                            }
+                            cardView.addView(holder.headerViewHolder.footer);
                         }
-                        cardView.addView(holder.headerViewHolder.footer);
 
                         view = cardView;
                     }
@@ -851,19 +847,22 @@ public class ViewItemPagerActivity extends BaseActivity {
                                 ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
                         cardView.setOrientation(LinearLayout.VERTICAL);
 
-                        if (null != holder.headerViewHolder.header.getParent()) {
-                            ((ViewGroup) holder.headerViewHolder.header.getParent()).removeView(holder.headerViewHolder.header);
+                        if (null != holder.headerViewHolder.header) {
+                            if (null != holder.headerViewHolder.header.getParent()) {
+                                ((ViewGroup) holder.headerViewHolder.header.getParent()).removeView(holder.headerViewHolder.header);
+                            }
+                            cardView.addView(holder.headerViewHolder.header);
                         }
-                        cardView.addView(holder.headerViewHolder.header);
                         if (null != view.getParent()) {
                             ((ViewGroup) view.getParent()).removeView(view);
                         }
                         cardView.addView(view);
-                        if (null != holder.headerViewHolder.footer.getParent()) {
-                            ((ViewGroup) holder.headerViewHolder.footer.getParent()).removeView(holder.headerViewHolder.footer);
+                        if (null != holder.headerViewHolder.footer) {
+                            if (null != holder.headerViewHolder.footer.getParent()) {
+                                ((ViewGroup) holder.headerViewHolder.footer.getParent()).removeView(holder.headerViewHolder.footer);
+                            }
+                            cardView.addView(holder.headerViewHolder.footer);
                         }
-                        cardView.addView(holder.headerViewHolder.footer);
-
                         view = cardView;
                     }
                     break;
@@ -1043,12 +1042,12 @@ public class ViewItemPagerActivity extends BaseActivity {
                             itemView.setLayoutParams(lp);
 
                             final ViewItem viewItem = model.getViewItems().get(offset + position);
-                            if (!TextUtils.isEmpty(viewItem.getLabel())) {
-                                holder.text.setVisibility(View.VISIBLE);
-                                holder.text.setText(viewItem.getLabel());
-                            } else {
+//                            if (!TextUtils.isEmpty(viewItem.getLabel())) {
+//                                holder.text.setVisibility(View.VISIBLE);
+//                                holder.text.setText(viewItem.getLabel());
+//                            } else {
                                 holder.text.setVisibility(View.GONE);
-                            }
+//                            }
                             switch (viewItem.getViewItemType()) {
                                 case ViewItem.VIEW_ITEM_TYPE_COLOR:
                                     itemView.setBackgroundColor(viewItem.getViewItemColor());

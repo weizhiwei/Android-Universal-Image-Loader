@@ -43,6 +43,7 @@ public class PanoramioViewNodeSightSeeing extends PanoramioViewNode {
                     viewItems.add(viewItem);
                 }
                 headers.add(placeElems.size());
+                headerItems.add(new ViewItem(continentName, null, null, ViewItem.VIEW_TYPE_PLACE_LIST, null));
 			}
 		}
 		return viewItems;

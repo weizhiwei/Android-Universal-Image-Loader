@@ -11,13 +11,16 @@ public class ViewNode extends IcObject {
 	protected List<ViewItem> viewItems, viewItemsCopy;
 	protected List<ViewNodeAction> actions, actionsCopy;
 	protected List<Integer> headers, headersCopy;
-	protected boolean isDetached = false;
+    protected List<ViewItem> headerItems, headerItemsCopy;
+
+    protected boolean isDetached = false;
 	
 	public ViewNode(String sourceUrl) {
 		this.sourceUrl = sourceUrl;
 		this.viewItems = new ArrayList<ViewItem>();
 		this.headers = new ArrayList<Integer>();
 		this.actions = new ArrayList<ViewNodeAction>();
+        this.headerItems = new ArrayList<ViewItem>();
 	}
 
 	public ViewNode(String sourceUrl, List<ViewItem> viewItems) {
@@ -25,6 +28,7 @@ public class ViewNode extends IcObject {
 		this.viewItems = viewItems;
 		this.headers = new ArrayList<Integer>();
 		this.actions = new ArrayList<ViewNodeAction>();
+        this.headerItems = new ArrayList<ViewItem>();
 	}
 	
 	public void detach() {
@@ -34,13 +38,16 @@ public class ViewNode extends IcObject {
 		headersCopy.addAll(headers);
 		actionsCopy = new ArrayList<ViewNodeAction>(actions.size());
 		actionsCopy.addAll(actions);
-		isDetached = true;
+        headerItemsCopy = new ArrayList<ViewItem>(headerItems.size());
+        headerItemsCopy.addAll(headerItems);
+        isDetached = true;
 	}
 
     public void clearDetachment() {
         viewItemsCopy.clear();
         headersCopy.clear();
         actionsCopy.clear();
+        headerItemsCopy.clear();
     }
 
 	public void attach() {
@@ -48,6 +55,7 @@ public class ViewNode extends IcObject {
 		viewItemsCopy = null;
 		headersCopy = null;
 		actionsCopy = null;
+        headerItemsCopy = null;
 	}
 	
 	public String getSourceUrl() {
@@ -65,8 +73,12 @@ public class ViewNode extends IcObject {
 	public List<ViewNodeAction> getActions() {
 		return isDetached ? actionsCopy : actions;
 	}
-	
-	public boolean supportReloading() {
+
+    public List<ViewItem> getHeaderItems() {
+        return isDetached ? headerItemsCopy : headerItems;
+    }
+
+    public boolean supportReloading() {
 		return false;
 	}
 	

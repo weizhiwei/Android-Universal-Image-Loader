@@ -15,9 +15,6 @@ import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.flickr.FlickrViewNodeSearch;
-import com.wzw.ic.mvc.panoramio.PanoramioViewNodeSightSeeing;
-
-import org.jsoup.nodes.Document;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,12 +32,14 @@ public class PlacesViewNode extends ViewNode {
     protected final ViewNode[] SUBSTREAMS;
     protected final Object[] subpages;
     protected final Object[] subheaders;
+    protected final Object[] subheaderItems;
 
 	public PlacesViewNode(ViewNode[] viewNodes) {
         super("places");
         SUBSTREAMS = viewNodes;
         subpages = new Object[SUBSTREAMS.length];
         subheaders = new Object[SUBSTREAMS.length];
+        subheaderItems = new Object[SUBSTREAMS.length];
     }
 
     @Override
@@ -78,6 +77,7 @@ public class PlacesViewNode extends ViewNode {
                         List<ViewItem> page = reload ? node.reload() : node.loadOneMorePage();
                         subpages[index] = page;
                         subheaders[index] = node.getHeaders(); // TODO: assume no node.loadOneMorePage() here
+                        subheaderItems[index] = node.getHeaderItems();
                         latch.countDown();
                     }
 
@@ -94,12 +94,18 @@ public class PlacesViewNode extends ViewNode {
 
         final List<Integer> albumHeaders = new ArrayList<Integer>();
         final List<ViewItem> albumViewItems = new ArrayList<ViewItem> ();
+        final List<ViewItem> headerViewItems = new ArrayList<ViewItem> ();
+
+        boolean aggregateMode = false;
+
         for (int subpageIndex = 0; subpageIndex < subpages.length; ++subpageIndex) {
             if (null != subpages[subpageIndex]) {
                 List<ViewItem> subpageViewItems = (List<ViewItem>) subpages[subpageIndex];
                 List<Integer> subpageHeaders = (List<Integer>) subheaders[subpageIndex];
+                List<ViewItem> subpageHeaderItems = (List<ViewItem>) subheaderItems[subpageIndex];
 
-                if (null != subpageHeaders && !subpageHeaders.isEmpty()) {
+                if (aggregateMode &&
+                    (null != subpageHeaders && !subpageHeaders.isEmpty() && null != subpageHeaderItems && subpageHeaderItems.size() == subpageHeaders.size())) {
                     int offset = 0;
                     int m = Math.min(subpageHeaders.size(), 1);
                     for (int j = 0; j < m; ++j) {
@@ -110,23 +116,24 @@ public class PlacesViewNode extends ViewNode {
                             albumViewItems.add(viewItem);
                         }
                         albumHeaders.add(n);
+                        headerViewItems.add(subpageHeaderItems.get(j));
 
                         offset += header;
                     }
                     for (int i = 0; i < m; ++i) {
                         subpageHeaders.remove(0); // pop out all the used items
+                        subpageHeaderItems.remove(0);
                     }
                     for (int i = 0; i < offset; ++i) {
                         subpageViewItems.remove(0);
                     }
                 } else {
-                    int n = Math.min(subpageViewItems.size(), 9);
+                    int n = Math.min(subpageViewItems.size(), 5);
                     for (int i = 0; i < n; ++i) {
-                        ViewItem viewItem = subpageViewItems.get(i);
+                        int idx = (new Random()).nextInt(subpageViewItems.size());
+                        ViewItem viewItem = subpageViewItems.get(idx);
                         albumViewItems.add(viewItem);
-                    }
-                    for (int i = 0; i < n; ++i) {
-                        subpageViewItems.remove(0); // pop out all the used items
+                        subpageViewItems.remove(idx); // pop out all the used items
                     }
                 }
 
@@ -138,7 +145,6 @@ public class PlacesViewNode extends ViewNode {
                         searchNode.getSearchParameters().setLatitude(m.group(1));
                         searchNode.getSearchParameters().setLongitude(m.group(2));
                     }
-                    searchNode.setPerPage(1); // for later search
                     viewItem.setViewNode(searchNode);
                 }
             }
@@ -169,22 +175,31 @@ public class PlacesViewNode extends ViewNode {
             e.printStackTrace();
         }
 
+        List<ViewItem> resultViewItems = aggregateMode ? albumViewItems : new ArrayList<ViewItem>();
         for (int i = 0; i < albumViewItems.size(); ++i) {
             List<ViewItem> subpage2 = (List<ViewItem>) subpages2[i];
             if (null != subpage2 && !subpage2.isEmpty()) {
-                albumViewItems.get(i).setImageUrl(subpage2.get(0).getImageUrl());
-                ((FlickrViewNodeSearch) albumViewItems.get(i).getViewNode()).setPerPage(30);
+                if (aggregateMode) {
+                    albumViewItems.get(i).setImageUrl(subpage2.get(0).getImageUrl());
+                } else {
+                    resultViewItems.addAll(subpage2);
+                    albumHeaders.add(subpage2.size());
+                    albumViewItems.get(i).setImageUrl(subpage2.get(0).getImageUrl());
+                    headerViewItems.add(albumViewItems.get(i));
+                }
             }
         }
 
-        if (null != albumViewItems && albumViewItems.size() > 0) {
+        if (null != resultViewItems && resultViewItems.size() > 0) {
             pageNo = newPageNo;
             if (reload) {
                 viewItems.clear();
                 headers.clear();
+                headerItems.clear();
             }
-            viewItems.addAll(albumViewItems);
+            viewItems.addAll(resultViewItems);
             headers.addAll(albumHeaders);
+            headerItems.addAll(headerViewItems);
         }
 
         return albumViewItems;
@@ -198,5 +213,56 @@ public class PlacesViewNode extends ViewNode {
     @Override
     public boolean supportPaging() {
         return true;
+    }
+
+    @Override
+    public int getHeaderViewResId(int header, int itemViewType /* card type */) {
+        return R.layout.header;
+    }
+
+    @Override
+    public HeaderViewHolder createHolderFromHeaderView(View headerView) {
+        HeaderViewHolder holder = new StreamHeaderViewHolder(headerView);
+        holder.footer = null;
+        return holder;
+    }
+
+    @Override
+    public void updateHeaderView(View headerView, HeaderViewHolder holder, int position) {
+        ViewItem headerItem = headerItems.get(position);
+        String caption = "";
+        if (!TextUtils.isEmpty(headerItem.getLabel())) {
+            caption += String.format("<a>%s</a>", headerItem.getLabel());
+        }
+        if (!TextUtils.isEmpty(caption)) {
+            ((StreamHeaderViewHolder)holder).textView.setText(new SpannableString(Html.fromHtml(caption)));
+        }
+        ((StreamHeaderViewHolder)holder).imageView.setVisibility(View.GONE);
+    }
+
+    private static class StreamHeaderViewHolder extends HeaderViewHolder {
+        public TextView textView;
+        public ImageView imageView;
+
+        public StreamHeaderViewHolder(View convertView) {
+            super(convertView);
+            textView = (TextView)convertView.findViewById(R.id.text);
+            imageView = (ImageView)convertView.findViewById(R.id.image);
+        }
+    }
+
+    public void onHeaderClicked(int header, ViewItemActivityStarter starter) {
+        int n = 0;
+        for (int i = 0; i < header; ++i) {
+            n += headers.get(i);
+        }
+        ViewItem viewItem = viewItems.get(n);
+        if (!TextUtils.isEmpty(viewItem.getOrigin())) {
+            ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
+            if (null != originViewItem) {
+                starter.startViewItemActivity(RootViewNode.getInstance().getGalleryViewItem().getViewNode(),
+                        originViewItem);
+            }
+        }
     }
 }
