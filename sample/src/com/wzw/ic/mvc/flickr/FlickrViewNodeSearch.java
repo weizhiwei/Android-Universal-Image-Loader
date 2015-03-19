@@ -28,6 +28,8 @@ public class FlickrViewNodeSearch extends FlickrViewNode {
         searchParams.setText(sourceUrl);
         searchParams.setSort(SearchParameters.RELEVANCE);
         searchParams.setHasGeo(true);
+        searchParams.setRadius(32);
+        searchParams.setRadiusUnits("km");
         searchParams.setExtras(EXTRAS);
 
         perPage = 30;

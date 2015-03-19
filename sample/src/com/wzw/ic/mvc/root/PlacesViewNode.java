@@ -7,6 +7,12 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.esri.core.geometry.Point;
+import com.esri.core.geometry.SpatialReference;
+import com.esri.core.tasks.geocode.Locator;
+import com.esri.core.tasks.geocode.LocatorFindParameters;
+import com.esri.core.tasks.geocode.LocatorGeocodeParameters;
+import com.esri.core.tasks.geocode.LocatorGeocodeResult;
 import com.nostra13.example.universalimageloader.R;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -19,6 +25,7 @@ import com.wzw.ic.mvc.flickr.FlickrViewNodeSearch;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
@@ -162,7 +169,42 @@ public class PlacesViewNode extends ViewNode {
                     ViewNode node = albumViewItems.get(index).getViewNode();
                     List<ViewItem> page = node.reload();
                     subpages2[index] = page;
+
+                    final List<String> keys = Arrays.asList("Country", "City");
+                    Locator locator = Locator.createOnlineLocator();
+                    LocatorFindParameters params = new LocatorFindParameters(albumViewItems.get(index).getLabel());
+                    params.setOutFields(keys);
+                    params.setMaxLocations(1);
+                    if (true) {
+                        params.setLocation(new Point(
+                                Double.parseDouble(((FlickrViewNodeSearch) node).getSearchParameters().getLatitude()),
+                                Double.parseDouble(((FlickrViewNodeSearch) node).getSearchParameters().getLongitude())),
+                                SpatialReference.create(SpatialReference.WKID_WGS84)
+                        );
+                    }
+
+                    List<LocatorGeocodeResult> results = null;
+                    try {
+                        results = locator.find(params);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    if (null != results && !results.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        Map<String, String> attrs = results.get(0).getAttributes();
+                        for (String key: keys) {
+                            if (!TextUtils.isEmpty(attrs.get(key))) {
+                                sb.append(attrs.get(key));
+                                sb.append(" : ");
+                            }
+                        }
+                        sb.append(albumViewItems.get(index).getLabel());
+                        albumViewItems.get(index).setLabel(sb.toString());
+                    }
+
                     latch2.countDown();
+
                 }
 
             }).run();
