@@ -21,6 +21,7 @@ import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.flickr.FlickrViewNodeSearch;
+import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetViewNodeBreadCrumbs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -147,11 +148,11 @@ public class PlacesViewNode extends ViewNode {
                 for (ViewItem viewItem: albumViewItems) {
                     viewItem.setViewType(ViewItem.VIEW_TYPE_GRID);
                     FlickrViewNodeSearch searchNode = new FlickrViewNodeSearch(viewItem.getLabel());
-                    Matcher m = COORDS_PATTERN.matcher(viewItem.getNodeUrl());
-                    if (m.matches()) {
-                        searchNode.getSearchParameters().setLatitude(m.group(1));
-                        searchNode.getSearchParameters().setLongitude(m.group(2));
-                    }
+//                    Matcher m = COORDS_PATTERN.matcher(viewItem.getNodeUrl());
+//                    if (m.matches()) {
+//                        searchNode.getSearchParameters().setLatitude(m.group(1));
+//                        searchNode.getSearchParameters().setLongitude(m.group(2));
+//                    }
                     viewItem.setViewNode(searchNode);
                 }
             }
@@ -170,38 +171,42 @@ public class PlacesViewNode extends ViewNode {
                     List<ViewItem> page = node.reload();
                     subpages2[index] = page;
 
-                    final List<String> keys = Arrays.asList("Country", "City");
-                    Locator locator = Locator.createOnlineLocator();
-                    LocatorFindParameters params = new LocatorFindParameters(albumViewItems.get(index).getLabel());
-                    params.setOutFields(keys);
-                    params.setMaxLocations(1);
-                    if (true) {
-                        params.setLocation(new Point(
-                                Double.parseDouble(((FlickrViewNodeSearch) node).getSearchParameters().getLatitude()),
-                                Double.parseDouble(((FlickrViewNodeSearch) node).getSearchParameters().getLongitude())),
-                                SpatialReference.create(SpatialReference.WKID_WGS84)
-                        );
-                    }
+//                    final List<String> keys = Arrays.asList("Country", "City");
+//                    Locator locator = Locator.createOnlineLocator();
+//                    LocatorFindParameters params = new LocatorFindParameters(albumViewItems.get(index).getLabel());
+//                    params.setOutFields(keys);
+//                    params.setMaxLocations(1);
+//
+//                    List<LocatorGeocodeResult> results = null;
+//                    try {
+//                        results = locator.find(params);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//
+//                    if (null != results && !results.isEmpty()) {
+//                        StringBuilder sb = new StringBuilder();
+//                        Map<String, String> attrs = results.get(0).getAttributes();
+//                        for (String key: keys) {
+//                            if (!TextUtils.isEmpty(attrs.get(key))) {
+//                                sb.append(attrs.get(key));
+//                                sb.append(" : ");
+//                            }
+//                        }
+//                        sb.append(albumViewItems.get(index).getLabel());
+//                        albumViewItems.get(index).setLabel(sb.toString());
+//                    }
 
-                    List<LocatorGeocodeResult> results = null;
-                    try {
-                        results = locator.find(params);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    LonelyPlanetViewNodeBreadCrumbs nodeBreadCrumbs = new LonelyPlanetViewNodeBreadCrumbs(albumViewItems.get(index).getNodeUrl());
+                    List<ViewItem> breadCrumbs = nodeBreadCrumbs.reload();
+                    StringBuilder sb = new StringBuilder();
+                    for (ViewItem viewItem: breadCrumbs) {
+                        sb.append(viewItem.getLabel());
+                        sb.append(" / ");
                     }
-
-                    if (null != results && !results.isEmpty()) {
-                        StringBuilder sb = new StringBuilder();
-                        Map<String, String> attrs = results.get(0).getAttributes();
-                        for (String key: keys) {
-                            if (!TextUtils.isEmpty(attrs.get(key))) {
-                                sb.append(attrs.get(key));
-                                sb.append(" : ");
-                            }
-                        }
-                        sb.append(albumViewItems.get(index).getLabel());
-                        albumViewItems.get(index).setLabel(sb.toString());
-                    }
+                    sb.append("<br />");
+                    sb.append(albumViewItems.get(index).getLabel());
+                    albumViewItems.get(index).setLabel(sb.toString());
 
                     latch2.countDown();
 
@@ -235,6 +240,11 @@ public class PlacesViewNode extends ViewNode {
         if (null != resultViewItems && resultViewItems.size() > 0) {
             pageNo = newPageNo;
             if (reload) {
+                // add dumb item for map view
+                resultViewItems.add(new ViewItem(null, null, null, 0, null));
+                albumHeaders.add(1);
+                headerViewItems.add(new ViewItem(null, null, null, 0, null));
+
                 viewItems.clear();
                 headers.clear();
                 headerItems.clear();
@@ -259,6 +269,9 @@ public class PlacesViewNode extends ViewNode {
 
     @Override
     public int getHeaderViewResId(int header, int itemViewType /* card type */) {
+        if (2 == itemViewType) {
+            return 0;
+        }
         return R.layout.header;
     }
 

@@ -3,6 +3,8 @@ package com.nostra13.example.universalimageloader;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewParent;
 import android.widget.FrameLayout;
 
 /**
@@ -29,5 +31,39 @@ public class InterceptableFrameLayout extends FrameLayout {
             return onInterceptTouchListener.onInterceptTouch(this, event);
         }
         return false;
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+        setInterceptedParents();
+    }
+
+    public void setInterceptedParents() {
+        setOnInterceptTouchListener(new OnInterceptTouchListener () {
+            @Override
+            public boolean onInterceptTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                    case MotionEvent.ACTION_MOVE:
+                        ViewParent p = v.getParent();
+                        while (null != p) {
+                            p.requestDisallowInterceptTouchEvent(true);
+                            p = p.getParent();
+                        }
+                        break;
+                    case MotionEvent.ACTION_CANCEL:
+                    case MotionEvent.ACTION_UP:
+                        p = v.getParent();
+                        while (null != p) {
+                            p.requestDisallowInterceptTouchEvent(false);
+                            p = p.getParent();
+                        }
+                        break;
+                }
+                return false;
+            }
+        });
     }
 }

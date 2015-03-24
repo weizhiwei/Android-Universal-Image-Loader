@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.nostra13.example.universalimageloader.InterceptableFrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/map_view_height"
+    android:id="@+id/ic_mapcontainer">
+    <com.esri.android.map.MapView
+        android:id="@+id/ic_mapview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        mapoptions.MapType="NATIONAL_GEOGRAPHIC"
+        mapoptions.ZoomLevel="0" />
+</com.nostra13.example.universalimageloader.InterceptableFrameLayout>

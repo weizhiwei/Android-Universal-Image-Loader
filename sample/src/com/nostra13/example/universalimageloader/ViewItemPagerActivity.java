@@ -45,7 +45,6 @@ import com.tonicartos.widget.stickygridheaders.StickyGridHeadersGridView;
 import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
-import com.wzw.ic.mvc.flickr.FlickrViewNodeSearch;
 
 import org.lucasr.twowayview.ItemClickSupport;
 import org.lucasr.twowayview.widget.SpannableGridLayoutManager;
@@ -54,10 +53,8 @@ import org.lucasr.twowayview.widget.TwoWayView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 public class ViewItemPagerActivity extends BaseActivity {
 	DisplayImageOptions gridOptions, listOptions, authorIconOptions;
@@ -256,85 +253,10 @@ public class ViewItemPagerActivity extends BaseActivity {
 			case ViewItem.VIEW_TYPE_LIST:
             case ViewItem.VIEW_TYPE_CARD_LIST:
             case ViewItem.VIEW_TYPE_STORY_LIST:
+            case ViewItem.VIEW_TYPE_PLACE_LIST:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
-                break;
-            case ViewItem.VIEW_TYPE_PLACE_LIST:
-                contentView = getLayoutInflater().inflate(R.layout.ac_place_list, view, false);
-                absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
-                itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
-                final MapView mapView = (MapView) contentView.findViewById(R.id.ic_map);
-
-                // fix the mapview in viewpager swipe problem
-                //
-                InterceptableFrameLayout mapContainer = (InterceptableFrameLayout)contentView.findViewById(R.id.ic_mapcontainer);
-                mapContainer.setOnInterceptTouchListener(new OnInterceptTouchListener() {
-                    @Override
-                    public boolean onInterceptTouch(View v, MotionEvent event) {
-                        switch (event.getAction()) {
-                            case MotionEvent.ACTION_DOWN:
-                            case MotionEvent.ACTION_MOVE:
-                                pager.requestDisallowInterceptTouchEvent(true);
-                                break;
-                            case MotionEvent.ACTION_CANCEL:
-                            case MotionEvent.ACTION_UP:
-                                pager.requestDisallowInterceptTouchEvent(false);
-                                break;
-                        }
-                        return false;
-                    }
-                });
-
-                mapView.enableWrapAround(true);
-                final MapViewHelper mapViewHelper = new MapViewHelper(mapView);
-//                ((ListView) absListView).setDividerHeight(0);
-                onScrollListeners.add(new AbsListView.OnScrollListener() {
-
-                    private HashMap<ViewItem, Integer> viewItemOnMap = new HashMap<ViewItem, Integer>();
-                    private int[] variants = new int[3];
-
-                    @Override
-                    public void onScrollStateChanged(AbsListView view, int scrollState) {
-
-                    }
-
-                    @Override
-                    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
-                        if (firstVisibleItem == variants[0] &&
-                            visibleItemCount == variants[1] &&
-                            totalItemCount == variants[2]) {
-                            return;
-                        }
-
-                        variants[0] = firstVisibleItem;
-                        variants[1] = visibleItemCount;
-                        variants[2] = totalItemCount;
-
-                        Set<ViewItem> updateViewItems = new HashSet<ViewItem>();
-                        for (int i = 0; i < visibleItemCount; ++i) {
-                            updateViewItems.add(childModel.getHeaderItems().get(firstVisibleItem + i));
-                        }
-
-                        for (ViewItem viewItem: updateViewItems) {
-                            if (!viewItemOnMap.containsKey(viewItem)) {
-                                FlickrViewNodeSearch node = (FlickrViewNodeSearch) viewItem.getViewNode();
-                                int graphicId = mapViewHelper.addMarkerGraphic(
-                                        Double.parseDouble(node.getSearchParameters().getLatitude()), Double.parseDouble(node.getSearchParameters().getLongitude()),
-                                        viewItem.getLabel(), null, viewItem.getImageUrl(), null, false, 0);
-
-                                viewItemOnMap.put(viewItem, graphicId);
-                            }
-                        }
-                        for (ViewItem viewItem: viewItemOnMap.keySet()) {
-                            if (!updateViewItems.contains(viewItem)) {
-                                mapViewHelper.removeGraphic(viewItemOnMap.get(viewItem));
-                            }
-                        }
-                        viewItemOnMap.keySet().retainAll(updateViewItems);
-                    }
-                });
                 break;
 			case ViewItem.VIEW_TYPE_GRID:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
@@ -690,6 +612,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		ImageView image;
         ProgressBar progressBar;
 		TwoWayView spannableGrid;
+        MapView mapView;
 
         HeaderViewHolder headerViewHolder;
     }
@@ -709,12 +632,14 @@ public class ViewItemPagerActivity extends BaseActivity {
 
         @Override
         public int getViewTypeCount() {
-            return 2;
+            return 3;
         }
 
         @Override
         public int getItemViewType(int position) {
-            if (null != model.getHeaders() && !model.getHeaders().isEmpty()) {
+            if (ViewItem.VIEW_TYPE_PLACE_LIST == viewType && 0 == position) {
+                return 2;
+            } else if (null != model.getHeaders() && !model.getHeaders().isEmpty()) {
                 return model.getHeaders().get(position) == 1 ? 0 : 1;
             } else {
                 return 0;
@@ -818,6 +743,58 @@ public class ViewItemPagerActivity extends BaseActivity {
                             view.setLayoutParams(new AbsListView.LayoutParams(
                                     AbsListView.LayoutParams.MATCH_PARENT, listView.getWidth()
                             ));
+                            break;
+                        case 2:
+                            view = getLayoutInflater().inflate(R.layout.item_map_view, parent, false);
+                            holder.mapView = (MapView) view.findViewById(R.id.ic_mapview);
+                            holder.mapView.enableWrapAround(true);
+                            final MapViewHelper mapViewHelper = new MapViewHelper(holder.mapView);
+//                            onScrollListeners.add(new AbsListView.OnScrollListener() {
+//
+//                                private HashMap<ViewItem, Integer> viewItemOnMap = new HashMap<ViewItem, Integer>();
+//                                private int[] variants = new int[3];
+//
+//                                @Override
+//                                public void onScrollStateChanged(AbsListView view, int scrollState) {
+//
+//                                }
+//
+//                                @Override
+//                                public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+//
+//                        if (firstVisibleItem == variants[0] &&
+//                            visibleItemCount == variants[1] &&
+//                            totalItemCount == variants[2]) {
+//                            return;
+//                        }
+//
+//                        variants[0] = firstVisibleItem;
+//                        variants[1] = visibleItemCount;
+//                        variants[2] = totalItemCount;
+//
+//                        Set<ViewItem> updateViewItems = new HashSet<ViewItem>();
+//                        for (int i = 0; i < visibleItemCount; ++i) {
+//                            updateViewItems.add(childModel.getHeaderItems().get(firstVisibleItem + i));
+//                        }
+//
+//                        for (ViewItem viewItem: updateViewItems) {
+//                            if (!viewItemOnMap.containsKey(viewItem)) {
+//                                FlickrViewNodeSearch node = (FlickrViewNodeSearch) viewItem.getViewNode();
+//                                int graphicId = mapViewHelper.addMarkerGraphic(
+//                                        Double.parseDouble(node.getSearchParameters().getLatitude()), Double.parseDouble(node.getSearchParameters().getLongitude()),
+//                                        viewItem.getLabel(), null, viewItem.getImageUrl(), null, false, 0);
+//
+//                                viewItemOnMap.put(viewItem, graphicId);
+//                            }
+//                        }
+//                        for (ViewItem viewItem: viewItemOnMap.keySet()) {
+//                            if (!updateViewItems.contains(viewItem)) {
+//                                mapViewHelper.removeGraphic(viewItemOnMap.get(viewItem));
+//                            }
+//                        }
+//                        viewItemOnMap.keySet().retainAll(updateViewItems);
+//                                }
+//                            });
                             break;
                         default:
                             break;
@@ -955,7 +932,9 @@ public class ViewItemPagerActivity extends BaseActivity {
             } else if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_CARD_LIST ||
                     myViewItem.getViewType() == ViewItem.VIEW_TYPE_PLACE_LIST) {
 
-                model.updateHeaderView(view, holder.headerViewHolder, position);
+                if (model.getHeaderViewResId(position, getItemViewType(position)) > 0) {
+                    model.updateHeaderView(view, holder.headerViewHolder, position);
+                }
 
                 int o = 0;
 				for (int i = 0; i < position; ++i) {
@@ -1015,7 +994,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                             break;
                     }
 
-                } else {
+                } else if (1 == getItemViewType(position)) {
                     final int albumPicCount = model.getHeaders().get(position);
                     final int hash = Math.abs(model.getViewItems().get(offset).hashCode());
 
