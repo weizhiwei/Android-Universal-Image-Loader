@@ -14,7 +14,7 @@ import java.util.List;
 public class LonelyPlanetViewNodeBreadCrumbs extends LonelyPlanetViewNode {
 
 	public LonelyPlanetViewNodeBreadCrumbs(String sourceUrl) {
-		super(URL_PREFIX + sourceUrl);
+		super(sourceUrl);
         supportPaging = true;
 	}
 
@@ -30,7 +30,7 @@ public class LonelyPlanetViewNodeBreadCrumbs extends LonelyPlanetViewNode {
                     name.startsWith("Sights in")) {
                     continue;
                 }
-                ViewItem viewItem = new ViewItem(name, elem.attr("href"), "", ViewItem.VIEW_TYPE_PLACE_LIST, null);
+                ViewItem viewItem = new ViewItem(name, URL_PREFIX + elem.attr("href"), "", ViewItem.VIEW_TYPE_PLACE_LIST, null);
                 viewItems.add(viewItem);
 			}
 		}

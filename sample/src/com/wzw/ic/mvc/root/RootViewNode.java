@@ -10,6 +10,7 @@ import com.wzw.ic.mvc.ViewNodeRoot;
 import com.wzw.ic.mvc.flickr.FlickrViewNode;
 import com.wzw.ic.mvc.flickr.FlickrViewNodePeopleGalleries;
 import com.wzw.ic.mvc.flickr.FlickrViewNodeRoot;
+import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetViewNodePlaces;
 import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetViewNodeSights;
 import com.wzw.ic.mvc.moko.MokoViewNode;
 import com.wzw.ic.mvc.moko.MokoViewNodeRoot;
@@ -64,7 +65,8 @@ public class RootViewNode extends ViewNode {
                 new ViewItem(null, null, null, 0, new ViewNode("", Arrays.asList(new ViewItem(null, null, null, 0, new TempViewNode(new NGViewNodePhotoOfTheDay())
         ))))));
 
-        ViewItem places = new ViewItem("Explore", "places", null, ViewItem.VIEW_TYPE_PLACE_LIST, new PlacesViewNode(new ViewNode[] { new LonelyPlanetViewNodeSights("")}));
+        ViewItem places = new ViewItem("Explore", "places", null, ViewItem.VIEW_TYPE_PLACE_LIST, new PlacesViewNode(new ViewNode[] {
+                new LonelyPlanetViewNodeSights("http://www.lonelyplanet.com/sights.html?page=%d"), new LonelyPlanetViewNodePlaces("http://www.lonelyplanet.com/china/hubei/places.html?page=%d") }));
 
         this.viewItems = Arrays.asList(places, gallery, stream, albums, feeds, stories);
 	}

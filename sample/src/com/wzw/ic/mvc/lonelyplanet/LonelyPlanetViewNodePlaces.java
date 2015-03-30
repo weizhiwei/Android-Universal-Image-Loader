@@ -14,7 +14,7 @@ import java.util.List;
 public class LonelyPlanetViewNodePlaces extends LonelyPlanetViewNodeSights {
 
 	public LonelyPlanetViewNodePlaces(String sourceUrl) {
-		super(URL_PREFIX + sourceUrl + "/places.html?page=%d");
+		super(sourceUrl);
         supportPaging = true;
 	}
 }

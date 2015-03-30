@@ -12,7 +12,7 @@ import java.util.List;
 public class LonelyPlanetViewNodeSights extends LonelyPlanetViewNode {
 
 	public LonelyPlanetViewNodeSights(String sourceUrl) {
-		super(URL_PREFIX + sourceUrl + "/sights.html?page=%d");
+		super(sourceUrl);
         supportPaging = true;
 	}
 
@@ -30,7 +30,7 @@ public class LonelyPlanetViewNodeSights extends LonelyPlanetViewNode {
 
                     Elements aElems = elem.select("a");
                     if (null != aElems && aElems.size() > 0) {
-                        viewItem.setNodeUrl(aElems.get(0).attr("href"));
+                        viewItem.setNodeUrl(URL_PREFIX + aElems.get(0).attr("href"));
                     }
                 }
 			}
