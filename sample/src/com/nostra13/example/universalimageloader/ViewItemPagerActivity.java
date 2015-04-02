@@ -15,10 +15,7 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
@@ -31,8 +28,6 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.esri.android.map.MapView;
-import com.esri.android.toolkit.map.MapViewHelper;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
@@ -40,8 +35,6 @@ import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
-import com.tonicartos.widget.stickygridheaders.StickyGridHeadersBaseAdapter;
-import com.tonicartos.widget.stickygridheaders.StickyGridHeadersGridView;
 import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
@@ -52,7 +45,6 @@ import org.lucasr.twowayview.widget.TwoWayView;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -257,6 +249,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
+                ((ListView) absListView).setDividerHeight(0);
                 break;
 			case ViewItem.VIEW_TYPE_GRID:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
@@ -265,18 +258,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 				if (viewItem.getInitialZoomLevel() > 0 && viewItem.getInitialZoomLevel() <= 3) {
 					((GridView) absListView).setNumColumns(viewItem.getInitialZoomLevel());
 				}
-				((StickyGridHeadersGridView)absListView).setAreHeadersSticky(false);
-//				((StickyGridHeadersGridView)absListView).setOnHeaderClickListener(
-//						new OnHeaderClickListener () {
-//							@Override
-//							public void onHeaderClick(AdapterView<?> parent, View view, long id) {
-//								HeaderViewHolder holder = (HeaderViewHolder) view.getTag();
-//								if (null != holder.viewItem) {
-//									ViewItemPagerActivity.this.startViewItemActivity(holder.model, holder.viewItem);
-//								}
-//							}
-//							
-//						});
 				break;
 			default:
 				itemAdapter = null;
@@ -318,22 +299,22 @@ public class ViewItemPagerActivity extends BaseActivity {
 				}
 			});
 			
-			final ScaleGestureDetector scaleDetector = new ScaleGestureDetector(ViewItemPagerActivity.this,
-					new ScaleGestureDetector.SimpleOnScaleGestureListener () {
-			    @Override
-			    public void onScaleEnd(ScaleGestureDetector detector) {
-			    	zoomGridView(detector.getScaleFactor() > 1.0, false);
-			    }
-			});
-			
-			absListView.setOnTouchListener(new OnTouchListener() {
-				
-				@Override
-				public boolean onTouch(View v, MotionEvent event) {
-					scaleDetector.onTouchEvent(event);
-					return false;
-				}
-			});
+//			final ScaleGestureDetector scaleDetector = new ScaleGestureDetector(ViewItemPagerActivity.this,
+//					new ScaleGestureDetector.SimpleOnScaleGestureListener () {
+//			    @Override
+//			    public void onScaleEnd(ScaleGestureDetector detector) {
+//			    	zoomGridView(detector.getScaleFactor() > 1.0, false);
+//			    }
+//			});
+//
+//			absListView.setOnTouchListener(new OnTouchListener() {
+//
+//				@Override
+//				public boolean onTouch(View v, MotionEvent event) {
+//					scaleDetector.onTouchEvent(event);
+//					return false;
+//				}
+//			});
 			
 			if (childModel.supportPaging()) {
 				onScrollListeners.add(new EndlessScrollListener() {
@@ -384,7 +365,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		TextView text;
 	}
 	
-	private class GridItemAdapter extends BaseAdapter implements StickyGridHeadersBaseAdapter {
+	private class GridItemAdapter extends BaseAdapter {
 		
 		private ViewNode model;
 		private GridView gridView;
@@ -404,16 +385,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			if (null == model.getViewItems()) {
 				return null;
 			}
-			ItemPositionStatus ips = getHeaderPositionForItem(position);
-			ViewItem viewItem = null;
-			if (ips != null) {
-				if (!ips.isPaddingItem) {
-					viewItem = model.getViewItems().get(ips.itemPositionInModel);
-				}
-			} else {
-				viewItem = model.getViewItems().get(position);
-			}
-			
+			ViewItem viewItem = model.getViewItems().get(position);
 			return viewItem;
 		}
 
@@ -421,12 +393,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 		public long getItemId(int position) {
 			Object item = getItem(position);
 			return item == null ? 0 : item.hashCode();
-		}
-
-		@Override
-		public boolean isEnabled (int position) {
-			ItemPositionStatus ips = getHeaderPositionForItem(position);
-			return ips == null || !ips.isPaddingItem;
 		}
 		
 		@Override
@@ -458,22 +424,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			}
 			view.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.FILL_PARENT, rowHeight));
 			
-			ItemPositionStatus ips = getHeaderPositionForItem(position);
-			final ViewItem viewItem;
-			if (ips != null) {
-				int color = randomColorForHeader(ips.header);
-				view.setBackgroundColor(color);
-				if (ips.isPaddingItem) {
-					holder.imageView.setVisibility(View.GONE);
-					holder.progressBar.setVisibility(View.GONE);
-					holder.text.setVisibility(View.GONE);
-					return view;
-				} else {
-					viewItem = model.getViewItems().get(ips.itemPositionInModel);
-				}
-			} else {
-				viewItem = model.getViewItems().get(position);
-			}
+			final ViewItem viewItem = model.getViewItems().get(position);
 			
 			switch (viewItem.getViewItemType()) {
 			case ViewItem.VIEW_ITEM_TYPE_COLOR:
@@ -531,80 +482,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 			
 			return view;
 		}
-
-		private class ItemPositionStatus {
-			public int header;
-			public boolean isPaddingItem;
-			public int itemPositionInModel;
-			public ItemPositionStatus(
-					int header,
-					boolean isPaddingItem,
-					int itemPositionInModel) {
-				this.header = header;
-				this.isPaddingItem = isPaddingItem;
-				this.itemPositionInModel = itemPositionInModel;
-			}
-		}
-		
-		private ItemPositionStatus getHeaderPositionForItem(int itemPos) {
-			int itemPositionInModel = 0;
-			for (int i = 0; i < getNumHeaders(); ++i) {
-				itemPos -= getCountForHeader(i);
-				itemPositionInModel += model.getHeaders().get(i);
-				if (itemPos < 0) {
-					itemPos += getCountForHeader(i);
-					itemPositionInModel -= model.getHeaders().get(i);
-					return new ItemPositionStatus(
-							i,
-							itemPos >= model.getHeaders().get(i),
-							itemPositionInModel + itemPos);
-				}
-			}
-			return null;
-		}
-		
-		@Override
-		public View getHeaderView(final int position, View convertView, ViewGroup parent) {
-			final HeaderViewHolder holder;
-	        if (convertView == null) {
-	            convertView = getLayoutInflater().inflate(model.getHeaderViewResId(position, 0), parent, false);
-	            holder = model.createHolderFromHeaderView(convertView);
-	            convertView.setTag(holder);
-	        } else {
-	            holder = (HeaderViewHolder)convertView.getTag();
-	        }
-	        
-	        return convertView;
-	    }
-
-		@Override
-		public int getCountForHeader(int header) {
-			List<Integer> headers = model.getHeaders();
-			if (null == headers) {
-				return 0;
-			}
-			if (header >= headers.size()) {
-				return 0;
-			}
-			int count = headers.get(header);
-			int numColumns = gridView.getNumColumns();
-			int r = count % numColumns;
-			if (0 != r) {
-				count += (numColumns - r);
-			}
-			return count;
-		}
-
-		@Override
-		public int getNumHeaders() {
-			if (null == model.getHeaders()) {
-				return 0;
-			} else if (0 == model.getHeaders().size()) {
-				return 0;
-			} else {
-				return model.getHeaders().size() + 1;
-			}
-		}
 	}
 	
 	private static class ListViewHolder {
@@ -612,7 +489,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 		ImageView image;
         ProgressBar progressBar;
 		TwoWayView spannableGrid;
-        MapView mapView;
 
         HeaderViewHolder headerViewHolder;
     }
@@ -632,14 +508,12 @@ public class ViewItemPagerActivity extends BaseActivity {
 
         @Override
         public int getViewTypeCount() {
-            return 3;
+            return 2;
         }
 
         @Override
         public int getItemViewType(int position) {
-            if (ViewItem.VIEW_TYPE_PLACE_LIST == viewType && 0 == position) {
-                return 2;
-            } else if (null != model.getHeaders() && !model.getHeaders().isEmpty()) {
+            if (null != model.getHeaders() && !model.getHeaders().isEmpty()) {
                 return model.getHeaders().get(position) == 1 ? 0 : 1;
             } else {
                 return 0;
@@ -744,11 +618,11 @@ public class ViewItemPagerActivity extends BaseActivity {
                                     AbsListView.LayoutParams.MATCH_PARENT, listView.getWidth()
                             ));
                             break;
-                        case 2:
-                            view = getLayoutInflater().inflate(R.layout.item_map_view, parent, false);
-                            holder.mapView = (MapView) view.findViewById(R.id.ic_mapview);
-                            holder.mapView.enableWrapAround(true);
-                            final MapViewHelper mapViewHelper = new MapViewHelper(holder.mapView);
+//                        case 2:
+//                            view = getLayoutInflater().inflate(R.layout.item_map_view, parent, false);
+//                            holder.mapView = (MapView) view.findViewById(R.id.ic_mapview);
+//                            holder.mapView.enableWrapAround(true);
+//                            final MapViewHelper mapViewHelper = new MapViewHelper(holder.mapView);
 //                            onScrollListeners.add(new AbsListView.OnScrollListener() {
 //
 //                                private HashMap<ViewItem, Integer> viewItemOnMap = new HashMap<ViewItem, Integer>();
@@ -762,40 +636,40 @@ public class ViewItemPagerActivity extends BaseActivity {
 //                                @Override
 //                                public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 //
-//                        if (firstVisibleItem == variants[0] &&
-//                            visibleItemCount == variants[1] &&
-//                            totalItemCount == variants[2]) {
-//                            return;
-//                        }
+//                                    if (firstVisibleItem == variants[0] &&
+//                                            visibleItemCount == variants[1] &&
+//                                            totalItemCount == variants[2]) {
+//                                        return;
+//                                    }
 //
-//                        variants[0] = firstVisibleItem;
-//                        variants[1] = visibleItemCount;
-//                        variants[2] = totalItemCount;
+//                                    variants[0] = firstVisibleItem;
+//                                    variants[1] = visibleItemCount;
+//                                    variants[2] = totalItemCount;
 //
-//                        Set<ViewItem> updateViewItems = new HashSet<ViewItem>();
-//                        for (int i = 0; i < visibleItemCount; ++i) {
-//                            updateViewItems.add(childModel.getHeaderItems().get(firstVisibleItem + i));
-//                        }
+//                                    Set<ViewItem> updateViewItems = new HashSet<ViewItem>();
+//                                    for (int i = 0; i < visibleItemCount; ++i) {
+//                                        updateViewItems.add(childModel.getHeaderItems().get(firstVisibleItem + i));
+//                                    }
 //
-//                        for (ViewItem viewItem: updateViewItems) {
-//                            if (!viewItemOnMap.containsKey(viewItem)) {
-//                                FlickrViewNodeSearch node = (FlickrViewNodeSearch) viewItem.getViewNode();
-//                                int graphicId = mapViewHelper.addMarkerGraphic(
-//                                        Double.parseDouble(node.getSearchParameters().getLatitude()), Double.parseDouble(node.getSearchParameters().getLongitude()),
-//                                        viewItem.getLabel(), null, viewItem.getImageUrl(), null, false, 0);
+//                                    for (ViewItem viewItem: updateViewItems) {
+//                                        if (!viewItemOnMap.containsKey(viewItem)) {
+//                                            FlickrViewNodeSearch node = (FlickrViewNodeSearch) viewItem.getViewNode();
+//                                            int graphicId = mapViewHelper.addMarkerGraphic(
+//                                                    Double.parseDouble(node.getSearchParameters().getLatitude()), Double.parseDouble(node.getSearchParameters().getLongitude()),
+//                                                    viewItem.getLabel(), null, viewItem.getImageUrl(), null, false, 0);
 //
-//                                viewItemOnMap.put(viewItem, graphicId);
-//                            }
-//                        }
-//                        for (ViewItem viewItem: viewItemOnMap.keySet()) {
-//                            if (!updateViewItems.contains(viewItem)) {
-//                                mapViewHelper.removeGraphic(viewItemOnMap.get(viewItem));
-//                            }
-//                        }
-//                        viewItemOnMap.keySet().retainAll(updateViewItems);
+//                                            viewItemOnMap.put(viewItem, graphicId);
+//                                        }
+//                                    }
+//                                    for (ViewItem viewItem: viewItemOnMap.keySet()) {
+//                                        if (!updateViewItems.contains(viewItem)) {
+//                                            mapViewHelper.removeGraphic(viewItemOnMap.get(viewItem));
+//                                        }
+//                                    }
+//                                    viewItemOnMap.keySet().retainAll(updateViewItems);
 //                                }
 //                            });
-                            break;
+//                            break;
                         default:
                             break;
                     }
@@ -809,7 +683,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                                 break;
                             case 1:
                                 view.setLayoutParams(new ListView.LayoutParams(
-                                        ListView.LayoutParams.MATCH_PARENT, listView.getWidth()
+                                        ListView.LayoutParams.MATCH_PARENT, (listView.getWidth()*2/3)
                                 ));
                                 break;
                             default:
