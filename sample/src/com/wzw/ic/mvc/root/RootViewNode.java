@@ -66,7 +66,9 @@ public class RootViewNode extends ViewNode {
         ))))));
 
         ViewItem places = new ViewItem("Explore", "places", null, ViewItem.VIEW_TYPE_PLACE_LIST, new PlacesViewNode(new ViewNode[] {
-                new LonelyPlanetViewNodeSights("http://www.lonelyplanet.com/sights.html?page=%d"), new LonelyPlanetViewNodePlaces("http://www.lonelyplanet.com/china/hubei/places.html?page=%d") }));
+                new LonelyPlanetViewNodeSights("http://www.lonelyplanet.com/sights.html?page=%d"),
+                //new LonelyPlanetViewNodePlaces("http://www.lonelyplanet.com/china/hubei/places.html?page=%d")
+        }));
 
         this.viewItems = Arrays.asList(places, gallery, stream, albums, feeds, stories);
 	}

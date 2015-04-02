@@ -152,7 +152,8 @@ public class PlacesViewNode extends ViewNode {
 //                    if (m.matches()) {
 //                        searchNode.getSearchParameters().setLatitude(m.group(1));
 //                        searchNode.getSearchParameters().setLongitude(m.group(2));
-//                    }
+//                    };
+//                    searchNode.setPerPage(1);
                     viewItem.setViewNode(searchNode);
                 }
             }
@@ -199,15 +200,16 @@ public class PlacesViewNode extends ViewNode {
 
                     LonelyPlanetViewNodeBreadCrumbs nodeBreadCrumbs = new LonelyPlanetViewNodeBreadCrumbs(albumViewItems.get(index).getNodeUrl());
                     List<ViewItem> breadCrumbs = nodeBreadCrumbs.reload();
-                    StringBuilder sb = new StringBuilder();
-                    for (ViewItem viewItem: breadCrumbs) {
-                        sb.append(viewItem.getLabel());
-                        sb.append(" / ");
+                    if (null != breadCrumbs && !breadCrumbs.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (ViewItem viewItem : breadCrumbs) {
+                            sb.append(viewItem.getLabel());
+                            sb.append(" / ");
+                        }
+                        sb.append("<br />");
+                        sb.append(albumViewItems.get(index).getLabel());
+                        albumViewItems.get(index).setLabel(sb.toString());
                     }
-                    sb.append("<br />");
-                    sb.append(albumViewItems.get(index).getLabel());
-                    albumViewItems.get(index).setLabel(sb.toString());
-
                     latch2.countDown();
 
                 }
@@ -240,11 +242,6 @@ public class PlacesViewNode extends ViewNode {
         if (null != resultViewItems && resultViewItems.size() > 0) {
             pageNo = newPageNo;
             if (reload) {
-                // add dumb item for map view
-                resultViewItems.add(new ViewItem(null, null, null, 0, null));
-                albumHeaders.add(1);
-                headerViewItems.add(new ViewItem(null, null, null, 0, null));
-
                 viewItems.clear();
                 headers.clear();
                 headerItems.clear();
@@ -269,10 +266,10 @@ public class PlacesViewNode extends ViewNode {
 
     @Override
     public int getHeaderViewResId(int header, int itemViewType /* card type */) {
-        if (2 == itemViewType) {
+//        if (2 == itemViewType) {
             return 0;
-        }
-        return R.layout.header;
+//        }
+//        return R.layout.header;
     }
 
     @Override
