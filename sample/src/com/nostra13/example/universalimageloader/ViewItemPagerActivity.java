@@ -49,7 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class ViewItemPagerActivity extends BaseActivity {
-	DisplayImageOptions gridOptions, listOptions, authorIconOptions;
+	DisplayImageOptions gridOptions, listOptions;
 	ViewPager pager;
 
 	@Override
@@ -87,16 +87,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 			.considerExifParams(true)
 			.displayer(new RoundedBitmapDisplayer(20))
 			.build();
-
-        authorIconOptions = new DisplayImageOptions.Builder()
-                .showImageOnLoading(R.drawable.ic_stub)
-                .showImageForEmptyUri(R.drawable.ic_empty)
-                .showImageOnFail(R.drawable.ic_error)
-                .cacheInMemory(true)
-                .cacheOnDisk(true)
-                .considerExifParams(true)
-                .displayer(new RoundedBitmapDisplayer(getResources().getDimensionPixelSize(R.dimen.author_icon_dimen)/2))
-                .build();
 
 		pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
 //		pager.setOffscreenPageLimit(3);
@@ -683,7 +673,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                                 break;
                             case 1:
                                 view.setLayoutParams(new ListView.LayoutParams(
-                                        ListView.LayoutParams.MATCH_PARENT, (listView.getWidth()*2/3)
+                                        ListView.LayoutParams.MATCH_PARENT, (listView.getWidth())
                                 ));
                                 break;
                             default:
@@ -895,12 +885,12 @@ public class ViewItemPagerActivity extends BaseActivity {
                             itemView.setLayoutParams(lp);
 
                             final ViewItem viewItem = model.getViewItems().get(offset + position);
-//                            if (!TextUtils.isEmpty(viewItem.getLabel())) {
-//                                holder.text.setVisibility(View.VISIBLE);
-//                                holder.text.setText(viewItem.getLabel());
-//                            } else {
+                            if (!TextUtils.isEmpty(viewItem.getLabel())) {
+                                holder.text.setVisibility(View.VISIBLE);
+                                holder.text.setText(viewItem.getLabel());
+                            } else {
                                 holder.text.setVisibility(View.GONE);
-//                            }
+                            }
                             switch (viewItem.getViewItemType()) {
                                 case ViewItem.VIEW_ITEM_TYPE_COLOR:
                                     itemView.setBackgroundColor(viewItem.getViewItemColor());

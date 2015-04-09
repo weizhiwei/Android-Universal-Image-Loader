@@ -65,10 +65,14 @@ public class RootViewNode extends ViewNode {
                 new ViewItem(null, null, null, 0, new ViewNode("", Arrays.asList(new ViewItem(null, null, null, 0, new TempViewNode(new NGViewNodePhotoOfTheDay())
         ))))));
 
-        ViewItem places = new ViewItem("Explore", "places", null, ViewItem.VIEW_TYPE_PLACE_LIST, new PlacesViewNode(new ViewNode[] {
-                new LonelyPlanetViewNodeSights("http://www.lonelyplanet.com/sights.html?page=%d"),
-                //new LonelyPlanetViewNodePlaces("http://www.lonelyplanet.com/china/hubei/places.html?page=%d")
-        }));
+        ViewItem places = new ViewItem("Explore", "places", null, ViewItem.VIEW_TYPE_GRID, new ViewNode("", Arrays.asList(
+                new ViewItem("Sights", "sights", null, ViewItem.VIEW_TYPE_PLACE_LIST, new PlacesViewNode(new ViewNode[] {
+                        new LonelyPlanetViewNodeSights("http://www.lonelyplanet.com/sights.html?page=%d"),
+                })),
+                new ViewItem("Places", "places", null, ViewItem.VIEW_TYPE_PLACE_LIST, new PlacesViewNode(new ViewNode[] {
+                        new LonelyPlanetViewNodePlaces("http://www.lonelyplanet.com/china/places.html?page=%d")
+                }))
+        )));
 
         this.viewItems = Arrays.asList(places, gallery, stream, albums, feeds, stories);
 	}
