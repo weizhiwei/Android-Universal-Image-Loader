@@ -24,8 +24,18 @@ public class LonelyPlanetViewNodeSights extends LonelyPlanetViewNode {
 			viewItems = new ArrayList<ViewItem>();
             for (Element elem: articleElems) {
                 Elements titleElems = elem.select("h1");
-                if (null != titleElems && titleElems.size() > 0) {
-                    ViewItem viewItem = new ViewItem(titleElems.get(0).text(), "", "", ViewItem.VIEW_TYPE_PLACE_LIST, null);
+                if (null != titleElems && !titleElems.isEmpty()) {
+
+                    String label = titleElems.get(0).text();
+
+                    Elements placeElems = elem.select(".icon--place--pin--line--before");
+                    if (null != placeElems && !placeElems.isEmpty()) {
+                        if (!label.contains(placeElems.get(0).text())) {
+                            label += ", " + placeElems.get(0).text();
+                        }
+                    }
+
+                    ViewItem viewItem = new ViewItem(label, "", "", ViewItem.VIEW_TYPE_PLACE_LIST, null);
                     viewItems.add(viewItem);
 
                     Elements aElems = elem.select("a");

@@ -93,7 +93,7 @@ public class PlacesViewNode extends ViewNode {
         for (int subpageIndex = 0; subpageIndex < SUBSTREAMS.length; ++subpageIndex) {
             if (null != subpages[subpageIndex]) {
                 List<ViewItem> subpageViewItems = (List<ViewItem>) subpages[subpageIndex];
-                int n = Math.min(subpageViewItems.size(), 5);
+                int n = Math.min(subpageViewItems.size(), placesMode ? 1 : 5);
                 for (int i = 0; i < n; ++i) {
                     int idx = (new Random()).nextInt(subpageViewItems.size());
                     ViewItem viewItem = subpageViewItems.get(idx);
@@ -140,11 +140,10 @@ public class PlacesViewNode extends ViewNode {
             for (int i = 0; i < albumViewItems.size(); ++i) {
                 List<ViewItem> subpage1 = (List<ViewItem>) subpages1[i];
                 if (null != subpage1 && !subpage1.isEmpty()) {
-                    int n = Math.min(subpage1.size(), 3 + (new Random()).nextInt(4));
+                    int n = Math.min(subpage1.size(), 2 + (new Random()).nextInt(3));
                     for (int j = 0; j < n; ++j) {
-//                        int idx = (new Random()).nextInt(subpage1.size());
-                        int idx = j;
-                        ViewItem viewItem = subpage1.get(idx);
+                        int idx = (new Random()).nextInt(subpage1.size());
+                        ViewItem viewItem = subpage1.remove(idx);
                         resultViewItems.add(viewItem);
                     }
                     albumHeaders.add(n);
@@ -171,30 +170,8 @@ public class PlacesViewNode extends ViewNode {
 
                     ViewItem viewItem = finalResultViewItems.get(index);
 
-                    String unqualifiedQuery = viewItem.getLabel();
-                    String qualifiedQuery = viewItem.getLabel();
-                    StringBuilder sb = new StringBuilder();
-
-                    LonelyPlanetViewNodeBreadCrumbs nodeBreadCrumbs = new LonelyPlanetViewNodeBreadCrumbs(viewItem.getNodeUrl());
-                    List<ViewItem> breadCrumbs = nodeBreadCrumbs.reload();
-                    if (null != breadCrumbs && !breadCrumbs.isEmpty()) {
-                        sb.append("<small>");
-                        for (ViewItem vi : breadCrumbs) {
-                            sb.append(vi.getLabel());
-                            sb.append(" / ");
-                        }
-                        sb.append("</small><br />");
-
-                        if (!breadCrumbs.isEmpty()) {
-                            qualifiedQuery += ", ";
-                            qualifiedQuery += breadCrumbs.get(breadCrumbs.size() - 1).getLabel();
-                        }
-                    }
-                    sb.append(viewItem.getLabel());
-
-                    viewItem.setLabel(placesMode ? qualifiedQuery : sb.toString());
                     viewItem.setViewType(ViewItem.VIEW_TYPE_GRID);
-                    FlickrViewNodeSearch searchNode = new FlickrViewNodeSearch(removeDiacritic(qualifiedQuery));
+                    FlickrViewNodeSearch searchNode = new FlickrViewNodeSearch(removeDiacritic(viewItem.getLabel()));
 //                    Matcher m = COORDS_PATTERN.matcher(viewItem.getNodeUrl());
 //                    if (m.matches()) {
 //                        searchNode.getSearchParameters().setLatitude(m.group(1));
@@ -203,20 +180,42 @@ public class PlacesViewNode extends ViewNode {
                     searchNode.setPerPage(5);
 
                     List<ViewItem> page = null;
-                    for (int i = 0; i < 3 && (null == page || page.isEmpty()); ++i) {
+                    final int TRY_QUALIFIED_QUERY = 1;
+                    final int TRY_UNQUALIFIED_QUERY = 0;
+                    for (int i = 0; i < TRY_QUALIFIED_QUERY && (null == page || page.isEmpty()); ++i) {
                         page = searchNode.reload();
                     }
-
                     if (null == page || page.isEmpty()) {
-                        searchNode.getSearchParameters().setText(removeDiacritic(unqualifiedQuery));
-                        for (int i = 0; i < 3 && (null == page || page.isEmpty()); ++i) {
-                            page = searchNode.reload();
+                        String qualifiedQuery = viewItem.getLabel();
+                        int index = qualifiedQuery.lastIndexOf(',');
+                        if (index > 0) {
+                            String unqualifiedQuery = qualifiedQuery.substring(0, index);
+                            searchNode.getSearchParameters().setText(removeDiacritic(unqualifiedQuery));
+                            for (int i = 0; i < TRY_UNQUALIFIED_QUERY && (null == page || page.isEmpty()); ++i) {
+                                page = searchNode.reload();
+                            }
                         }
                     }
 
                     if (null != page && !page.isEmpty()) {
                         viewItem.setImageUrl(page.get((new Random()).nextInt(page.size())).getImageUrl());
                     }
+
+//                    if (!placesMode) {
+//                        LonelyPlanetViewNodeBreadCrumbs nodeBreadCrumbs = new LonelyPlanetViewNodeBreadCrumbs(viewItem.getNodeUrl());
+//                        List<ViewItem> breadCrumbs = nodeBreadCrumbs.reload();
+//                        if (null != breadCrumbs && !breadCrumbs.isEmpty()) {
+//                            StringBuilder sb = new StringBuilder();
+//                            sb.append("<small>");
+//                            for (ViewItem vi : breadCrumbs) {
+//                                sb.append(vi.getLabel());
+//                                sb.append(" / ");
+//                            }
+//                            sb.append("</small><br />");
+//                            sb.append(viewItem.getLabel());
+//                            viewItem.setLabel(sb.toString());
+//                        }
+//                    }
 
                     latch2.countDown();
                 }
@@ -231,16 +230,41 @@ public class PlacesViewNode extends ViewNode {
             e.printStackTrace();
         }
 
-        if (null != resultViewItems && resultViewItems.size() > 0) {
+        // clean up failed items
+        List<ViewItem> resultViewItems2 = new ArrayList<ViewItem>(resultViewItems.size());
+        List<Integer> albumHeaders2 = new ArrayList<Integer>(albumHeaders.size());
+        List<ViewItem> headerViewItems2 = new ArrayList<ViewItem>(headerViewItems.size());
+        int idxInGroup, countInGroup, idxInterGroup;
+
+        idxInGroup = 0;
+        countInGroup = 0;
+        idxInterGroup = 0;
+        for (ViewItem viewItem: resultViewItems) {
+            if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+                resultViewItems2.add(viewItem);
+                ++countInGroup;
+            }
+            if (++idxInGroup == albumHeaders.get(idxInterGroup)) {
+                if (countInGroup > 0) {
+                    albumHeaders2.add(countInGroup);
+                    headerViewItems2.add(headerViewItems.get(idxInterGroup));
+                }
+                idxInGroup = 0;
+                countInGroup = 0;
+                ++idxInterGroup;
+            }
+        }
+
+        if (null != resultViewItems2 && resultViewItems2.size() > 0) {
             pageNo = newPageNo;
             if (reload) {
                 viewItems.clear();
                 headers.clear();
                 headerItems.clear();
             }
-            viewItems.addAll(resultViewItems);
-            headers.addAll(albumHeaders);
-            headerItems.addAll(headerViewItems);
+            viewItems.addAll(resultViewItems2);
+            headers.addAll(albumHeaders2);
+            headerItems.addAll(headerViewItems2);
         }
 
         return albumViewItems;
@@ -308,20 +332,34 @@ public class PlacesViewNode extends ViewNode {
     }
 
     /**
-     * Mirror of the unicode table from 00c0 to 017f without diacritics.
+     * Mirror of the unicode table from 00c0 to 024f without diacritics.
      */
-    private static final String tab00c0 = "AAAAAAACEEEEIIII" +
+    //Latin 1 - Latin Extended-B
+    private static final String tab00c0 = "aaaaaaaceeeeiiii" +
             "DNOOOOO\u00d7\u00d8UUUUYI\u00df" +
             "aaaaaaaceeeeiiii" +
             "\u00f0nooooo\u00f7\u00f8uuuuy\u00fey" +
-            "AaAaAaCcCcCcCcDd" +
-            "DdEeEeEeEeEeGgGg" +
-            "GgGgHhHhIiIiIiIi" +
-            "IiJjJjKkkLlLlLlL" +
-            "lLlNnNnNnnNnOoOo" +
-            "OoOoRrRrRrSsSsSs" +
-            "SsTtTtTtUuUuUuUu" +
-            "UuUuWwYyYZzZzZzF";
+            "aaaaaaccccccccdd" +
+            "ddeeeeeeeeeegggg" +
+            "gggghhhhiiiiiiii" +
+            "iijjjjkkklllllll" +
+            "lllnnnnnnnnnoooo" +
+            "oooorrrrrrssssss" +
+            "ssttttttuuuuuuuu" +
+            "uuuuwwyyyzzzzzzf" +
+            "bbbbbboccddddoee" +
+            "effgyhltikklawnn" +
+            "ooooopprsseltttt" +
+            "uuuuyyzz3ee3255t" +
+            "plll!dddjjjnnnaa" +
+            "iioouuuuuuuuuuea" +
+            "aaaaaggggkkoooo3" +
+            "3jdddgghpnnaaaao" +
+            "oaaaaeeeeiiiiooo" +
+            "orrrruuuusstt33h" +
+            "hnd88zzaaeeooooo" +
+            "oooyybnbjbpacclt" +
+            "sz??buaeejjqrrryy";
 
     /**
      * Returns string without diacritics - 7 bit approximation.
@@ -334,7 +372,7 @@ public class PlacesViewNode extends ViewNode {
         char one;
         for (int i = 0; i < source.length(); i++) {
             one = source.charAt(i);
-            if (one >= '\u00c0' && one <= '\u017f') {
+            if (one >= '\u00c0' && one <= '\u024f') {
                 one = tab00c0.charAt((int) one - '\u00c0');
             }
             vysl[i] = one;
