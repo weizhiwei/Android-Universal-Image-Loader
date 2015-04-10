@@ -744,7 +744,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
                 view.setBackgroundColor(randomColorForHeader(Math.abs(viewItem.hashCode())));
 
-                SpannableString text = buildPictureText(viewItem, false, false, true, true, true, false);
+                SpannableString text = buildPictureText(viewItem, true, false, true, true, true, false);
                 holder.text.setText(text);
                 holder.text.setMovementMethod(LinkMovementMethod.getInstance());
                 holder.text.setVisibility(View.VISIBLE);

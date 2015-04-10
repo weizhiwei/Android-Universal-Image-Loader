@@ -19,6 +19,7 @@ import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetViewNodeSights;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -28,14 +29,21 @@ public class PlacesViewNode extends ViewNode {
 
     static final Pattern COORDS_PATTERN = Pattern.compile(".*lt=([0-9.-]+)[^0-9.-]+ln=([0-9.-]+).*");
 
+    static final int MODE_COVER = 0;
+    static final int MODE_PLACES = 1;
+    static final int MODE_SIGHTS = 2;
+    static final int CHUNK_SIZES[] = {2, 1, 3};
+
     protected int pageNo;
     protected final ViewNode[] SUBSTREAMS;
     protected final Object[] subpages;
+    protected final int mode;
 
-	public PlacesViewNode(ViewNode[] viewNodes) {
+	public PlacesViewNode(ViewNode[] viewNodes, int mode) {
         super("explorer");
         SUBSTREAMS = viewNodes;
         subpages = new Object[SUBSTREAMS.length];
+        this.mode = mode;
     }
 
     @Override
@@ -51,8 +59,6 @@ public class PlacesViewNode extends ViewNode {
     private List<ViewItem> doLoad(final boolean reload) {
 
         int newPageNo = reload ? 0 : pageNo + 1;
-
-        final boolean placesMode = SUBSTREAMS[0] instanceof LonelyPlanetViewNodePlaces;
 
         boolean needToDoLoad = true;
         if (!reload) {
@@ -93,12 +99,12 @@ public class PlacesViewNode extends ViewNode {
         for (int subpageIndex = 0; subpageIndex < SUBSTREAMS.length; ++subpageIndex) {
             if (null != subpages[subpageIndex]) {
                 List<ViewItem> subpageViewItems = (List<ViewItem>) subpages[subpageIndex];
-                int n = Math.min(subpageViewItems.size(), placesMode ? 1 : 5);
+
+                int n = Math.min(subpageViewItems.size(), CHUNK_SIZES[mode]);
                 for (int i = 0; i < n; ++i) {
                     int idx = (new Random()).nextInt(subpageViewItems.size());
-                    ViewItem viewItem = subpageViewItems.get(idx);
+                    ViewItem viewItem = subpageViewItems.remove(idx); // pop out all the used items
                     albumViewItems.add(viewItem);
-                    subpageViewItems.remove(idx); // pop out all the used items
                 }
             }
         }
@@ -107,7 +113,7 @@ public class PlacesViewNode extends ViewNode {
         final List<Integer> albumHeaders = new ArrayList<Integer>();
         List<ViewItem> headerViewItems = null;
 
-        if (placesMode) {
+        if (MODE_PLACES == mode) {
             final Object[] subpages1 = new Object[albumViewItems.size()];
             final CountDownLatch latch1 = new CountDownLatch(albumViewItems.size());
             for (int i = 0; i < albumViewItems.size(); ++i) {
@@ -159,7 +165,33 @@ public class PlacesViewNode extends ViewNode {
         }
 
         // search for a thumbnail..
-        final CountDownLatch latch2 = new CountDownLatch(resultViewItems.size());
+        final CountDownLatch latch2 = new CountDownLatch(resultViewItems.size() + MODE_COVER == mode ? 1 : 0);
+
+        final String[] titleStr = new String[1];
+        if (MODE_COVER == mode) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    LonelyPlanetViewNodeBreadCrumbs nodeBreadCrumbs = new LonelyPlanetViewNodeBreadCrumbs(String.format(SUBSTREAMS[0].getSourceUrl(), 1));
+                    List<ViewItem> breadCrumbs = nodeBreadCrumbs.reload();
+                    if (null != breadCrumbs && !breadCrumbs.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("<small>");
+                        for (int i = 0; i < breadCrumbs.size() - 1; ++i) {
+                            sb.append(breadCrumbs.get(i).getLabel());
+                            sb.append(" / ");
+                        }
+                        sb.append("</small><br />");
+                        sb.append(breadCrumbs.get(breadCrumbs.size() - 1).getLabel());
+                        titleStr[0] = sb.toString();
+                    }
+
+                    latch2.countDown();
+                }
+
+            }).run();
+        }
+
         for (int i = 0; i < resultViewItems.size(); ++i) {
             final int index = i;
             final List<ViewItem> finalResultViewItems = resultViewItems;
@@ -177,7 +209,7 @@ public class PlacesViewNode extends ViewNode {
 //                        searchNode.getSearchParameters().setLatitude(m.group(1));
 //                        searchNode.getSearchParameters().setLongitude(m.group(2));
 //                    };
-                    searchNode.setPerPage(5);
+                    searchNode.setPerPage(MODE_COVER == mode ? 150 : 30);
 
                     List<ViewItem> page = null;
                     final int TRY_QUALIFIED_QUERY = 1;
@@ -198,24 +230,20 @@ public class PlacesViewNode extends ViewNode {
                     }
 
                     if (null != page && !page.isEmpty()) {
-                        viewItem.setImageUrl(page.get((new Random()).nextInt(page.size())).getImageUrl());
+                        ViewItem picViewItem = null;
+                        Collections.shuffle(page);
+                        for (ViewItem vi: page) {
+                            if (vi.getStory().length() > 350) {
+                                picViewItem = vi;
+                                break;
+                            }
+                        }
+                        if (picViewItem == null) {
+                            picViewItem = page.get(0);
+                        }
+                        viewItem.setStory(picViewItem.getStory());
+                        viewItem.setImageUrl(picViewItem.getImageUrl());
                     }
-
-//                    if (!placesMode) {
-//                        LonelyPlanetViewNodeBreadCrumbs nodeBreadCrumbs = new LonelyPlanetViewNodeBreadCrumbs(viewItem.getNodeUrl());
-//                        List<ViewItem> breadCrumbs = nodeBreadCrumbs.reload();
-//                        if (null != breadCrumbs && !breadCrumbs.isEmpty()) {
-//                            StringBuilder sb = new StringBuilder();
-//                            sb.append("<small>");
-//                            for (ViewItem vi : breadCrumbs) {
-//                                sb.append(vi.getLabel());
-//                                sb.append(" / ");
-//                            }
-//                            sb.append("</small><br />");
-//                            sb.append(viewItem.getLabel());
-//                            viewItem.setLabel(sb.toString());
-//                        }
-//                    }
 
                     latch2.countDown();
                 }
@@ -248,6 +276,16 @@ public class PlacesViewNode extends ViewNode {
                 if (countInGroup > 0) {
                     albumHeaders2.add(countInGroup);
                     headerViewItems2.add(headerViewItems.get(idxInterGroup));
+
+                    // we only need one pic for MODE_COVER
+                    if (MODE_COVER == mode) {
+                        if (!TextUtils.isEmpty(titleStr[0])) {
+                            ViewItem headerViewItem = new ViewItem(null, null, null, 0, null);
+                            headerViewItem.setLabel(titleStr[0]);
+                            headerViewItems2.set(0, headerViewItem);
+                        }
+                        break;
+                    }
                 }
                 idxInGroup = 0;
                 countInGroup = 0;
@@ -277,7 +315,7 @@ public class PlacesViewNode extends ViewNode {
 
     @Override
     public boolean supportPaging() {
-        return true;
+        return MODE_COVER != mode;
     }
 
     @Override
