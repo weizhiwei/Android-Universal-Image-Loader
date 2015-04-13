@@ -61,6 +61,10 @@ public abstract class EndlessScrollListener implements OnScrollListener {
 		}
 	}
 
+    public void setLoading(boolean loading) {
+        this.loading = loading;
+    }
+
 	// Defines the process for actually loading more data based on page
 	public abstract void onLoadMore(int page, int totalItemsCount);
 

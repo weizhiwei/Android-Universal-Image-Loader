@@ -310,7 +310,13 @@ public class ViewItemPagerActivity extends BaseActivity {
 				onScrollListeners.add(new EndlessScrollListener() {
 				    @Override
 				    public void onLoadMore(int page, int totalItemsCount) {
-				    	new GetDataTask(childModel, swipeRefreshLayout, itemAdapter, null).execute(false);
+				    	new GetDataTask(childModel, swipeRefreshLayout, itemAdapter, new GetDataTask.GetDataTaskFinishedListener() {
+
+                            @Override
+                            public void onGetDataTaskFinished(ViewNode model) {
+                                setLoading(false);
+                            }
+                        }).execute(false);
 				    }
 			    });
 			}
