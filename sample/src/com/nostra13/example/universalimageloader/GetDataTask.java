@@ -7,6 +7,9 @@ import android.widget.BaseAdapter;
 
 import com.wzw.ic.mvc.ViewNode;
 
+import java.util.HashMap;
+import java.util.Map;
+
 class GetDataTask extends AsyncTask<Object, Integer, Void> {
 
 	public interface GetDataTaskFinishedListener {
@@ -18,23 +21,39 @@ class GetDataTask extends AsyncTask<Object, Integer, Void> {
 	protected BaseAdapter itemAdapter;
 	protected PagerAdapter pagerAdapter;
 	protected GetDataTaskFinishedListener listener;
-	
+
+    private static Map<ViewNode, GetDataTask> reentrantLocks = new HashMap<ViewNode, GetDataTask>();
+
+    protected void init(ViewNode model,
+                        SwipeRefreshLayout swipeRefreshLayout,
+                        BaseAdapter itemAdapter,
+                        PagerAdapter pagerAdapter,
+                        GetDataTaskFinishedListener listener,
+                        boolean reload) {
+        this.model = model;
+        this.swipeRefreshLayout = swipeRefreshLayout;
+        this.itemAdapter = itemAdapter;
+        this.pagerAdapter = pagerAdapter;
+        this.listener = listener;
+        if (!reentrantLocks.containsKey(model)) {
+            reentrantLocks.put(model, this);
+            this.execute(reload);
+        }
+    }
+
 	public GetDataTask(ViewNode model,
 			SwipeRefreshLayout swipeRefreshLayout,
 			BaseAdapter itemAdapter,
-			GetDataTaskFinishedListener listener) {
-		this.model = model;
-		this.swipeRefreshLayout = swipeRefreshLayout;
-		this.itemAdapter = itemAdapter;
-		this.listener = listener;
+			GetDataTaskFinishedListener listener,
+            boolean reload) {
+		init(model, swipeRefreshLayout, itemAdapter, null, listener, reload);
 	}
 	
 	public GetDataTask(ViewNode model,
 			PagerAdapter pagerAdapter,
-			GetDataTaskFinishedListener listener) {
-		this.model = model;
-		this.pagerAdapter = pagerAdapter;
-		this.listener = listener;
+			GetDataTaskFinishedListener listener,
+            boolean reload) {
+        init(model, null, null, pagerAdapter, listener, reload);
 	}
 	
 	@Override
@@ -91,5 +110,7 @@ class GetDataTask extends AsyncTask<Object, Integer, Void> {
 		if (null != swipeRefreshLayout) {
 			swipeRefreshLayout.setRefreshing(false);
 		}
+
+        reentrantLocks.remove(model);
 	}
 }

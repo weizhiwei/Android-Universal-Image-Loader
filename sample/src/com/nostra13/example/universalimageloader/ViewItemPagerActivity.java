@@ -92,9 +92,10 @@ public class ViewItemPagerActivity extends BaseActivity {
 //		pager.setOffscreenPageLimit(3);
 		final PagerAdapter pagerAdapter = new ViewItemPagerAdapter();
 		pager.setAdapter(pagerAdapter);
-		pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener () {
+        pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener () {
 			@Override
 		    public void onPageSelected(int position) {
+                updateCurrentPage();
 				if (parentModel.supportPaging() && position >= pagerAdapter.getCount() - 5) {
 					new GetDataTask(parentModel, pagerAdapter, new GetDataTask.GetDataTaskFinishedListener() {
 							@Override
@@ -104,38 +105,64 @@ public class ViewItemPagerActivity extends BaseActivity {
 									initActionBar(actionBar);
 								}
 							}
-						}).execute(false);
+						}, false);
 				}
 		    }
 		});
-		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
-		// trigger a initial update of page 0
-		myViewItem = null;
 	}
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if (hasFocus) {
+            int idx = (null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0;
+            pager.setCurrentItem(idx);
+            if (0 == idx) { // page 0 wont trigger a onPageSelected
+                updateCurrentPage();
+            }
+        }
+    }
+
 	private void updateCurrentPage() {
+        int position = pager.getCurrentItem();
+
+        myViewItem = parentModel.getViewItems().get(position);
+        model = myViewItem.getViewNode();
+
+        updateMenu(model);
+
+        updateTitleIconFromViewItem(myViewItem);
+
+        if (Build.VERSION.SDK_INT >= 11) {
+            ActionBar actionBar = getActionBar();
+            setActionBarSelection(actionBar, position);
+        }
+
         if (model.supportReloading() && model.getViewItems().isEmpty()) {
-        	View contentView = (View) pager.findViewWithTag(pager.getCurrentItem());
+        	View contentView = (View) pager.findViewWithTag(position);
         	SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
-			AbsListView absListView = null;
-			BaseAdapter itemAdapter = null;
-        	switch (myViewItem.getViewType()) {
-			case ViewItem.VIEW_TYPE_LIST:
-			case ViewItem.VIEW_TYPE_CARD_LIST:
-            case ViewItem.VIEW_TYPE_STORY_LIST:
-            case ViewItem.VIEW_TYPE_PLACE_LIST:
-				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
-				itemAdapter = (BaseAdapter) absListView.getAdapter();
-				break;
-			case ViewItem.VIEW_TYPE_GRID:
-				absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
-				itemAdapter = (BaseAdapter) absListView.getAdapter();
-				break;
-			default:
-				break;
-			}
-			
-			new GetDataTask(model, swipeRefreshLayout, itemAdapter, null).execute(true);
+            if (!swipeRefreshLayout.isRefreshing()) {
+                AbsListView absListView = null;
+                BaseAdapter itemAdapter = null;
+                switch (myViewItem.getViewType()) {
+                    case ViewItem.VIEW_TYPE_LIST:
+                    case ViewItem.VIEW_TYPE_CARD_LIST:
+                    case ViewItem.VIEW_TYPE_STORY_LIST:
+                    case ViewItem.VIEW_TYPE_PLACE_LIST:
+                        absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
+                        itemAdapter = (BaseAdapter) absListView.getAdapter();
+                        break;
+                    case ViewItem.VIEW_TYPE_GRID:
+                        absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
+                        itemAdapter = (BaseAdapter) absListView.getAdapter();
+                        break;
+                    default:
+                        break;
+                }
+
+                new GetDataTask(model, swipeRefreshLayout, itemAdapter, null, true);
+            }
 		}
 	}
 		
@@ -198,29 +225,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 		public int getCount() {
 			return null == parentModel.getViewItems() ? 0 : parentModel.getViewItems().size();
 		}
-
-		@Override
-	    public void setPrimaryItem(ViewGroup container, int position, Object object) {
-	        super.setPrimaryItem(container, position, object);
-	        
-	        updateMenu(model);
-	        
-	        if (myViewItem == parentModel.getViewItems().get(position)) {
-	        	return;
-	        }
-	        
-	        myViewItem = parentModel.getViewItems().get(position);
-	        model = myViewItem.getViewNode();
-	        
-	        updateTitleIconFromViewItem(myViewItem);
-	        
-	        if (Build.VERSION.SDK_INT >= 11) {
-				ActionBar actionBar = getActionBar();
-				setActionBarSelection(actionBar, position);
-	        }
-	        
-	        updateCurrentPage();
-	    }
 		
 		@Override
 		public Object instantiateItem(ViewGroup view, final int position) {
@@ -270,7 +274,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		                // Your code to refresh the list here.
 		                // Make sure you call swipeContainer.setRefreshing(false) when
 		                // once the network request has completed successfully.
-						new GetDataTask(childModel, swipeRefreshLayout, itemAdapter, null).execute(true);
+						new GetDataTask(childModel, swipeRefreshLayout, itemAdapter, null, true);
 		            }
 			});
 			swipeRefreshLayout.setEnabled(childModel.supportReloading());
@@ -316,7 +320,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                             public void onGetDataTaskFinished(ViewNode model) {
                                 setLoading(false);
                             }
-                        }).execute(false);
+                        }, false);
 				    }
 			    });
 			}
@@ -722,7 +726,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				holder = (ListViewHolder) view.getTag();
 			}
 
-			if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_LIST) {
+			if (viewType == ViewItem.VIEW_TYPE_LIST) {
 				
 				final ViewItem viewItem = model.getViewItems().get(position);
 				
@@ -743,7 +747,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				default:
 					break;
 				}
-			} else if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_STORY_LIST) {
+			} else if (viewType == ViewItem.VIEW_TYPE_STORY_LIST) {
                 model.updateHeaderView(view, holder.headerViewHolder, position);
 
                 final ViewItem viewItem = model.getViewItems().get(position);
@@ -799,8 +803,8 @@ public class ViewItemPagerActivity extends BaseActivity {
                     default:
                         break;
                 }
-            } else if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_CARD_LIST ||
-                    myViewItem.getViewType() == ViewItem.VIEW_TYPE_PLACE_LIST) {
+            } else if (viewType == ViewItem.VIEW_TYPE_CARD_LIST ||
+                    viewType == ViewItem.VIEW_TYPE_PLACE_LIST) {
 
                 if (model.getHeaderViewResId(position, getItemViewType(position)) > 0) {
                     model.updateHeaderView(view, holder.headerViewHolder, position);
