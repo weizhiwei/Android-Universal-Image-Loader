@@ -19,7 +19,7 @@ public class LonelyPlanetViewNodeRandomSights extends LonelyPlanetViewNodeSights
     public List<ViewItem> reload()  {
         List<ViewItem> page = null;
         pageNo = (new Random()).nextInt(20);
-        while ((null == page || page.isEmpty()) &&
+        while ((null == page || page.size() < 5) &&
                 pageNo > 1) {
             pageNo = Math.max(1, pageNo >> 1);
             page = loadOneMorePage(); // for pageNo to take effect

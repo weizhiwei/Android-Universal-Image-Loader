@@ -85,7 +85,7 @@ public class FeedsViewNode extends ViewNode {
                             subpages[index] = page;
                             latch.countDown();
                         }
-                    }).run();
+                    }).start();
                 }
             }
 
@@ -149,7 +149,7 @@ public class FeedsViewNode extends ViewNode {
                         subpages2[index] = viewItem.getViewNode().reload();
                         latch2.countDown();
                     }
-                }).run();
+                }).start();
             }
         }
 

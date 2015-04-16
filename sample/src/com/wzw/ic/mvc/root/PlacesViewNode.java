@@ -14,6 +14,7 @@ import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.flickr.FlickrViewNodeSearch;
 import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetViewNodeBreadCrumbs;
 import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetViewNodePlaces;
+import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetViewNodeRandomSights;
 import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetViewNodeSights;
 
 import java.text.Normalizer;
@@ -32,7 +33,7 @@ public class PlacesViewNode extends ViewNode {
     static final int MODE_COVER = 0;
     static final int MODE_PLACES = 1;
     static final int MODE_SIGHTS = 2;
-    static final int CHUNK_SIZES[] = {2, 1, 3};
+    static final int CHUNK_SIZES[] = {2, 2, 3};
 
     protected int pageNo;
     protected final ViewNode[] SUBSTREAMS;
@@ -84,7 +85,7 @@ public class PlacesViewNode extends ViewNode {
                         latch.countDown();
                     }
 
-                }).run();
+                }).start();
             }
 
             try {
@@ -124,14 +125,14 @@ public class PlacesViewNode extends ViewNode {
                     public void run() {
                         ViewItem viewItem = albumViewItems.get(index);
 
-                        LonelyPlanetViewNodeSights sightsNode = new LonelyPlanetViewNodeSights(viewItem.getNodeUrl() + "/sights.html?page=%d");
+                        ViewNode sightsNode = new LonelyPlanetViewNodeRandomSights(viewItem.getNodeUrl() + "/sights.html?page=%d");
                         List<ViewItem> page = sightsNode.reload();
                         subpages1[index] = page;
 
                         latch1.countDown();
                     }
 
-                }).run();
+                }).start();
             }
 
             try {
@@ -146,7 +147,7 @@ public class PlacesViewNode extends ViewNode {
             for (int i = 0; i < albumViewItems.size(); ++i) {
                 List<ViewItem> subpage1 = (List<ViewItem>) subpages1[i];
                 if (null != subpage1 && !subpage1.isEmpty()) {
-                    int n = Math.min(subpage1.size(), 2 + (new Random()).nextInt(3));
+                    int n = Math.min(subpage1.size(), 3 + (new Random()).nextInt(3));
                     for (int j = 0; j < n; ++j) {
                         int idx = (new Random()).nextInt(subpage1.size());
                         ViewItem viewItem = subpage1.remove(idx);
@@ -165,7 +166,7 @@ public class PlacesViewNode extends ViewNode {
         }
 
         // search for a thumbnail..
-        final CountDownLatch latch2 = new CountDownLatch(resultViewItems.size() + MODE_COVER == mode ? 1 : 0);
+        final CountDownLatch latch2 = new CountDownLatch(resultViewItems.size() + (MODE_COVER == mode ? 1 : 0));
 
         final String[] titleStr = new String[1];
         if (MODE_COVER == mode) {
@@ -189,7 +190,7 @@ public class PlacesViewNode extends ViewNode {
                     latch2.countDown();
                 }
 
-            }).run();
+            }).start();
         }
 
         for (int i = 0; i < resultViewItems.size(); ++i) {
@@ -209,7 +210,7 @@ public class PlacesViewNode extends ViewNode {
 //                        searchNode.getSearchParameters().setLatitude(m.group(1));
 //                        searchNode.getSearchParameters().setLongitude(m.group(2));
 //                    };
-                    searchNode.setPerPage(MODE_COVER == mode ? 150 : 30);
+                    searchNode.setPerPage(MODE_COVER == mode ? 150 : 10);
 
                     List<ViewItem> page = null;
                     final int TRY_QUALIFIED_QUERY = 1;
@@ -232,23 +233,32 @@ public class PlacesViewNode extends ViewNode {
                     if (null != page && !page.isEmpty()) {
                         ViewItem picViewItem = null;
                         Collections.shuffle(page);
-                        for (ViewItem vi: page) {
-                            if (vi.getStory().length() > 350) {
-                                picViewItem = vi;
-                                break;
+
+                        if (MODE_COVER == mode) {
+                            for (ViewItem vi : page) {
+                                if (vi.getStory().length() > 350) {
+                                    picViewItem = vi;
+                                    break;
+                                }
                             }
                         }
+
                         if (picViewItem == null) {
                             picViewItem = page.get(0);
                         }
+
                         viewItem.setStory(picViewItem.getStory());
                         viewItem.setImageUrl(picViewItem.getImageUrl());
+                        if (MODE_COVER == mode) {
+                            viewItem.setStory(viewItem.getStory() + "<br/><br/>Explore more around " + viewItem.getLabel() + ".<br/><br/>");
+                            viewItem.setLabel(picViewItem.getLabel());
+                        }
                     }
 
                     latch2.countDown();
                 }
 
-            }).run();
+            }).start();
         }
 
         try {

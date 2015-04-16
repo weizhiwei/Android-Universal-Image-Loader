@@ -86,7 +86,7 @@ public class StreamViewNode2 extends ViewNode {
                         latch.countDown();
                     }
 
-                }).run();
+                }).start();
             }
 
             try {
@@ -134,7 +134,7 @@ public class StreamViewNode2 extends ViewNode {
 					latch2.countDown();
 				}
 				
-			}).run();
+			}).start();
 		}
 		
 		try {

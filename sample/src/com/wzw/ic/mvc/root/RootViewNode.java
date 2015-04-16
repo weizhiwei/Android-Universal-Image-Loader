@@ -71,10 +71,10 @@ public class RootViewNode extends ViewNode {
                         new LonelyPlanetViewNodeRandomSights("http://www.lonelyplanet.com/china/sights.html?page=%d")
                 }, PlacesViewNode.MODE_COVER)),
                 new ViewItem("Places", "places", null, ViewItem.VIEW_TYPE_PLACE_LIST, new PlacesViewNode(new ViewNode[] {
-                        new LonelyPlanetViewNodePlaces("http://www.lonelyplanet.com/japan/places.html?page=%d")
+                        new LonelyPlanetViewNodePlaces("http://www.lonelyplanet.com/china/places.html?page=%d")
                 }, PlacesViewNode.MODE_PLACES)),
                 new ViewItem("Sights", "sights", null, ViewItem.VIEW_TYPE_PLACE_LIST, new PlacesViewNode(new ViewNode[] {
-                        new LonelyPlanetViewNodeSights("http://www.lonelyplanet.com/japan/sights.html?page=%d")
+                        new LonelyPlanetViewNodeSights("http://www.lonelyplanet.com/china/sights.html?page=%d")
                 }, PlacesViewNode.MODE_SIGHTS))
         )));
 
