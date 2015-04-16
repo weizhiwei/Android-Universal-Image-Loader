@@ -14,6 +14,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -47,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 public class ViewItemPagerActivity extends BaseActivity {
 	DisplayImageOptions gridOptions, listOptions;
@@ -565,31 +568,36 @@ public class ViewItemPagerActivity extends BaseActivity {
                     holder.image = (ImageView) view.findViewById(R.id.image);
                     holder.text = (TextView) view.findViewById(R.id.story);
 
+                    ViewGroup.LayoutParams lp = holder.image.getLayoutParams();
+                    lp.height = listView.getHeight();
+                    holder.image.setLayoutParams(lp);
+
                     if (model.getHeaderViewResId(position, getItemViewType(position)) > 0) {
                         holder.headerViewHolder = model.createHolderFromHeaderView(
                                 getLayoutInflater().inflate(model.getHeaderViewResId(position, getItemViewType(position)), parent, false)
                         );
 
-                        LinearLayout cardView = new LinearLayout(ViewItemPagerActivity.this);
+                        FrameLayout cardView = new FrameLayout(ViewItemPagerActivity.this);
                         cardView.setLayoutParams(new ListView.LayoutParams(
                                 ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
-                        cardView.setOrientation(LinearLayout.VERTICAL);
 
-                        if (null != holder.headerViewHolder.header) {
-                            if (null != holder.headerViewHolder.header.getParent()) {
-                                ((ViewGroup) holder.headerViewHolder.header.getParent()).removeView(holder.headerViewHolder.header);
-                            }
-                            cardView.addView(holder.headerViewHolder.header);
-                        }
                         if (null != view.getParent()) {
                             ((ViewGroup) view.getParent()).removeView(view);
                         }
                         cardView.addView(view);
-                        if (null != holder.headerViewHolder.footer) {
-                            if (null != holder.headerViewHolder.footer.getParent()) {
-                                ((ViewGroup) holder.headerViewHolder.footer.getParent()).removeView(holder.headerViewHolder.footer);
+                        if (null != holder.headerViewHolder.header) {
+                            if (null != holder.headerViewHolder.header.getParent()) {
+                                ((ViewGroup) holder.headerViewHolder.header.getParent()).removeView(holder.headerViewHolder.header);
                             }
-                            cardView.addView(holder.headerViewHolder.footer);
+
+                            FrameLayout.LayoutParams lp2 = new FrameLayout.LayoutParams(
+                                    FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT,
+                                    Gravity.LEFT | Gravity.TOP);
+                            holder.headerViewHolder.header.setLayoutParams(lp2);
+                            cardView.addView(holder.headerViewHolder.header);
+                            ((FrameLayout.LayoutParams) holder.headerViewHolder.header.getLayoutParams()).setMargins(20, listView.getHeight() - 200, 0, 0);
+
+                            holder.headerViewHolder.header.setBackgroundColor(randomColorForHeader(Math.abs((new Random()).nextInt())) - 0x55000000);
                         }
 
                         view = cardView;
@@ -748,7 +756,9 @@ public class ViewItemPagerActivity extends BaseActivity {
 					break;
 				}
 			} else if (viewType == ViewItem.VIEW_TYPE_STORY_LIST) {
-                model.updateHeaderView(view, holder.headerViewHolder, position);
+                if (model.getHeaderViewResId(position, getItemViewType(position)) > 0) {
+                    model.updateHeaderView(view, holder.headerViewHolder, position);
+                }
 
                 final ViewItem viewItem = model.getViewItems().get(position);
 
