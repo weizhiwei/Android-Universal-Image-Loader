@@ -51,6 +51,7 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.ViewNodeAction;
+import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetDumper;
 import com.wzw.ic.mvc.root.RootViewNode;
 
 /**
@@ -240,6 +241,15 @@ public abstract class BaseActivity extends Activity implements ViewNode.ViewItem
 				item.setChecked(wallpaperServiceEnabled);
 				enableWallpaperService(wallpaperServiceEnabled);
 				return true;
+            case R.id.item_settings:
+                new Thread(new Runnable () {
+
+                    @Override
+                    public void run() {
+                        LonelyPlanetDumper.dump();
+                    }
+                }).start();
+                return true;
 			default:
 				if (null != model && null != model.getActions()) {
 					for (ViewNodeAction action: model.getActions()) {
