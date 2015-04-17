@@ -39,11 +39,11 @@ public class PanoramioViewNodeSightSeeing extends PanoramioViewNode {
 
                 Elements placeElems = elem.select("li a");
                 for (Element placeElem: placeElems) {
-                    ViewItem viewItem = new ViewItem(placeElem.text(), URL_PREFIX + placeElem.attr("href"), "", ViewItem.VIEW_TYPE_PLACE_LIST, null);
+                    ViewItem viewItem = new ViewItem(placeElem.text(), URL_PREFIX + placeElem.attr("href"), "", ViewItem.VIEW_TYPE_CARD_LIST, null);
                     viewItems.add(viewItem);
                 }
                 headers.add(placeElems.size());
-                headerItems.add(new ViewItem(continentName, null, null, ViewItem.VIEW_TYPE_PLACE_LIST, null));
+                headerItems.add(new ViewItem(continentName, null, null, ViewItem.VIEW_TYPE_CARD_LIST, null));
 			}
 		}
 		return viewItems;

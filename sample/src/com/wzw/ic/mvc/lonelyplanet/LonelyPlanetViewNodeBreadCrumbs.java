@@ -32,7 +32,7 @@ public class LonelyPlanetViewNodeBreadCrumbs extends LonelyPlanetViewNode {
                     name.startsWith("Sights in")) {
                     continue;
                 }
-                ViewItem viewItem = new ViewItem(name, TextUtils.isEmpty(elem.attr("href")) ? null: URL_PREFIX + elem.attr("href"), "", ViewItem.VIEW_TYPE_PLACE_LIST, null);
+                ViewItem viewItem = new ViewItem(name, TextUtils.isEmpty(elem.attr("href")) ? null: URL_PREFIX + elem.attr("href"), "", ViewItem.VIEW_TYPE_CARD_LIST, null);
                 viewItems.add(viewItem);
 			}
 		}

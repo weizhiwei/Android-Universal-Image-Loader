@@ -156,7 +156,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                     case ViewItem.VIEW_TYPE_LIST:
                     case ViewItem.VIEW_TYPE_CARD_LIST:
                     case ViewItem.VIEW_TYPE_STORY_LIST:
-                    case ViewItem.VIEW_TYPE_PLACE_LIST:
                         absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
                         itemAdapter = (BaseAdapter) absListView.getAdapter();
                         break;
@@ -260,7 +259,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 			case ViewItem.VIEW_TYPE_LIST:
             case ViewItem.VIEW_TYPE_CARD_LIST:
             case ViewItem.VIEW_TYPE_STORY_LIST:
-            case ViewItem.VIEW_TYPE_PLACE_LIST:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
@@ -656,7 +654,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                     break;
 
 				case ViewItem.VIEW_TYPE_CARD_LIST:
-                case ViewItem.VIEW_TYPE_PLACE_LIST:
                     int itemViewType = getItemViewType(position);
 
                     switch (itemViewType) {
@@ -864,8 +861,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     default:
                         break;
                 }
-            } else if (viewType == ViewItem.VIEW_TYPE_CARD_LIST ||
-                    viewType == ViewItem.VIEW_TYPE_PLACE_LIST) {
+            } else if (viewType == ViewItem.VIEW_TYPE_CARD_LIST) {
 
                 if (model.getHeaderViewResId(position, getItemViewType(position)) > 0) {
                     model.updateHeaderView(view, holder.headerViewHolder, position);

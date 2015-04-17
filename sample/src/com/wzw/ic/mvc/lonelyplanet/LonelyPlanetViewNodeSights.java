@@ -35,7 +35,7 @@ public class LonelyPlanetViewNodeSights extends LonelyPlanetViewNode {
                         }
                     }
 
-                    ViewItem viewItem = new ViewItem(label, "", "", ViewItem.VIEW_TYPE_PLACE_LIST, null);
+                    ViewItem viewItem = new ViewItem(label, "", "", ViewItem.VIEW_TYPE_CARD_LIST, null);
                     viewItems.add(viewItem);
 
                     Elements aElems = elem.select("a");
