@@ -19,6 +19,7 @@ import com.wzw.ic.mvc.nationalgeographic.NGViewNode;
 import com.wzw.ic.mvc.nationalgeographic.NGViewNodePhotoOfTheDay;
 import com.wzw.ic.mvc.nationalgeographic.NGViewNodeRoot;
 import com.wzw.ic.mvc.panoramio.PanoramioViewNodeSightSeeing;
+import com.wzw.ic.mvc.wikipedia.WikipediaViewNode;
 
 public class RootViewNode extends ViewNode {
 
@@ -70,6 +71,7 @@ public class RootViewNode extends ViewNode {
                 new ViewItem("Cover Story", "cover", null, ViewItem.VIEW_TYPE_STORY_LIST, new PlacesViewNode(new ViewNode[] {
                         new LonelyPlanetViewNodeRandomSights("http://www.lonelyplanet.com/china/sights.html?page=%d")
                 }, PlacesViewNode.MODE_COVER)),
+                new ViewItem("Wikipedia", "wikipedia", null, ViewItem.VIEW_TYPE_WEBVIEW, new WikipediaViewNode("china")),
                 new ViewItem("Places", "places", null, ViewItem.VIEW_TYPE_PLACE_LIST, new PlacesViewNode(new ViewNode[] {
                         new LonelyPlanetViewNodePlaces("http://www.lonelyplanet.com/china/places.html?page=%d")
                 }, PlacesViewNode.MODE_PLACES)),

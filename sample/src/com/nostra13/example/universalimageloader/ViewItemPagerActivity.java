@@ -15,9 +15,12 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -148,6 +151,7 @@ public class ViewItemPagerActivity extends BaseActivity {
             if (!swipeRefreshLayout.isRefreshing()) {
                 AbsListView absListView = null;
                 BaseAdapter itemAdapter = null;
+                GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener = null;
                 switch (myViewItem.getViewType()) {
                     case ViewItem.VIEW_TYPE_LIST:
                     case ViewItem.VIEW_TYPE_CARD_LIST:
@@ -160,11 +164,23 @@ public class ViewItemPagerActivity extends BaseActivity {
                         absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
                         itemAdapter = (BaseAdapter) absListView.getAdapter();
                         break;
+                    case ViewItem.VIEW_TYPE_WEBVIEW:
+                        final WebView webView = (WebView) contentView.findViewById(R.id.ic_webview);
+                        getDataTaskFinishedListener = new GetDataTask.GetDataTaskFinishedListener () {
+
+                            @Override
+                            public void onGetDataTaskFinished(ViewNode model) {
+                                List<ViewItem> viewItems = model.getViewItems();
+                                if (null != viewItems && !viewItems.isEmpty()) {
+                                    webView.loadUrl(viewItems.get(0).getNodeUrl());
+                                }
+                            }
+                        };
                     default:
                         break;
                 }
 
-                new GetDataTask(model, swipeRefreshLayout, itemAdapter, null, true);
+                new GetDataTask(model, swipeRefreshLayout, itemAdapter, getDataTaskFinishedListener, true);
             }
 		}
 	}
@@ -238,6 +254,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 			AbsListView absListView = null;
             final List<AbsListView.OnScrollListener> onScrollListeners = new ArrayList<AbsListView.OnScrollListener>();
 			final BaseAdapter itemAdapter;
+            final GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener;
+
 			switch (viewItem.getViewType()) {
 			case ViewItem.VIEW_TYPE_LIST:
             case ViewItem.VIEW_TYPE_CARD_LIST:
@@ -246,25 +264,44 @@ public class ViewItemPagerActivity extends BaseActivity {
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
+                getDataTaskFinishedListener = null;
                 ((ListView) absListView).setDividerHeight(0);
                 break;
 			case ViewItem.VIEW_TYPE_GRID:
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
 				itemAdapter = new GridItemAdapter(childModel, (GridView) absListView);
+                getDataTaskFinishedListener = null;
 				if (viewItem.getInitialZoomLevel() > 0 && viewItem.getInitialZoomLevel() <= 3) {
 					((GridView) absListView).setNumColumns(viewItem.getInitialZoomLevel());
 				}
 				break;
+            case ViewItem.VIEW_TYPE_WEBVIEW:
+                contentView = getLayoutInflater().inflate(R.layout.ac_web_view, view, false);
+                itemAdapter = null;
+                final WebView webView = (WebView) contentView.findViewById(R.id.ic_webview);
+                webView.setWebViewClient(new WebViewClient());
+                getDataTaskFinishedListener = new GetDataTask.GetDataTaskFinishedListener () {
+
+                    @Override
+                    public void onGetDataTaskFinished(ViewNode model) {
+                        List<ViewItem> viewItems = model.getViewItems();
+                        if (null != viewItems && !viewItems.isEmpty()) {
+                            webView.loadUrl(viewItems.get(0).getNodeUrl());
+                        }
+                    }
+                };
+                break;
 			default:
 				itemAdapter = null;
+                getDataTaskFinishedListener = null;
 				break;
 			}
 			
 			final SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
 			
 			assert contentView != null;
-			if (null == contentView || null == swipeRefreshLayout || null == absListView) {
+			if (null == contentView || null == swipeRefreshLayout) {
 				return null;
 			}
 			
@@ -277,7 +314,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		                // Your code to refresh the list here.
 		                // Make sure you call swipeContainer.setRefreshing(false) when
 		                // once the network request has completed successfully.
-						new GetDataTask(childModel, swipeRefreshLayout, itemAdapter, null, true);
+						new GetDataTask(childModel, swipeRefreshLayout, itemAdapter, getDataTaskFinishedListener, true);
 		            }
 			});
 			swipeRefreshLayout.setEnabled(childModel.supportReloading());
@@ -286,32 +323,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 	                android.R.color.holo_green_light, 
 	                android.R.color.holo_orange_light, 
 	                android.R.color.holo_red_light);
-						
-			absListView.setAdapter(itemAdapter);
-			absListView.setOnItemClickListener(new OnItemClickListener() {
-				@Override
-				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-					// drill down
-					model.onViewItemClicked((ViewItem)itemAdapter.getItem(position), ViewItemPagerActivity.this);
-				}
-			});
-			
-//			final ScaleGestureDetector scaleDetector = new ScaleGestureDetector(ViewItemPagerActivity.this,
-//					new ScaleGestureDetector.SimpleOnScaleGestureListener () {
-//			    @Override
-//			    public void onScaleEnd(ScaleGestureDetector detector) {
-//			    	zoomGridView(detector.getScaleFactor() > 1.0, false);
-//			    }
-//			});
-//
-//			absListView.setOnTouchListener(new OnTouchListener() {
-//
-//				@Override
-//				public boolean onTouch(View v, MotionEvent event) {
-//					scaleDetector.onTouchEvent(event);
-//					return false;
-//				}
-//			});
 			
 			if (childModel.supportPaging()) {
 				onScrollListeners.add(new EndlessScrollListener() {
@@ -328,28 +339,56 @@ public class ViewItemPagerActivity extends BaseActivity {
 			    });
 			}
 
-            absListView.setOnScrollListener(
-                    new AbsListView.OnScrollListener() {
-
-                        @Override
-                        public void onScrollStateChanged(AbsListView view, int scrollState) {
-                            if (null != onScrollListeners) {
-                                for (AbsListView.OnScrollListener onScrollListener: onScrollListeners) {
-                                    onScrollListener.onScrollStateChanged(view, scrollState);
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                            if (null != onScrollListeners) {
-                                for (AbsListView.OnScrollListener onScrollListener: onScrollListeners) {
-                                    onScrollListener.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
-                                }
-                            }
-                        }
+            if (null != absListView) {
+                absListView.setAdapter(itemAdapter);
+                absListView.setOnItemClickListener(new OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        // drill down
+                        model.onViewItemClicked((ViewItem) itemAdapter.getItem(position), ViewItemPagerActivity.this);
                     }
-            );
+                });
+
+//			final ScaleGestureDetector scaleDetector = new ScaleGestureDetector(ViewItemPagerActivity.this,
+//					new ScaleGestureDetector.SimpleOnScaleGestureListener () {
+//			    @Override
+//			    public void onScaleEnd(ScaleGestureDetector detector) {
+//			    	zoomGridView(detector.getScaleFactor() > 1.0, false);
+//			    }
+//			});
+//
+//			absListView.setOnTouchListener(new OnTouchListener() {
+//
+//				@Override
+//				public boolean onTouch(View v, MotionEvent event) {
+//					scaleDetector.onTouchEvent(event);
+//					return false;
+//				}
+//			});
+
+                absListView.setOnScrollListener(
+                        new AbsListView.OnScrollListener() {
+
+                            @Override
+                            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                                if (null != onScrollListeners) {
+                                    for (AbsListView.OnScrollListener onScrollListener : onScrollListeners) {
+                                        onScrollListener.onScrollStateChanged(view, scrollState);
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                                if (null != onScrollListeners) {
+                                    for (AbsListView.OnScrollListener onScrollListener : onScrollListeners) {
+                                        onScrollListener.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
+                                    }
+                                }
+                            }
+                        }
+                );
+            }
 
             view.addView(contentView, 0);
 			
@@ -361,7 +400,19 @@ public class ViewItemPagerActivity extends BaseActivity {
 			return view.equals(object);
 		}
 	}
-	
+
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//        // Check if the key event was the Back button and if there's history
+//        if ((keyCode == KeyEvent.KEYCODE_BACK) && myWebView.canGoBack()) {
+//            myWebView.goBack();
+//            return true;
+//        }
+//        // If it wasn't the Back key or there's no web page history, bubble up to the default
+//        // system behavior (probably exit the activity)
+//        return super.onKeyDown(keyCode, event);
+//    }
+
 	private static class GridViewHolder {
 		ImageView imageView;
 		ProgressBar progressBar;
@@ -734,7 +785,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				holder = (ListViewHolder) view.getTag();
 			}
 
-			if (viewType == ViewItem.VIEW_TYPE_LIST) {
+            if (viewType == ViewItem.VIEW_TYPE_LIST) {
 				
 				final ViewItem viewItem = model.getViewItems().get(position);
 				
