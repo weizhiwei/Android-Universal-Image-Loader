@@ -1,9 +1,11 @@
 package com.nostra13.example.universalimageloader;
 
+import android.support.v7.widget.RecyclerView;
 import android.widget.AbsListView;
-import android.widget.AbsListView.OnScrollListener;
 
-public abstract class EndlessScrollListener implements OnScrollListener {
+import org.lucasr.twowayview.widget.TwoWayView;
+
+public abstract class EndlessScrollListener extends RecyclerView.OnScrollListener implements AbsListView.OnScrollListener {
 	// The minimum amount of items to have below your current scroll position
 	// before loading more.
 	private int visibleThreshold = 5;
@@ -33,8 +35,17 @@ public abstract class EndlessScrollListener implements OnScrollListener {
 	// We are given a few useful parameters to help us work out if we need to load some more data,
 	// but first we check if we are waiting for the previous load to finish.
 	@Override
-	public void onScroll(AbsListView view,int firstVisibleItem,int visibleItemCount,int totalItemCount) 
-        {
+	public void onScroll(AbsListView view,int firstVisibleItem,int visibleItemCount,int totalItemCount) {
+        doOnScroll(firstVisibleItem, visibleItemCount, totalItemCount);
+    }
+
+    @Override
+    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+        TwoWayView view = (TwoWayView) recyclerView;
+        doOnScroll(view.getFirstVisiblePosition(), view.getLastVisiblePosition() - view.getFirstVisiblePosition(), view.getChildCount());
+    }
+
+    private void doOnScroll(int firstVisibleItem,int visibleItemCount,int totalItemCount) {
 		// If the total item count is zero and the previous isn't, assume the
 		// list is invalidated and should be reset back to initial state
 		if (totalItemCount < previousTotalItemCount) {

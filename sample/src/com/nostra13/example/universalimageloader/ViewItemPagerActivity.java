@@ -33,6 +33,13 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.esri.android.map.MapView;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
@@ -45,18 +52,23 @@ import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 
 import org.lucasr.twowayview.ItemClickSupport;
+import org.lucasr.twowayview.widget.ListLayoutManager;
 import org.lucasr.twowayview.widget.SpannableGridLayoutManager;
 import org.lucasr.twowayview.widget.TwoWayView;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 public class ViewItemPagerActivity extends BaseActivity {
 	DisplayImageOptions gridOptions, listOptions;
 	ViewPager pager;
+    GoogleMap googleMap;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -146,11 +158,12 @@ public class ViewItemPagerActivity extends BaseActivity {
         }
 
         if (model.supportReloading() && model.getViewItems().isEmpty()) {
-        	View contentView = (View) pager.findViewWithTag(position);
+        	View contentView = pager.findViewWithTag(position);
         	SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
             if (!swipeRefreshLayout.isRefreshing()) {
                 AbsListView absListView = null;
                 BaseAdapter itemAdapter = null;
+                RecyclerView.Adapter recyclerViewAdapter = null;
                 GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener = null;
                 switch (myViewItem.getViewType()) {
                     case ViewItem.VIEW_TYPE_LIST:
@@ -175,11 +188,15 @@ public class ViewItemPagerActivity extends BaseActivity {
                                 }
                             }
                         };
+                        break;
+                    case ViewItem.VIEW_TYPE_MAPVIEW:
+                        final TwoWayView horizontalList = (TwoWayView) contentView.findViewById(R.id.ic_listview);
+                        recyclerViewAdapter = horizontalList.getAdapter();
                     default:
                         break;
                 }
 
-                new GetDataTask(model, swipeRefreshLayout, itemAdapter, getDataTaskFinishedListener, true);
+                new GetDataTask(model, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
             }
 		}
 	}
@@ -250,9 +267,11 @@ public class ViewItemPagerActivity extends BaseActivity {
 			final ViewNode childModel = viewItem.getViewNode();
 			
 			View contentView = null;
+            final SwipeRefreshLayout swipeRefreshLayout;
 			AbsListView absListView = null;
-            final List<AbsListView.OnScrollListener> onScrollListeners = new ArrayList<AbsListView.OnScrollListener>();
+            final List<EndlessScrollListener> onScrollListeners = new ArrayList<EndlessScrollListener>();
 			final BaseAdapter itemAdapter;
+            final RecyclerView.Adapter recyclerViewAdapter;
             final GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener;
 
 			switch (viewItem.getViewType()) {
@@ -262,6 +281,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
+                recyclerViewAdapter = null;
                 getDataTaskFinishedListener = null;
                 ((ListView) absListView).setDividerHeight(0);
                 break;
@@ -269,6 +289,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
 				itemAdapter = new GridItemAdapter(childModel, (GridView) absListView);
+                recyclerViewAdapter = null;
                 getDataTaskFinishedListener = null;
 				if (viewItem.getInitialZoomLevel() > 0 && viewItem.getInitialZoomLevel() <= 3) {
 					((GridView) absListView).setNumColumns(viewItem.getInitialZoomLevel());
@@ -277,6 +298,7 @@ public class ViewItemPagerActivity extends BaseActivity {
             case ViewItem.VIEW_TYPE_WEBVIEW:
                 contentView = getLayoutInflater().inflate(R.layout.ac_web_view, view, false);
                 itemAdapter = null;
+                recyclerViewAdapter = null;
                 final WebView webView = (WebView) contentView.findViewById(R.id.ic_webview);
                 webView.setWebViewClient(new WebViewClient());
                 getDataTaskFinishedListener = new GetDataTask.GetDataTaskFinishedListener () {
@@ -290,21 +312,202 @@ public class ViewItemPagerActivity extends BaseActivity {
                     }
                 };
                 break;
+            case ViewItem.VIEW_TYPE_MAPVIEW:
+                contentView = getLayoutInflater().inflate(R.layout.ac_map_view, view, false);
+                final TwoWayView horizontalList = (TwoWayView) contentView.findViewById(R.id.ic_listview);
+                itemAdapter = null;
+                getDataTaskFinishedListener = null;
+
+                MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.ic_mapview);
+                mapFragment.getMapAsync(new OnMapReadyCallback() {
+
+                    @Override
+                    public void onMapReady(GoogleMap googleMap) {
+                        ViewItemPagerActivity.this.googleMap = googleMap;
+                    }
+                });
+
+                recyclerViewAdapter = new RecyclerView.Adapter<SimpleViewHolder>() {
+
+                    @Override
+                    public int getItemCount() {
+                        return null == childModel.getViewItems() ? 0 : childModel.getViewItems().size();
+                    }
+
+                    @Override
+                    public void onBindViewHolder(final SimpleViewHolder holder, int position) {
+                        final View itemView = holder.itemView;
+
+                        final ViewGroup.LayoutParams lp = itemView.getLayoutParams();
+                        lp.width = horizontalList.getHeight();
+                        itemView.setLayoutParams(lp);
+
+                        final ViewItem viewItem = childModel.getViewItems().get(position);
+
+                        if (!TextUtils.isEmpty(viewItem.getLabel())) {
+                            holder.text.setVisibility(View.VISIBLE);
+                            holder.text.setText(viewItem.getLabel());
+                        } else {
+                            holder.text.setVisibility(View.GONE);
+                        }
+                        switch (viewItem.getViewItemType()) {
+                            case ViewItem.VIEW_ITEM_TYPE_COLOR:
+                                itemView.setBackgroundColor(viewItem.getViewItemColor());
+                                holder.imageView.setVisibility(View.GONE);
+                                holder.progressBar.setVisibility(View.GONE);
+                                break;
+                            case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
+                                holder.imageView.setVisibility(View.VISIBLE);
+                                holder.imageView.setImageResource(viewItem.getViewItemImageResId());
+                                holder.progressBar.setVisibility(View.GONE);
+                                break;
+                            case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
+                                if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+                                    holder.imageView.setVisibility(View.VISIBLE);
+                                    imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, gridOptions, new SimpleImageLoadingListener() {
+                                                @Override
+                                                public void onLoadingStarted(String imageUri, View view) {
+                                                    holder.progressBar.setProgress(0);
+                                                    holder.progressBar.setVisibility(View.VISIBLE);
+                                                }
+
+                                                @Override
+                                                public void onLoadingFailed(String imageUri, View view,
+                                                                            FailReason failReason) {
+                                                    holder.progressBar.setVisibility(View.GONE);
+                                                }
+
+                                                @Override
+                                                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                                                    holder.progressBar.setVisibility(View.GONE);
+                                                }
+                                            }, new ImageLoadingProgressListener() {
+                                                @Override
+                                                public void onProgressUpdate(String imageUri, View view, int current,
+                                                                             int total) {
+                                                    holder.progressBar.setProgress(Math.round(100.0f * current / total));
+                                                }
+                                            }
+                                    );
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    @Override
+                    public SimpleViewHolder onCreateViewHolder(ViewGroup parent, int arg1) {
+                        final View view = getLayoutInflater().inflate(R.layout.item_grid_image, parent, false);
+                        SimpleViewHolder holder = new SimpleViewHolder(view);
+                        return holder;
+                    }
+
+                };
+                horizontalList.setAdapter(recyclerViewAdapter);
+
+                final ItemClickSupport itemClick = ItemClickSupport.addTo(horizontalList);
+
+                itemClick.setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(RecyclerView parent, View child, int position, long id) {
+                        // drill down
+
+                    }
+                });
+
+                horizontalList.setOnScrollListener(
+                        new RecyclerView.OnScrollListener() {
+
+                            @Override
+                            public void onScrollStateChanged(RecyclerView view, int scrollState) {
+                                if (null != onScrollListeners) {
+                                    for (RecyclerView.OnScrollListener onScrollListener : onScrollListeners) {
+                                        onScrollListener.onScrollStateChanged(view, scrollState);
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onScrolled(RecyclerView view, int dx, int dy) {
+                                if (null != onScrollListeners) {
+                                    for (RecyclerView.OnScrollListener onScrollListener : onScrollListeners) {
+                                        onScrollListener.onScrolled(view, dx, dy);
+                                    }
+                                }
+                            }
+                        }
+                );
+
+                onScrollListeners.add(new EndlessScrollListener() {
+
+                    private HashMap<ViewItem, Marker> viewItemOnMap = new HashMap<ViewItem, Marker>();
+                    private int[] variants = new int[3];
+
+                    @Override
+                    public void onLoadMore(int page, int totalItemsCount) {}
+
+                    @Override
+                    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                        if (null == googleMap) {
+                            return;
+                        }
+
+                        TwoWayView view = (TwoWayView) recyclerView;
+                        int firstVisibleItem = view.getFirstVisiblePosition();
+                        int visibleItemCount = view.getLastVisiblePosition() - view.getFirstVisiblePosition();
+                        int totalItemCount = view.getChildCount();
+
+                        if (firstVisibleItem == variants[0] &&
+                                visibleItemCount == variants[1] &&
+                                totalItemCount == variants[2]) {
+                            return;
+                        }
+
+                        variants[0] = firstVisibleItem;
+                        variants[1] = visibleItemCount;
+                        variants[2] = totalItemCount;
+
+                        Set<ViewItem> updateViewItems = new HashSet<ViewItem>();
+                        for (int i = 0; i < visibleItemCount; ++i) {
+                            updateViewItems.add(childModel.getHeaderItems().get(firstVisibleItem + i));
+                        }
+
+                        for (ViewItem viewItem: updateViewItems) {
+                            if (!viewItemOnMap.containsKey(viewItem)) {
+                                Marker marker = googleMap.addMarker(new MarkerOptions()
+                                        .title(viewItem.getLabel())
+                                        .position(new LatLng(viewItem.getLat(), viewItem.getLng())));
+
+                                viewItemOnMap.put(viewItem, marker);
+                            }
+                        }
+                        for (ViewItem viewItem: viewItemOnMap.keySet()) {
+                            if (!updateViewItems.contains(viewItem)) {
+                                viewItemOnMap.get(viewItem).remove();
+                            }
+                        }
+                        viewItemOnMap.keySet().retainAll(updateViewItems);
+                    }
+                });
+
+                break;
 			default:
 				itemAdapter = null;
+                recyclerViewAdapter = null;
                 getDataTaskFinishedListener = null;
 				break;
 			}
 			
-			final SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
-			
-			assert contentView != null;
+			swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
+
+            assert contentView != null;
 			if (null == contentView || null == swipeRefreshLayout) {
 				return null;
 			}
 			
 			contentView.setTag(position);
-			
+
 			// Set a listener to be invoked when the list should be refreshed.
 			swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
 				    @Override
@@ -312,7 +515,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		                // Your code to refresh the list here.
 		                // Make sure you call swipeContainer.setRefreshing(false) when
 		                // once the network request has completed successfully.
-						new GetDataTask(childModel, swipeRefreshLayout, itemAdapter, getDataTaskFinishedListener, true);
+						new GetDataTask(childModel, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
 		            }
 			});
 			swipeRefreshLayout.setEnabled(childModel.supportReloading());
@@ -321,20 +524,20 @@ public class ViewItemPagerActivity extends BaseActivity {
 	                android.R.color.holo_green_light, 
 	                android.R.color.holo_orange_light, 
 	                android.R.color.holo_red_light);
-			
+
 			if (childModel.supportPaging()) {
 				onScrollListeners.add(new EndlessScrollListener() {
-				    @Override
-				    public void onLoadMore(int page, int totalItemsCount) {
-				    	new GetDataTask(childModel, swipeRefreshLayout, itemAdapter, new GetDataTask.GetDataTaskFinishedListener() {
+                    @Override
+                    public void onLoadMore(int page, int totalItemsCount) {
+                        new GetDataTask(childModel, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, new GetDataTask.GetDataTaskFinishedListener() {
 
                             @Override
                             public void onGetDataTaskFinished(ViewNode model) {
                                 setLoading(false);
                             }
                         }, false);
-				    }
-			    });
+                    }
+                });
 			}
 
             if (null != absListView) {
@@ -674,58 +877,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                                     AbsListView.LayoutParams.MATCH_PARENT, listView.getWidth()
                             ));
                             break;
-//                        case 2:
-//                            view = getLayoutInflater().inflate(R.layout.item_map_view, parent, false);
-//                            holder.mapView = (MapView) view.findViewById(R.id.ic_mapview);
-//                            holder.mapView.enableWrapAround(true);
-//                            final MapViewHelper mapViewHelper = new MapViewHelper(holder.mapView);
-//                            onScrollListeners.add(new AbsListView.OnScrollListener() {
-//
-//                                private HashMap<ViewItem, Integer> viewItemOnMap = new HashMap<ViewItem, Integer>();
-//                                private int[] variants = new int[3];
-//
-//                                @Override
-//                                public void onScrollStateChanged(AbsListView view, int scrollState) {
-//
-//                                }
-//
-//                                @Override
-//                                public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-//
-//                                    if (firstVisibleItem == variants[0] &&
-//                                            visibleItemCount == variants[1] &&
-//                                            totalItemCount == variants[2]) {
-//                                        return;
-//                                    }
-//
-//                                    variants[0] = firstVisibleItem;
-//                                    variants[1] = visibleItemCount;
-//                                    variants[2] = totalItemCount;
-//
-//                                    Set<ViewItem> updateViewItems = new HashSet<ViewItem>();
-//                                    for (int i = 0; i < visibleItemCount; ++i) {
-//                                        updateViewItems.add(childModel.getHeaderItems().get(firstVisibleItem + i));
-//                                    }
-//
-//                                    for (ViewItem viewItem: updateViewItems) {
-//                                        if (!viewItemOnMap.containsKey(viewItem)) {
-//                                            FlickrViewNodeSearch node = (FlickrViewNodeSearch) viewItem.getViewNode();
-//                                            int graphicId = mapViewHelper.addMarkerGraphic(
-//                                                    Double.parseDouble(node.getSearchParameters().getLatitude()), Double.parseDouble(node.getSearchParameters().getLongitude()),
-//                                                    viewItem.getLabel(), null, viewItem.getImageUrl(), null, false, 0);
-//
-//                                            viewItemOnMap.put(viewItem, graphicId);
-//                                        }
-//                                    }
-//                                    for (ViewItem viewItem: viewItemOnMap.keySet()) {
-//                                        if (!updateViewItems.contains(viewItem)) {
-//                                            mapViewHelper.removeGraphic(viewItemOnMap.get(viewItem));
-//                                        }
-//                                    }
-//                                    viewItemOnMap.keySet().retainAll(updateViewItems);
-//                                }
-//                            });
-//                            break;
                         default:
                             break;
                     }

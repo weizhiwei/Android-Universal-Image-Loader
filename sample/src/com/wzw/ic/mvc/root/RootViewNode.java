@@ -72,6 +72,9 @@ public class RootViewNode extends ViewNode {
                         new LonelyPlanetViewNodeRandomSights("http://www.lonelyplanet.com/china/sights.html?page=%d")
                 }, PlacesViewNode.MODE_COVER)),
                 new ViewItem("Wikipedia", "wikipedia", null, ViewItem.VIEW_TYPE_WEBVIEW, new WikipediaViewNode("china")),
+                new ViewItem("Map", "map", null, ViewItem.VIEW_TYPE_MAPVIEW, new PlacesViewNode(new ViewNode[] {
+                        new LonelyPlanetViewNodeSights("http://www.lonelyplanet.com/china/sights.html?page=%d")
+                }, PlacesViewNode.MODE_SIGHTS)),
                 new ViewItem("Places", "places", null, ViewItem.VIEW_TYPE_CARD_LIST, new PlacesViewNode(new ViewNode[] {
                         new LonelyPlanetViewNodePlaces("http://www.lonelyplanet.com/china/places.html?page=%d")
                 }, PlacesViewNode.MODE_PLACES)),

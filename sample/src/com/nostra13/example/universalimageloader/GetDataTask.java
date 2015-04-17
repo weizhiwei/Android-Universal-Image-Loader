@@ -3,6 +3,7 @@ package com.nostra13.example.universalimageloader;
 import android.os.AsyncTask;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.RecyclerView;
 import android.widget.BaseAdapter;
 
 import com.wzw.ic.mvc.ViewNode;
@@ -19,6 +20,7 @@ class GetDataTask extends AsyncTask<Object, Integer, Void> {
 	protected ViewNode model;
 	protected SwipeRefreshLayout swipeRefreshLayout;
 	protected BaseAdapter itemAdapter;
+    protected RecyclerView.Adapter recyclerViewAdapter;
 	protected PagerAdapter pagerAdapter;
 	protected GetDataTaskFinishedListener listener;
 
@@ -27,12 +29,14 @@ class GetDataTask extends AsyncTask<Object, Integer, Void> {
     protected void init(ViewNode model,
                         SwipeRefreshLayout swipeRefreshLayout,
                         BaseAdapter itemAdapter,
+                        RecyclerView.Adapter recyclerViewAdapter,
                         PagerAdapter pagerAdapter,
                         GetDataTaskFinishedListener listener,
                         boolean reload) {
         this.model = model;
         this.swipeRefreshLayout = swipeRefreshLayout;
         this.itemAdapter = itemAdapter;
+        this.recyclerViewAdapter = recyclerViewAdapter;
         this.pagerAdapter = pagerAdapter;
         this.listener = listener;
         if (!reentrantLocks.containsKey(model)) {
@@ -44,16 +48,17 @@ class GetDataTask extends AsyncTask<Object, Integer, Void> {
 	public GetDataTask(ViewNode model,
 			SwipeRefreshLayout swipeRefreshLayout,
 			BaseAdapter itemAdapter,
+            RecyclerView.Adapter recyclerViewAdapter,
 			GetDataTaskFinishedListener listener,
             boolean reload) {
-		init(model, swipeRefreshLayout, itemAdapter, null, listener, reload);
+		init(model, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, null, listener, reload);
 	}
 	
 	public GetDataTask(ViewNode model,
 			PagerAdapter pagerAdapter,
 			GetDataTaskFinishedListener listener,
             boolean reload) {
-        init(model, null, null, pagerAdapter, listener, reload);
+        init(model, null, null, null, pagerAdapter, listener, reload);
 	}
 	
 	@Override
@@ -84,6 +89,9 @@ class GetDataTask extends AsyncTask<Object, Integer, Void> {
             if (null != itemAdapter) {
                 itemAdapter.notifyDataSetChanged();
             }
+            if (null != recyclerViewAdapter) {
+                recyclerViewAdapter.notifyDataSetChanged();
+            }
             if (null != pagerAdapter) {
                 pagerAdapter.notifyDataSetChanged();
             }
@@ -101,6 +109,9 @@ class GetDataTask extends AsyncTask<Object, Integer, Void> {
 		if (null != itemAdapter) {
 			itemAdapter.notifyDataSetChanged();
 		}
+        if (null != recyclerViewAdapter) {
+            recyclerViewAdapter.notifyDataSetChanged();
+        }
 		if (null != pagerAdapter) {
 			pagerAdapter.notifyDataSetChanged();
 		}

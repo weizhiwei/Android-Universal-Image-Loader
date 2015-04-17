@@ -12,6 +12,7 @@ public class ViewItem extends IcObject {
 	public static final int VIEW_TYPE_CARD_LIST = 4;
     public static final int VIEW_TYPE_STORY_LIST = 5;
     public static final int VIEW_TYPE_WEBVIEW = 6;
+    public static final int VIEW_TYPE_MAPVIEW = 7;
 	
 	public static final int VIEW_ITEM_TYPE_COLOR = 1;
 	public static final int VIEW_ITEM_TYPE_IMAGE_RES = 2;
@@ -30,6 +31,8 @@ public class ViewItem extends IcObject {
 	private String origin;
 	private String webPageUrl;
 	private int initialZoomLevel;
+    private double lat = 91.;
+    private double lng = 181.;
 	
 	private Date postedDate;
 
@@ -191,4 +194,20 @@ public class ViewItem extends IcObject {
 	public void setPostedDate(Date postedDate) {
 		this.postedDate = postedDate;
 	}
+
+    public double getLat() {
+        return lat;
+    }
+
+    public void setLat(double lat) {
+        this.lat = lat;
+    }
+
+    public double getLng() {
+        return lng;
+    }
+
+    public void setLng(double lng) {
+        this.lng = lng;
+    }
 }

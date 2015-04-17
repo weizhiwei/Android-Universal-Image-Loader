@@ -12,6 +12,8 @@ import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.flickr.FlickrViewNodeSearch;
+import com.wzw.ic.mvc.google.GoogleViewNode;
+import com.wzw.ic.mvc.google.GoogleViewNodeGeocoder;
 import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetViewNodeBreadCrumbs;
 import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetViewNodePlaces;
 import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetViewNodeRandomSights;
@@ -204,7 +206,8 @@ public class PlacesViewNode extends ViewNode {
                     ViewItem viewItem = finalResultViewItems.get(index);
 
                     viewItem.setViewType(ViewItem.VIEW_TYPE_GRID);
-                    FlickrViewNodeSearch searchNode = new FlickrViewNodeSearch(removeDiacritic(viewItem.getLabel()));
+                    String qualifiedQuery = removeDiacritic(viewItem.getLabel());
+                    FlickrViewNodeSearch searchNode = new FlickrViewNodeSearch(qualifiedQuery);
 //                    Matcher m = COORDS_PATTERN.matcher(viewItem.getNodeUrl());
 //                    if (m.matches()) {
 //                        searchNode.getSearchParameters().setLatitude(m.group(1));
@@ -219,11 +222,10 @@ public class PlacesViewNode extends ViewNode {
                         page = searchNode.reload();
                     }
                     if (null == page || page.isEmpty()) {
-                        String qualifiedQuery = viewItem.getLabel();
                         int index = qualifiedQuery.lastIndexOf(',');
                         if (index > 0) {
                             String unqualifiedQuery = qualifiedQuery.substring(0, index);
-                            searchNode.getSearchParameters().setText(removeDiacritic(unqualifiedQuery));
+                            searchNode.getSearchParameters().setText(unqualifiedQuery);
                             for (int i = 0; i < TRY_UNQUALIFIED_QUERY && (null == page || page.isEmpty()); ++i) {
                                 page = searchNode.reload();
                             }
@@ -253,6 +255,13 @@ public class PlacesViewNode extends ViewNode {
                             viewItem.setStory(viewItem.getStory() + "<br/><br/>Explore more around " + viewItem.getLabel() + ".<br/><br/>");
                             viewItem.setLabel(picViewItem.getLabel());
                         }
+                    }
+
+                    GoogleViewNodeGeocoder geocoderNode = new GoogleViewNodeGeocoder(qualifiedQuery);
+                    page = geocoderNode.reload();
+                    if (null != page && !page.isEmpty()) {
+                        viewItem.setLat(page.get(0).getLat());
+                        viewItem.setLng(page.get(0).getLng());
                     }
 
                     latch2.countDown();
