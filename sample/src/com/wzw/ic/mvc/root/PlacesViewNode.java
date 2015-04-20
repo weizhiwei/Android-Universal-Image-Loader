@@ -35,7 +35,8 @@ public class PlacesViewNode extends ViewNode {
     static final int MODE_COVER = 0;
     static final int MODE_PLACES = 1;
     static final int MODE_SIGHTS = 2;
-    static final int CHUNK_SIZES[] = {2, 2, 3};
+    static final int MODE_MAP = 3;
+    static final int CHUNK_SIZES[] = {2, 2, 3, 3};
 
     protected int pageNo;
     protected final ViewNode[] SUBSTREAMS;
@@ -168,10 +169,12 @@ public class PlacesViewNode extends ViewNode {
         }
 
         // search for a thumbnail..
-        final CountDownLatch latch2 = new CountDownLatch(resultViewItems.size() + (MODE_COVER == mode ? 1 : 0));
+        final boolean needToFetchSomeInfoAboutPlace = (MODE_COVER == mode || MODE_MAP == mode);
+        final CountDownLatch latch2 = new CountDownLatch(resultViewItems.size() + (needToFetchSomeInfoAboutPlace ? 1 : 0));
 
-        final String[] titleStr = new String[1];
-        if (MODE_COVER == mode) {
+        final String[] titleStr = { null };
+        final ViewItem placeMapViewItem = new ViewItem(null, null, null, 0, null);
+        if (needToFetchSomeInfoAboutPlace) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -187,6 +190,20 @@ public class PlacesViewNode extends ViewNode {
                         sb.append("</small><br />");
                         sb.append(breadCrumbs.get(breadCrumbs.size() - 1).getLabel());
                         titleStr[0] = sb.toString();
+
+
+                        if (MODE_MAP == mode) {
+                            for (int i = breadCrumbs.size() - 1; i >= 0; --i) {
+                                GoogleViewNodeGeocoder geocoderNode = new GoogleViewNodeGeocoder(removeDiacritic(breadCrumbs.get(i).getLabel()));
+                                List<ViewItem> page = geocoderNode.reload();
+                                if (null != page && !page.isEmpty()) {
+                                    placeMapViewItem.setLat(page.get(0).getLat());
+                                    placeMapViewItem.setLng(page.get(0).getLng());
+                                    placeMapViewItem.setViewport(page.get(0).getViewport());
+                                    break;
+                                }
+                            }
+                        }
                     }
 
                     latch2.countDown();
@@ -257,11 +274,14 @@ public class PlacesViewNode extends ViewNode {
                         }
                     }
 
-                    GoogleViewNodeGeocoder geocoderNode = new GoogleViewNodeGeocoder(qualifiedQuery);
-                    page = geocoderNode.reload();
-                    if (null != page && !page.isEmpty()) {
-                        viewItem.setLat(page.get(0).getLat());
-                        viewItem.setLng(page.get(0).getLng());
+                    if (MODE_MAP == mode) {
+                        GoogleViewNodeGeocoder geocoderNode = new GoogleViewNodeGeocoder(qualifiedQuery);
+                        page = geocoderNode.reload();
+                        if (null != page && !page.isEmpty()) {
+                            viewItem.setLat(page.get(0).getLat());
+                            viewItem.setLng(page.get(0).getLng());
+                            viewItem.setViewport(page.get(0).getViewport());
+                        }
                     }
 
                     latch2.countDown();
@@ -296,14 +316,21 @@ public class PlacesViewNode extends ViewNode {
                     albumHeaders2.add(countInGroup);
                     headerViewItems2.add(headerViewItems.get(idxInterGroup));
 
-                    // we only need one pic for MODE_COVER
-                    if (MODE_COVER == mode) {
-                        if (!TextUtils.isEmpty(titleStr[0])) {
-                            ViewItem headerViewItem = new ViewItem(null, null, null, 0, null);
-                            headerViewItem.setLabel(titleStr[0]);
+                    if (0 == idxInterGroup) {
+                        ViewItem headerViewItem = new ViewItem(null, null, null, 0, null);
+                        if (MODE_COVER == mode) {
+                            if (!TextUtils.isEmpty(titleStr[0])) {
+                                headerViewItem.setLabel(titleStr[0]);
+                                headerViewItems2.set(0, headerViewItem);
+                            }
+                            // we only need one pic for MODE_COVER
+                            break;
+                        } else if (MODE_MAP == mode) {
+                            headerViewItem.setLat(placeMapViewItem.getLat());
+                            headerViewItem.setLng(placeMapViewItem.getLng());
+                            headerViewItem.setViewport(placeMapViewItem.getViewport());
                             headerViewItems2.set(0, headerViewItem);
                         }
-                        break;
                     }
                 }
                 idxInGroup = 0;

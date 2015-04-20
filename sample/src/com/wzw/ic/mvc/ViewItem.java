@@ -33,6 +33,7 @@ public class ViewItem extends IcObject {
 	private int initialZoomLevel;
     private double lat = 91.;
     private double lng = 181.;
+    private double[] viewport = {91., 181., 91., 181.}; // southwest, northeast
 	
 	private Date postedDate;
 
@@ -209,5 +210,13 @@ public class ViewItem extends IcObject {
 
     public void setLng(double lng) {
         this.lng = lng;
+    }
+
+    public double[] getViewport() {
+        return viewport;
+    }
+
+    public void setViewport(double[] viewport) {
+        this.viewport = viewport;
     }
 }

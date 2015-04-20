@@ -34,10 +34,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.esri.android.map.MapView;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -192,6 +195,23 @@ public class ViewItemPagerActivity extends BaseActivity {
                     case ViewItem.VIEW_TYPE_MAPVIEW:
                         final TwoWayView horizontalList = (TwoWayView) contentView.findViewById(R.id.ic_listview);
                         recyclerViewAdapter = horizontalList.getAdapter();
+
+                        getDataTaskFinishedListener = new GetDataTask.GetDataTaskFinishedListener () {
+
+                            @Override
+                            public void onGetDataTaskFinished(ViewNode model) {
+                                if (null != googleMap) {
+                                    List<ViewItem> viewItems = model.getHeaderItems();
+                                    if (null != viewItems && !viewItems.isEmpty()) {
+                                        double[] viewport = viewItems.get(0).getViewport();
+                                        googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(new LatLngBounds(
+                                                new LatLng(viewport[0], viewport[1]),
+                                                new LatLng(viewport[2], viewport[3])
+                                                ), 0));
+                                    }
+                                }
+                            }
+                        };
                     default:
                         break;
                 }
@@ -470,7 +490,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
                         Set<ViewItem> updateViewItems = new HashSet<ViewItem>();
                         for (int i = 0; i < visibleItemCount; ++i) {
-                            updateViewItems.add(childModel.getHeaderItems().get(firstVisibleItem + i));
+                            updateViewItems.add(childModel.getViewItems().get(firstVisibleItem + i));
                         }
 
                         for (ViewItem viewItem: updateViewItems) {
