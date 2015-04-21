@@ -72,6 +72,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 	DisplayImageOptions gridOptions, listOptions;
 	ViewPager pager;
     GoogleMap googleMap;
+    GetDataTask.GetDataTaskFinishedListener updateMapCameraCallback;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -130,6 +131,23 @@ public class ViewItemPagerActivity extends BaseActivity {
 				}
 		    }
 		});
+
+        updateMapCameraCallback = new GetDataTask.GetDataTaskFinishedListener () {
+
+            @Override
+            public void onGetDataTaskFinished(ViewNode model) {
+                if (null != googleMap) {
+                    List<ViewItem> viewItems = model.getHeaderItems();
+                    if (null != viewItems && !viewItems.isEmpty()) {
+                        double[] viewport = viewItems.get(0).getViewport();
+                        googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(new LatLngBounds(
+                                new LatLng(viewport[0], viewport[1]),
+                                new LatLng(viewport[2], viewport[3])
+                        ), 0));
+                    }
+                }
+            }
+        };
 	}
 
     @Override
@@ -195,23 +213,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     case ViewItem.VIEW_TYPE_MAPVIEW:
                         final TwoWayView horizontalList = (TwoWayView) contentView.findViewById(R.id.ic_listview);
                         recyclerViewAdapter = horizontalList.getAdapter();
-
-                        getDataTaskFinishedListener = new GetDataTask.GetDataTaskFinishedListener () {
-
-                            @Override
-                            public void onGetDataTaskFinished(ViewNode model) {
-                                if (null != googleMap) {
-                                    List<ViewItem> viewItems = model.getHeaderItems();
-                                    if (null != viewItems && !viewItems.isEmpty()) {
-                                        double[] viewport = viewItems.get(0).getViewport();
-                                        googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(new LatLngBounds(
-                                                new LatLng(viewport[0], viewport[1]),
-                                                new LatLng(viewport[2], viewport[3])
-                                                ), 0));
-                                    }
-                                }
-                            }
-                        };
+                        getDataTaskFinishedListener = updateMapCameraCallback;
                     default:
                         break;
                 }
@@ -336,7 +338,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                 contentView = getLayoutInflater().inflate(R.layout.ac_map_view, view, false);
                 final TwoWayView horizontalList = (TwoWayView) contentView.findViewById(R.id.ic_listview);
                 itemAdapter = null;
-                getDataTaskFinishedListener = null;
+                getDataTaskFinishedListener = updateMapCameraCallback;
 
                 MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.ic_mapview);
                 mapFragment.getMapAsync(new OnMapReadyCallback() {
@@ -807,11 +809,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		@Override
 		public Object getItem(int position) {
             if (null != model.getHeaders() && !model.getHeaders().isEmpty()) {
-                int o = 0;
-                for (int i = 0; i < position; ++i) {
-                    o += model.getHeaders().get(i);
-                }
-                return null == model.getViewItems() ? null : model.getViewItems().get(o);
+                return null == model.getHeaderItems() ? null : model.getHeaderItems().get(position);
             } else {
                 return null == model.getViewItems() ? null : model.getViewItems().get(position);
             }
