@@ -15,7 +15,6 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,11 +32,10 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.esri.android.map.MapView;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -55,7 +53,6 @@ import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 
 import org.lucasr.twowayview.ItemClickSupport;
-import org.lucasr.twowayview.widget.ListLayoutManager;
 import org.lucasr.twowayview.widget.SpannableGridLayoutManager;
 import org.lucasr.twowayview.widget.TwoWayView;
 
@@ -71,6 +68,7 @@ import java.util.Set;
 public class ViewItemPagerActivity extends BaseActivity {
 	DisplayImageOptions gridOptions, listOptions;
 	ViewPager pager;
+    MapView mapView;
     GoogleMap googleMap;
     GetDataTask.GetDataTaskFinishedListener updateMapCameraCallback;
 
@@ -148,7 +146,53 @@ public class ViewItemPagerActivity extends BaseActivity {
                 }
             }
         };
+
+        MapsInitializer.initialize(this);
+        mapView = new MapView(this);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(new OnMapReadyCallback() {
+
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                ViewItemPagerActivity.this.googleMap = googleMap;
+            }
+        });
 	}
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        mapView.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        mapView.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        mapView.onDestroy();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        mapView.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+
+        mapView.onLowMemory();
+    }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
@@ -340,14 +384,11 @@ public class ViewItemPagerActivity extends BaseActivity {
                 itemAdapter = null;
                 getDataTaskFinishedListener = updateMapCameraCallback;
 
-                MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.ic_mapview);
-                mapFragment.getMapAsync(new OnMapReadyCallback() {
-
-                    @Override
-                    public void onMapReady(GoogleMap googleMap) {
-                        ViewItemPagerActivity.this.googleMap = googleMap;
-                    }
-                });
+                if (null != mapView.getParent()) {
+                    ((ViewGroup) mapView.getParent()).removeView(mapView);
+                }
+                FrameLayout mapViewContainer = (FrameLayout) contentView.findViewById(R.id.ic_mapview);
+                mapViewContainer.addView(mapView);
 
                 recyclerViewAdapter = new RecyclerView.Adapter<SimpleViewHolder>() {
 

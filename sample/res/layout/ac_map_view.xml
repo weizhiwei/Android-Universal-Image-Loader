@@ -12,11 +12,10 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <fragment
+        <com.nostra13.example.universalimageloader.InterceptableFrameLayout
             android:id="@+id/ic_mapview"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:name="com.google.android.gms.maps.MapFragment"/>
+            android:layout_height="300dp" />
 
         <com.nostra13.example.universalimageloader.InterceptableFrameLayout
             android:layout_width="match_parent"
