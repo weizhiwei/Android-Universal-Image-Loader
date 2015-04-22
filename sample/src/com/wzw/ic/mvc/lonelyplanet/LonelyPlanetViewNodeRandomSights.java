@@ -20,8 +20,8 @@ public class LonelyPlanetViewNodeRandomSights extends LonelyPlanetViewNodeSights
         List<ViewItem> page = null;
         pageNo = (new Random()).nextInt(20);
         while ((null == page || page.size() < 5) &&
-                pageNo > 1) {
-            pageNo = Math.max(1, pageNo >> 1);
+                pageNo > 0) {
+            pageNo >>= 1;
             page = loadOneMorePage(); // for pageNo to take effect
         }
 

@@ -18,6 +18,7 @@ import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetViewNodeBreadCrumbs;
 import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetViewNodePlaces;
 import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetViewNodeRandomSights;
 import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetViewNodeSights;
+import com.wzw.ic.mvc.wikipedia.WikipediaViewNode;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -128,7 +129,7 @@ public class PlacesViewNode extends ViewNode {
                     public void run() {
                         ViewItem viewItem = albumViewItems.get(index);
 
-                        ViewNode sightsNode = new LonelyPlanetViewNodeRandomSights(viewItem.getNodeUrl() + "/sights.html?page=%d");
+                        ViewNode sightsNode = new LonelyPlanetViewNodeSights(viewItem.getNodeUrl() + "/sights.html?page=%d");
                         List<ViewItem> page = sightsNode.reload();
                         subpages1[index] = page;
 
@@ -400,19 +401,27 @@ public class PlacesViewNode extends ViewNode {
         }
     }
 
-    public void onHeaderClicked(int header, ViewItemActivityStarter starter) {
-        int n = 0;
-        for (int i = 0; i < header; ++i) {
-            n += headers.get(i);
-        }
-        ViewItem viewItem = viewItems.get(n);
-        if (!TextUtils.isEmpty(viewItem.getOrigin())) {
-            ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
-            if (null != originViewItem) {
-                starter.startViewItemActivity(RootViewNode.getInstance().getGalleryViewItem().getViewNode(),
-                        originViewItem);
-            }
-        }
+    @Override
+    public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {
+        String placeName = viewItem.getLabel();
+        String lpUrl = viewItem.getNodeUrl();
+
+        ViewNode node = new ViewNode("", Arrays.asList(
+                new ViewItem("Cover Story", "cover", null, ViewItem.VIEW_TYPE_STORY_LIST, new PlacesViewNode(new ViewNode[] {
+                        new LonelyPlanetViewNodeSights(lpUrl+"/sights.html?page=%d")
+                }, PlacesViewNode.MODE_COVER)),
+                new ViewItem("Wikipedia", "wikipedia", null, ViewItem.VIEW_TYPE_WEBVIEW, new WikipediaViewNode(removeDiacritic(placeName))),
+                new ViewItem("Map", "map", null, ViewItem.VIEW_TYPE_MAPVIEW, new PlacesViewNode(new ViewNode[] {
+                        new LonelyPlanetViewNodeSights(lpUrl+"/sights.html?page=%d")
+                }, PlacesViewNode.MODE_MAP)),
+                new ViewItem("Places", "places", null, ViewItem.VIEW_TYPE_CARD_LIST, new PlacesViewNode(new ViewNode[] {
+                        new LonelyPlanetViewNodePlaces(lpUrl+"/places.html?page=%d")
+                }, PlacesViewNode.MODE_PLACES)),
+                new ViewItem("Sights", "sights", null, ViewItem.VIEW_TYPE_CARD_LIST, new PlacesViewNode(new ViewNode[] {
+                        new LonelyPlanetViewNodeSights(lpUrl+"/sights.html?page=%d")
+                }, PlacesViewNode.MODE_SIGHTS))
+        ));
+        starter.startViewItemActivity(node, node.getViewItems().get(0));
     }
 
     /**

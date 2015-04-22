@@ -67,10 +67,10 @@ public class RootViewNode extends ViewNode {
                 new ViewItem(null, null, null, 0, new ViewNode("", Arrays.asList(new ViewItem(null, null, null, 0, new TempViewNode(new NGViewNodePhotoOfTheDay())
         ))))));
 
-        final String placeName = "china/hubei";
+        final String placeName = "asia";
         ViewItem places = new ViewItem("Explore", "places", null, ViewItem.VIEW_TYPE_GRID, new ViewNode("", Arrays.asList(
                 new ViewItem("Cover Story", "cover", null, ViewItem.VIEW_TYPE_STORY_LIST, new PlacesViewNode(new ViewNode[] {
-                        new LonelyPlanetViewNodeRandomSights("http://www.lonelyplanet.com/"+placeName+"/sights.html?page=%d")
+                        new LonelyPlanetViewNodeSights("http://www.lonelyplanet.com/"+placeName+"/sights.html?page=%d")
                 }, PlacesViewNode.MODE_COVER)),
                 new ViewItem("Wikipedia", "wikipedia", null, ViewItem.VIEW_TYPE_WEBVIEW, new WikipediaViewNode(placeName)),
                 new ViewItem("Map", "map", null, ViewItem.VIEW_TYPE_MAPVIEW, new PlacesViewNode(new ViewNode[] {
