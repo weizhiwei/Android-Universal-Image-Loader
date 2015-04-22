@@ -23,10 +23,7 @@
             <org.lucasr.twowayview.widget.TwoWayView
                 android:id="@+id/ic_listview"
                 android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:orientation="horizontal"
-                android:scrollbars="none"
-                app:twowayview_layoutManager="ListLayoutManager" />
+                android:layout_height="fill_parent" />
 
         </com.nostra13.example.universalimageloader.InterceptableFrameLayout>
     </LinearLayout>

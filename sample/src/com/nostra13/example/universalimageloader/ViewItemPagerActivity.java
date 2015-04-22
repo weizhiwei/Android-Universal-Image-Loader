@@ -53,6 +53,8 @@ import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 
 import org.lucasr.twowayview.ItemClickSupport;
+import org.lucasr.twowayview.TwoWayLayoutManager;
+import org.lucasr.twowayview.widget.ListLayoutManager;
 import org.lucasr.twowayview.widget.SpannableGridLayoutManager;
 import org.lucasr.twowayview.widget.TwoWayView;
 
@@ -413,6 +415,9 @@ public class ViewItemPagerActivity extends BaseActivity {
                         } else {
                             holder.text.setVisibility(View.GONE);
                         }
+
+                        itemView.setBackgroundColor(randomColorForHeader(position));
+
                         switch (viewItem.getViewItemType()) {
                             case ViewItem.VIEW_ITEM_TYPE_COLOR:
                                 itemView.setBackgroundColor(viewItem.getViewItemColor());
@@ -551,6 +556,14 @@ public class ViewItemPagerActivity extends BaseActivity {
                             }
                         }
                         viewItemOnMap.keySet().retainAll(updateViewItems);
+                    }
+                });
+
+                horizontalList.setHasFixedSize(true);
+
+                // disable snapping in the default behavior
+                horizontalList.setLayoutManager(new ListLayoutManager(ViewItemPagerActivity.this, TwoWayLayoutManager.Orientation.HORIZONTAL) {
+                    void moveLayoutToPosition(int position, int offset, RecyclerView.Recycler recycler, RecyclerView.State state) {
                     }
                 });
 
