@@ -1,8 +1,8 @@
 package com.nostra13.example.universalimageloader;
 
-import android.app.ActionBar;
-import android.app.ActionBar.OnNavigationListener;
-import android.app.ActionBar.Tab;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBar.OnNavigationListener;
+import android.support.v7.app.ActionBar.Tab;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;

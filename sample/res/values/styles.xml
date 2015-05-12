@@ -2,11 +2,12 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
     <style name="ProgressBarStyle" parent="@android:style/Widget.ProgressBar.Horizontal"/>
     
-    <style name="AppTheme" parent="android:Theme.Holo">
+    <style name="AppTheme" parent="@style/Theme.AppCompat.Light">
         <item name="android:actionBarStyle">@style/EmbeddedActionBar</item>
         <item name="android:actionBarTabStyle">@style/EmbeddedTabStyle</item>
         <item name="android:actionBarTabBarStyle">@style/customActionBarTabBarStyle</item>
     </style>
+
     <style name="EmbeddedActionBar" parent="@android:style/Widget.Holo.ActionBar.Solid">
         <item name="android:displayOptions">none</item>
         <item name="android:background">@color/actionbar_dark_grey</item>

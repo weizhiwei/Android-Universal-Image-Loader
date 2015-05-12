@@ -1,16 +1,16 @@
 package com.nostra13.example.universalimageloader;
 
-import android.app.ActionBar;
-import android.app.ActionBar.Tab;
-import android.app.FragmentTransaction;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBar.Tab;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
@@ -32,15 +32,6 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.MapsInitializer;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
@@ -70,8 +61,6 @@ import java.util.Set;
 public class ViewItemPagerActivity extends BaseActivity {
 	DisplayImageOptions gridOptions, listOptions;
 	ViewPager pager;
-    MapView mapView;
-    GoogleMap googleMap;
     GetDataTask.GetDataTaskFinishedListener updateMapCameraCallback;
 
 	@Override
@@ -82,12 +71,10 @@ public class ViewItemPagerActivity extends BaseActivity {
 		
 		setModelFromIntent();
 		
-		if (Build.VERSION.SDK_INT >= 11) {
-			ActionBar actionBar = getActionBar();
-			initActionBar(actionBar);
-		}
-		
-		Bundle bundle = getIntent().getExtras();
+		ActionBar actionBar = getSupportActionBar();
+		initActionBar(actionBar);
+
+        Bundle bundle = getIntent().getExtras();
 		assert bundle != null;
 
 		gridOptions = new DisplayImageOptions.Builder()
@@ -122,79 +109,14 @@ public class ViewItemPagerActivity extends BaseActivity {
 					new GetDataTask(parentModel, pagerAdapter, new GetDataTask.GetDataTaskFinishedListener() {
 							@Override
 							public void onGetDataTaskFinished(ViewNode model) {
-								if (Build.VERSION.SDK_INT >= 11) {
-									ActionBar actionBar = getActionBar();
-									initActionBar(actionBar);
-								}
+								ActionBar actionBar = getSupportActionBar();
+								initActionBar(actionBar);
 							}
 						}, false);
 				}
 		    }
 		});
-
-        updateMapCameraCallback = new GetDataTask.GetDataTaskFinishedListener () {
-
-            @Override
-            public void onGetDataTaskFinished(ViewNode model) {
-                if (null != googleMap) {
-                    List<ViewItem> viewItems = model.getHeaderItems();
-                    if (null != viewItems && !viewItems.isEmpty()) {
-                        double[] viewport = viewItems.get(0).getViewport();
-                        googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(new LatLngBounds(
-                                new LatLng(viewport[0], viewport[1]),
-                                new LatLng(viewport[2], viewport[3])
-                        ), 0));
-                    }
-                }
-            }
-        };
-
-        MapsInitializer.initialize(this);
-        mapView = new MapView(this);
-        mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(new OnMapReadyCallback() {
-
-            @Override
-            public void onMapReady(GoogleMap googleMap) {
-                ViewItemPagerActivity.this.googleMap = googleMap;
-            }
-        });
 	}
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        mapView.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        mapView.onPause();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        mapView.onDestroy();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        mapView.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-
-        mapView.onLowMemory();
-    }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
@@ -219,10 +141,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 
         updateTitleIconFromViewItem(myViewItem);
 
-        if (Build.VERSION.SDK_INT >= 11) {
-            ActionBar actionBar = getActionBar();
-            setActionBarSelection(actionBar, position);
-        }
+        ActionBar actionBar = getSupportActionBar();
+        setActionBarSelection(actionBar, position);
 
         if (model.supportReloading() && model.getViewItems().isEmpty()) {
         	View contentView = pager.findViewWithTag(position);
@@ -379,194 +299,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                         }
                     }
                 };
-                break;
-            case ViewItem.VIEW_TYPE_MAPVIEW:
-                contentView = getLayoutInflater().inflate(R.layout.ac_map_view, view, false);
-                final TwoWayView horizontalList = (TwoWayView) contentView.findViewById(R.id.ic_listview);
-                itemAdapter = null;
-                getDataTaskFinishedListener = updateMapCameraCallback;
-
-                if (null != mapView.getParent()) {
-                    ((ViewGroup) mapView.getParent()).removeView(mapView);
-                }
-                FrameLayout mapViewContainer = (FrameLayout) contentView.findViewById(R.id.ic_mapview);
-                mapViewContainer.addView(mapView);
-
-                recyclerViewAdapter = new RecyclerView.Adapter<SimpleViewHolder>() {
-
-                    @Override
-                    public int getItemCount() {
-                        return null == childModel.getViewItems() ? 0 : childModel.getViewItems().size();
-                    }
-
-                    @Override
-                    public void onBindViewHolder(final SimpleViewHolder holder, int position) {
-                        final View itemView = holder.itemView;
-
-                        final ViewGroup.LayoutParams lp = itemView.getLayoutParams();
-                        lp.width = horizontalList.getHeight();
-                        itemView.setLayoutParams(lp);
-
-                        final ViewItem viewItem = childModel.getViewItems().get(position);
-
-                        if (!TextUtils.isEmpty(viewItem.getLabel())) {
-                            holder.text.setVisibility(View.VISIBLE);
-                            holder.text.setText(viewItem.getLabel());
-                        } else {
-                            holder.text.setVisibility(View.GONE);
-                        }
-
-                        itemView.setBackgroundColor(randomColorForHeader(position));
-
-                        switch (viewItem.getViewItemType()) {
-                            case ViewItem.VIEW_ITEM_TYPE_COLOR:
-                                itemView.setBackgroundColor(viewItem.getViewItemColor());
-                                holder.imageView.setVisibility(View.GONE);
-                                holder.progressBar.setVisibility(View.GONE);
-                                break;
-                            case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
-                                holder.imageView.setVisibility(View.VISIBLE);
-                                holder.imageView.setImageResource(viewItem.getViewItemImageResId());
-                                holder.progressBar.setVisibility(View.GONE);
-                                break;
-                            case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
-                                if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-                                    holder.imageView.setVisibility(View.VISIBLE);
-                                    imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, gridOptions, new SimpleImageLoadingListener() {
-                                                @Override
-                                                public void onLoadingStarted(String imageUri, View view) {
-                                                    holder.progressBar.setProgress(0);
-                                                    holder.progressBar.setVisibility(View.VISIBLE);
-                                                }
-
-                                                @Override
-                                                public void onLoadingFailed(String imageUri, View view,
-                                                                            FailReason failReason) {
-                                                    holder.progressBar.setVisibility(View.GONE);
-                                                }
-
-                                                @Override
-                                                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                                                    holder.progressBar.setVisibility(View.GONE);
-                                                }
-                                            }, new ImageLoadingProgressListener() {
-                                                @Override
-                                                public void onProgressUpdate(String imageUri, View view, int current,
-                                                                             int total) {
-                                                    holder.progressBar.setProgress(Math.round(100.0f * current / total));
-                                                }
-                                            }
-                                    );
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-
-                    @Override
-                    public SimpleViewHolder onCreateViewHolder(ViewGroup parent, int arg1) {
-                        final View view = getLayoutInflater().inflate(R.layout.item_grid_image, parent, false);
-                        SimpleViewHolder holder = new SimpleViewHolder(view);
-                        return holder;
-                    }
-
-                };
-                horizontalList.setAdapter(recyclerViewAdapter);
-
-                final ItemClickSupport itemClick = ItemClickSupport.addTo(horizontalList);
-
-                itemClick.setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(RecyclerView parent, View child, int position, long id) {
-                        // drill down
-
-                    }
-                });
-
-                horizontalList.setOnScrollListener(
-                        new RecyclerView.OnScrollListener() {
-
-                            @Override
-                            public void onScrollStateChanged(RecyclerView view, int scrollState) {
-                                if (null != onScrollListeners) {
-                                    for (RecyclerView.OnScrollListener onScrollListener : onScrollListeners) {
-                                        onScrollListener.onScrollStateChanged(view, scrollState);
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onScrolled(RecyclerView view, int dx, int dy) {
-                                if (null != onScrollListeners) {
-                                    for (RecyclerView.OnScrollListener onScrollListener : onScrollListeners) {
-                                        onScrollListener.onScrolled(view, dx, dy);
-                                    }
-                                }
-                            }
-                        }
-                );
-
-                onScrollListeners.add(new EndlessScrollListener() {
-
-                    private HashMap<ViewItem, Marker> viewItemOnMap = new HashMap<ViewItem, Marker>();
-                    private int[] variants = new int[3];
-
-                    @Override
-                    public void onLoadMore(int page, int totalItemsCount) {}
-
-                    @Override
-                    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                        if (null == googleMap) {
-                            return;
-                        }
-
-                        TwoWayView view = (TwoWayView) recyclerView;
-                        int firstVisibleItem = view.getFirstVisiblePosition();
-                        int visibleItemCount = view.getLastVisiblePosition() - view.getFirstVisiblePosition();
-                        int totalItemCount = view.getChildCount();
-
-                        if (firstVisibleItem == variants[0] &&
-                                visibleItemCount == variants[1] &&
-                                totalItemCount == variants[2]) {
-                            return;
-                        }
-
-                        variants[0] = firstVisibleItem;
-                        variants[1] = visibleItemCount;
-                        variants[2] = totalItemCount;
-
-                        Set<ViewItem> updateViewItems = new HashSet<ViewItem>();
-                        for (int i = 0; i < visibleItemCount; ++i) {
-                            updateViewItems.add(childModel.getViewItems().get(firstVisibleItem + i));
-                        }
-
-                        for (ViewItem viewItem: updateViewItems) {
-                            if (!viewItemOnMap.containsKey(viewItem)) {
-                                Marker marker = googleMap.addMarker(new MarkerOptions()
-                                        .title(viewItem.getLabel())
-                                        .position(new LatLng(viewItem.getLat(), viewItem.getLng())));
-
-                                viewItemOnMap.put(viewItem, marker);
-                            }
-                        }
-                        for (ViewItem viewItem: viewItemOnMap.keySet()) {
-                            if (!updateViewItems.contains(viewItem)) {
-                                viewItemOnMap.get(viewItem).remove();
-                            }
-                        }
-                        viewItemOnMap.keySet().retainAll(updateViewItems);
-                    }
-                });
-
-                horizontalList.setHasFixedSize(true);
-
-                // disable snapping in the default behavior
-                horizontalList.setLayoutManager(new ListLayoutManager(ViewItemPagerActivity.this, TwoWayLayoutManager.Orientation.HORIZONTAL) {
-                    void moveLayoutToPosition(int position, int offset, RecyclerView.Recycler recycler, RecyclerView.State state) {
-                    }
-                });
-
                 break;
 			default:
 				itemAdapter = null;

@@ -21,8 +21,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
-import android.app.ActionBar.Tab;
 import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.content.ComponentName;
@@ -31,6 +29,9 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBar.Tab;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -51,13 +52,12 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.ViewNodeAction;
-import com.wzw.ic.mvc.lonelyplanet.LonelyPlanetDumper;
 import com.wzw.ic.mvc.root.RootViewNode;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
-public abstract class BaseActivity extends Activity implements ViewNode.ViewItemActivityStarter {
+public abstract class BaseActivity extends ActionBarActivity implements ViewNode.ViewItemActivityStarter {
 
 	protected ImageLoader imageLoader = ImageLoader.getInstance();
 	protected ViewNode parentModel;
@@ -66,17 +66,14 @@ public abstract class BaseActivity extends Activity implements ViewNode.ViewItem
 	protected Menu menu;
 	private boolean wallpaperServiceEnabled = false;
 	
-	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		if (Build.VERSION.SDK_INT >= 11) {
-			ActionBar actionBar = getActionBar();
 
-//			actionBar.setDisplayHomeAsUpEnabled(true);
-			actionBar.setDisplayShowTitleEnabled(false);
-		}
+		ActionBar actionBar = getSupportActionBar();
+
+//		actionBar.setDisplayHomeAsUpEnabled(true);
+		actionBar.setDisplayShowTitleEnabled(false);
 	}
 		
 	protected static void setHasEmbeddedTabs(Object inActionBar, final boolean inHasEmbeddedTabs)
@@ -117,8 +114,6 @@ public abstract class BaseActivity extends Activity implements ViewNode.ViewItem
 	    catch (IllegalArgumentException e) {}
 	}
 
-	
-	@SuppressLint("NewApi")
 	public boolean isFullscreen() {
 		return (getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
 	}
@@ -146,13 +141,11 @@ public abstract class BaseActivity extends Activity implements ViewNode.ViewItem
 	        }
 		}
 		
-		if (Build.VERSION.SDK_INT >= 11) {
-			ActionBar actionBar = getActionBar();
-			if (fullscreen) {
-	        	actionBar.hide();
-	        } else {
-			    actionBar.show();
-	        }
+		ActionBar actionBar = getSupportActionBar();
+		if (fullscreen) {
+	        actionBar.hide();
+	    } else {
+			actionBar.show();
 	    }
 	}
 	
@@ -242,13 +235,6 @@ public abstract class BaseActivity extends Activity implements ViewNode.ViewItem
 				enableWallpaperService(wallpaperServiceEnabled);
 				return true;
             case R.id.item_settings:
-                new Thread(new Runnable () {
-
-                    @Override
-                    public void run() {
-                        LonelyPlanetDumper.dump();
-                    }
-                }).start();
                 return true;
 			default:
 				if (null != model && null != model.getActions()) {

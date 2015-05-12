@@ -27,18 +27,14 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
-import com.wzw.ic.mvc.flickr.FlickrViewNodePeopleFeeds;
 import com.wzw.ic.mvc.moko.MokoViewNodeUser;
 
 public class FeedsViewNode extends ViewNode {
 
 	protected int pageNo;
 	protected final ViewNode[] SUBFEEDS = new ViewNode[] {
-//		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "davei1314") + "%d.html"),
-//		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "zhangqunyun") + "%d.html"),
-//		new FlickrViewNodePeopleFeeds("67764677@N07"),
-		new FlickrViewNodePeopleFeeds("70058109@N06"),
-		new FlickrViewNodePeopleFeeds("85310965@N08"),
+		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "davei1314") + "%d.html"),
+		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "zhangqunyun") + "%d.html"),
 	};
     protected final Object[] subpages;
 
