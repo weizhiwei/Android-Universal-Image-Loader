@@ -64,17 +64,17 @@ public class EntryActivity extends ViewItemPagerActivity {
 				ViewItem viewItem = parentModel.getViewItems().get(position);
 				TextView textView = new TextView(EntryActivity.this);
 				textView.setText(viewItem.getLabel());
-				textView.setTextSize(16);
+//				textView.setTextSize(16);
 //				textView.setCompoundDrawablesWithIntrinsicBounds(viewItem.getViewItemImageResId(), 0, 0, 0);
 //				textView.setCompoundDrawablePadding(20);
-				textView.setTextColor(Color.WHITE);
-				textView.setGravity(Gravity.CENTER_VERTICAL);
-				textView.setHeight(120);
-				textView.setPadding(30, 0, 10, 0);
-				if (actionBar.getSelectedNavigationIndex() == position &&
-					!(parent instanceof Spinner)) {
-					textView.setBackgroundColor(0xFFAAAAFF);
-				}
+//				textView.setTextColor(Color.WHITE);
+//				textView.setGravity(Gravity.CENTER_VERTICAL);
+//				textView.setHeight(120);
+//				textView.setPadding(30, 0, 10, 0);
+//				if (actionBar.getSelectedNavigationIndex() == position &&
+//					!(parent instanceof Spinner)) {
+//					textView.setBackgroundColor(0xFFAAAAFF);
+//				}
 				return textView;
 		    }
 
@@ -84,7 +84,7 @@ public class EntryActivity extends ViewItemPagerActivity {
 			public boolean onNavigationItemSelected(int itemPosition, long itemId) {
 
 				if (null != pager) {
-					pager.setCurrentItem(itemPosition);
+					pager.setCurrentItem(actionBar.getSelectedNavigationIndex());
 					return true;
 				}
 				return false;

@@ -55,7 +55,6 @@ public class MokoViewNodeRoot extends MokoViewNode implements ViewNodeRoot {
 				viewItem.setInitialZoomLevel(2);
 				viewItems.add(viewItem);
 			}
-			viewItems.add(stream);
 		}
 		return viewItems;
 	}

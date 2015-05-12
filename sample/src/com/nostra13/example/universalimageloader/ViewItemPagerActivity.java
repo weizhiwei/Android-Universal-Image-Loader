@@ -1,7 +1,6 @@
 package com.nostra13.example.universalimageloader;
 
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.PagerAdapter;
@@ -35,7 +34,6 @@ import android.widget.TextView;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
-import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
@@ -44,22 +42,17 @@ import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 
 import org.lucasr.twowayview.ItemClickSupport;
-import org.lucasr.twowayview.TwoWayLayoutManager;
-import org.lucasr.twowayview.widget.ListLayoutManager;
 import org.lucasr.twowayview.widget.SpannableGridLayoutManager;
 import org.lucasr.twowayview.widget.TwoWayView;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 public class ViewItemPagerActivity extends BaseActivity {
-	DisplayImageOptions gridOptions, listOptions;
+	DisplayImageOptions displayImageOptions;
 	ViewPager pager;
     GetDataTask.GetDataTaskFinishedListener updateMapCameraCallback;
 
@@ -77,7 +70,7 @@ public class ViewItemPagerActivity extends BaseActivity {
         Bundle bundle = getIntent().getExtras();
 		assert bundle != null;
 
-		gridOptions = new DisplayImageOptions.Builder()
+		displayImageOptions = new DisplayImageOptions.Builder()
 			.showImageOnLoading(R.drawable.ic_stub)
 			.showImageForEmptyUri(R.drawable.ic_empty)
 			.showImageOnFail(R.drawable.ic_error)
@@ -85,16 +78,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 			.cacheOnDisk(true)
 			.considerExifParams(true)
 			.bitmapConfig(Bitmap.Config.RGB_565)
-			.build();
-
-		listOptions = new DisplayImageOptions.Builder()
-			.showImageOnLoading(R.drawable.ic_stub)
-			.showImageForEmptyUri(R.drawable.ic_empty)
-			.showImageOnFail(R.drawable.ic_error)
-			.cacheInMemory(true)
-			.cacheOnDisk(true)
-			.considerExifParams(true)
-			.displayer(new RoundedBitmapDisplayer(20))
 			.build();
 
 		pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
@@ -117,19 +100,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 		    }
 		});
 	}
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-
-        if (hasFocus) {
-            int idx = (null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0;
-            pager.setCurrentItem(idx);
-            if (0 == idx) { // page 0 wont trigger a onPageSelected
-                updateCurrentPage();
-            }
-        }
-    }
 
 	private void updateCurrentPage() {
         int position = pager.getCurrentItem();
@@ -176,10 +146,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                             }
                         };
                         break;
-                    case ViewItem.VIEW_TYPE_MAPVIEW:
-                        final TwoWayView horizontalList = (TwoWayView) contentView.findViewById(R.id.ic_listview);
-                        recyclerViewAdapter = horizontalList.getAdapter();
-                        getDataTaskFinishedListener = updateMapCameraCallback;
                     default:
                         break;
                 }
@@ -503,7 +469,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
 				if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
 					holder.imageView.setVisibility(View.VISIBLE);
-					imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, gridOptions, new SimpleImageLoadingListener() {
+					imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, displayImageOptions, new SimpleImageLoadingListener() {
 											 @Override
 											 public void onLoadingStarted(String imageUri, View view) {
 												 holder.progressBar.setProgress(0);
@@ -752,7 +718,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 					break;
 				case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
 					if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-						imageLoader.displayImage(viewItem.getImageUrl(), holder.image, listOptions, animateFirstListener);
+						imageLoader.displayImage(viewItem.getImageUrl(), holder.image, displayImageOptions, animateFirstListener);
 					}
 					break;
 				default:
@@ -786,7 +752,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
                         if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
                             holder.image.setVisibility(View.VISIBLE);
-                            imageLoader.displayImage(viewItem.getImageUrl(), holder.image, gridOptions, new SimpleImageLoadingListener() {
+                            imageLoader.displayImage(viewItem.getImageUrl(), holder.image, displayImageOptions, new SimpleImageLoadingListener() {
                                         @Override
                                         public void onLoadingStarted(String imageUri, View view) {
                                             holder.progressBar.setProgress(0);
@@ -849,7 +815,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                         case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
                             if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
                                 holder.image.setVisibility(View.VISIBLE);
-                                imageLoader.displayImage(viewItem.getImageUrl(), holder.image, gridOptions, new SimpleImageLoadingListener() {
+                                imageLoader.displayImage(viewItem.getImageUrl(), holder.image, displayImageOptions, new SimpleImageLoadingListener() {
                                             @Override
                                             public void onLoadingStarted(String imageUri, View view) {
                                                 holder.progressBar.setProgress(0);
@@ -927,7 +893,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                                 case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
                                     if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
                                         holder.imageView.setVisibility(View.VISIBLE);
-                                        imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, gridOptions, new SimpleImageLoadingListener() {
+                                        imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, displayImageOptions, new SimpleImageLoadingListener() {
                                                     @Override
                                                     public void onLoadingStarted(String imageUri, View view) {
                                                         holder.progressBar.setProgress(0);
