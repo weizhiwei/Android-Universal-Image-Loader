@@ -1,6 +1,7 @@
 package com.nostra13.example.universalimageloader;
 
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.PagerAdapter;
@@ -45,6 +46,7 @@ import org.lucasr.twowayview.ItemClickSupport;
 import org.lucasr.twowayview.widget.SpannableGridLayoutManager;
 import org.lucasr.twowayview.widget.TwoWayView;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -235,6 +237,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
+                ((ListView) absListView).setAdapter(itemAdapter);
                 recyclerViewAdapter = null;
                 getDataTaskFinishedListener = null;
                 ((ListView) absListView).setDividerHeight(0);
@@ -243,6 +246,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
 				itemAdapter = new GridItemAdapter(childModel, (GridView) absListView);
+                ((GridView) absListView).setAdapter(itemAdapter);
                 recyclerViewAdapter = null;
                 getDataTaskFinishedListener = null;
 				if (viewItem.getInitialZoomLevel() > 0 && viewItem.getInitialZoomLevel() <= 3) {
@@ -294,10 +298,10 @@ public class ViewItemPagerActivity extends BaseActivity {
 			});
 			swipeRefreshLayout.setEnabled(childModel.supportReloading());
 			// Configure the refreshing colors
-			swipeRefreshLayout.setColorScheme(android.R.color.holo_blue_bright, 
-	                android.R.color.holo_green_light, 
-	                android.R.color.holo_orange_light, 
-	                android.R.color.holo_red_light);
+//			swipeRefreshLayout.setColorScheme(android.R.color.holo_blue_bright,
+//	                android.R.color.holo_green_light,
+//	                android.R.color.holo_orange_light,
+//	                android.R.color.holo_red_light);
 
 			if (childModel.supportPaging()) {
 				onScrollListeners.add(new EndlessScrollListener() {
@@ -315,7 +319,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 			}
 
             if (null != absListView) {
-                absListView.setAdapter(itemAdapter);
                 absListView.setOnItemClickListener(new OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -441,14 +444,14 @@ public class ViewItemPagerActivity extends BaseActivity {
 			}
 			
 			int rowHeight;
-			switch (gridView.getNumColumns()) {
+			switch (getGridViewNumColumns(gridView)) {
 			case 1:
 				rowHeight = GridView.LayoutParams.WRAP_CONTENT;
 				break;
 			case 2:
 			case 3:
 			default:
-				rowHeight = gridView.getWidth()/gridView.getNumColumns();
+				rowHeight = gridView.getWidth()/getGridViewNumColumns(gridView);
 				break;
 			}
 			view.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.FILL_PARENT, rowHeight));
@@ -501,7 +504,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			}
 
 			SpannableString text = buildPictureText(viewItem, true, true, false, false, false, false);
-			if (null != text && gridView.getNumColumns() < 3) {
+			if (null != text && getGridViewNumColumns(gridView) < 3) {
 				holder.text.setVisibility(View.VISIBLE);
 				holder.text.setText(text);
 //				holder.text.setMovementMethod(LinkMovementMethod.getInstance());
@@ -1027,9 +1030,9 @@ public class ViewItemPagerActivity extends BaseActivity {
 	
 	protected void setGridViewColumns(GridView gridView, int numColumns) {
 		if (numColumns <= 0) {
-			numColumns = gridView.getNumColumns() == 1 ? 3 : gridView.getNumColumns() - 1;
+			numColumns = getGridViewNumColumns(gridView) == 1 ? 3 : getGridViewNumColumns(gridView) - 1;
 		} else if (numColumns > 3) {
-			numColumns = gridView.getNumColumns() == 3 ? 1 : gridView.getNumColumns() - 1;
+			numColumns = getGridViewNumColumns(gridView) == 3 ? 1 : getGridViewNumColumns(gridView) - 1;
 		}
 		gridView.setNumColumns(numColumns);
 	}
@@ -1039,8 +1042,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 			View contentView = pager.findViewWithTag(pager.getCurrentItem());
 			GridView gridView = (GridView) contentView.findViewById(R.id.ic_gridview);
 			setGridViewColumns(gridView, in ?
-					(gridView.getNumColumns() == 1 ? (circular ? 3 : 1) : gridView.getNumColumns() - 1) :
-					(gridView.getNumColumns() == 3 ? (circular ? 1 : 3) : gridView.getNumColumns() + 1));
+					(getGridViewNumColumns(gridView) == 1 ? (circular ? 3 : 1) : getGridViewNumColumns(gridView) - 1) :
+					(getGridViewNumColumns(gridView) == 3 ? (circular ? 1 : 3) : getGridViewNumColumns(gridView) + 1));
 		}
 	}
 
@@ -1097,5 +1100,24 @@ public class ViewItemPagerActivity extends BaseActivity {
             default:
                 return ITEM_COUNT_FOR_LARGE_ALBUMS[hash%ITEM_COUNT_FOR_LARGE_ALBUMS.length];
         }
+    }
+
+    private static int getGridViewNumColumns(GridView gv) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+            return gv.getNumColumns();
+
+        try {
+            Field numColumns = gv.getClass().getSuperclass().getDeclaredField("mNumColumns");
+            numColumns.setAccessible(true);
+            return numColumns.getInt(gv);
+        }
+        catch (Exception e) {}
+
+        int columns = gv.AUTO_FIT;
+        if (gv.getChildCount() > 0) {
+            int width = gv.getChildAt(0).getMeasuredWidth();
+            if (width > 0) columns = gv.getWidth() / width;
+        }
+        return columns;
     }
 }

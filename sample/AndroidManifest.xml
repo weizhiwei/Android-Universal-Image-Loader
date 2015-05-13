@@ -17,7 +17,8 @@
     <application
         android:name=".UILApplication"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name" >
+        android:label="@string/app_name"
+        android:allowBackup="true">
 
         <!-- android:uiOptions="splitActionBarWhenNarrow" -->
         <activity

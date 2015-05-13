@@ -136,7 +136,7 @@ public abstract class BaseActivity extends ActionBarActivity implements ViewNode
 	        	int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
 	        	decorView.setSystemUiVisibility(uiOptions);
 	        } else {
-			    int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+			    int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
 			    decorView.setSystemUiVisibility(uiOptions);
 	        }
 		}
@@ -218,7 +218,7 @@ public abstract class BaseActivity extends ActionBarActivity implements ViewNode
 		if (null != model && null != model.getActions()) {
 			for (ViewNodeAction action: model.getActions()) {
 				MenuItem item = menu.add(Menu.NONE, action.getId(), Menu.FIRST, action.getTitle());
-				item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+//				item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 				item.setVisible(action.isVisible());
 			}
 		}
@@ -257,7 +257,7 @@ public abstract class BaseActivity extends ActionBarActivity implements ViewNode
 	}
 	
 	public void startViewItemActivity(ViewNode parent, ViewItem viewItem) {
-		Intent intent = null;
+		Intent intent;
 		switch (viewItem.getViewType()) {
 		case ViewItem.VIEW_TYPE_IMAGE_PAGER:
 			intent = new Intent(this, ImagePagerActivity.class);
