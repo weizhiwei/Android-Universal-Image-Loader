@@ -230,10 +230,6 @@ shareIntent.setType("image/*");
 				textView.setMovementMethod(LinkMovementMethod.getInstance());
 			}
 			
-			if (!TextUtils.isEmpty(viewItem.getOrigin())) {
-				setupOriginIcon(originIconImageView, viewItem);
-			}
-			
 			imageView.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {

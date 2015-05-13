@@ -12,8 +12,6 @@ public class RootViewNode extends ViewNode {
 
 	private static RootViewNode theRootNode = new RootViewNode();
 	
-	private ViewItem gallery;
-	
 	protected RootViewNode() {
 		
 		super("root", null);
@@ -35,18 +33,5 @@ public class RootViewNode extends ViewNode {
 	
 	public static RootViewNode getInstance() {
 		return theRootNode;
-	}
-	
-	public ViewItem findGalleryViewItem(String name) {
-		for (ViewItem viewItem: gallery.getViewNode().getViewItems()) {
-			if (viewItem.getNodeUrl().equals(name)) {
-				return viewItem;
-			}
-		}
-		return null;
-	}
-	
-	public ViewItem getGalleryViewItem() {
-		return gallery;
 	}
 }

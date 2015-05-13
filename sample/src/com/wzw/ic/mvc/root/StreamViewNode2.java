@@ -251,34 +251,4 @@ public class StreamViewNode2 extends ViewNode {
 	        imageView = (ImageView)convertView.findViewById(R.id.image);
 		}
     }
-	
-	public void onHeaderClicked(int header, ViewItemActivityStarter starter) {
-		int n = 0;
-		for (int i = 0; i < header; ++i) {
-			n += headers.get(i);
-		}
-		ViewItem viewItem = viewItems.get(n);
-		if (!TextUtils.isEmpty(viewItem.getOrigin())) {
-			ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
-			if (null != originViewItem) {
-				starter.startViewItemActivity(RootViewNode.getInstance().getGalleryViewItem().getViewNode(),
-						originViewItem);
-			}
-		}
-	}
-	
-//	public void onFooterClicked(int footer, ViewItemActivityStarter starter) {
-//		int n = 0;
-//		for (int i = 0; i < footer; ++i) {
-//			n += headers.get(i);
-//		}
-//		ViewItem viewItem = viewItems.get(n);
-//		if (!TextUtils.isEmpty(viewItem.getOrigin())) {
-//			ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
-//			if (null != originViewItem) {
-//				starter.startViewItemActivity(originViewItem.getViewNode(),
-//						((ViewNodeRoot)originViewItem.getViewNode()).getStream());
-//			}
-//		}
-//	}
 }

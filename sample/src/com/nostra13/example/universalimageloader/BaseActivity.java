@@ -325,17 +325,4 @@ public abstract class BaseActivity extends ActionBarActivity implements ViewNode
 		
 		return ss;
 	}
-	
-	protected void setupOriginIcon(ImageView iconView, ViewItem viewItem) {
-		final ViewItem originViewItem = RootViewNode.getInstance().findGalleryViewItem(viewItem.getOrigin());
-		iconView.setImageResource(originViewItem.getViewItemImageResId());
-//		iconView.setOnClickListener(new OnClickListener() {					
-//			@Override
-//			public void onClick(View arg0) {
-//				BaseActivity.this.startViewItemActivity(
-//						RootViewNode.getInstance().getGalleryViewItem().getViewNode(),
-//						originViewItem);
-//			}
-//		});
-	}
 }
