@@ -42,6 +42,8 @@ class GetDataTask extends AsyncTask<Object, Integer, Void> {
         if (!reentrantLocks.containsKey(model)) {
             reentrantLocks.put(model, this);
             this.execute(reload);
+        } else {
+            onPostExecute(null);
         }
     }
 
