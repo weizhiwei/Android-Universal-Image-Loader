@@ -49,12 +49,12 @@ public class MokoViewNodePost extends MokoViewNode {
 		}
 		
 		List<ViewItem> viewItems = null;
-		Elements imgElems = page.select("p.picbox img");
+		Elements imgElems = page.select("img");
 		if (null != imgElems && imgElems.size() > 0) {
 			viewItems = new ArrayList<ViewItem>();
 			for (int i = 0; i < imgElems.size(); ++i) {
 				Element img = imgElems.get(i);
-				ViewItem viewItem = new ViewItem(pageTitle, sourceUrl, img.attr("src2"), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
+				ViewItem viewItem = new ViewItem(pageTitle, sourceUrl, img.attr("src"), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
 				viewItem.setAuthor(authorViewItem);
 				viewItem.setOrigin(MOKO_NAME);
 				viewItems.add(viewItem);

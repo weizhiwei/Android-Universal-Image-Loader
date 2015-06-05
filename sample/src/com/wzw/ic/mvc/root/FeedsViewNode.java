@@ -43,7 +43,7 @@ public class FeedsViewNode extends ViewNode {
         subpages = new Object[SUBFEEDS.length];
 	}
 
-	@Override
+    @Override
 	public boolean supportReloading() {
 		return true;
 	}
@@ -70,7 +70,7 @@ public class FeedsViewNode extends ViewNode {
 
             final CountDownLatch latch = new CountDownLatch(needToDoLoadCount);
             for (int i = 0; i < SUBFEEDS.length; ++i) {
-                if (null == subpages[i] || ((List<ViewItem>) subpages[i]).isEmpty()) {
+                if (reload || null == subpages[i] || ((List<ViewItem>) subpages[i]).isEmpty()) {
                     final int index = i;
                     new Thread(new Runnable() {
 
