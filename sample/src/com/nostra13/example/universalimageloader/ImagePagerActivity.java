@@ -15,8 +15,6 @@
  *******************************************************************************/
 package com.nostra13.example.universalimageloader;
 
-import ru.truba.touchgallery.GalleryWidget.GalleryViewPager;
-import ru.truba.touchgallery.TouchView.TouchImageView;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -191,9 +189,8 @@ shareIntent.setType("image/*");
 	        
 	        myViewItem = parentModel.getViewItems().get(position);
 
-	        GalleryViewPager galleryContainer = ((GalleryViewPager)container);
 	        View imageLayout = (View) object;
-	        galleryContainer.mCurrentView = (TouchImageView) imageLayout.findViewById(R.id.image);
+	        ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
 	        
 	        if (!isFullscreen()) {
 	        	updateTitleIconFromViewItem(myViewItem);
