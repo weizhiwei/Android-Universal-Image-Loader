@@ -1,15 +1,19 @@
 package com.wzw.ic.mvc.moko;
 
 import java.io.IOException;
+import java.net.HttpCookie;
+import java.net.URI;
 import java.util.List;
 
-import org.jsoup.Connection;
-import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import android.content.Context;
 import android.text.TextUtils;
 
+import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.ion.Ion;
+import com.koushikdutta.ion.Response;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 
@@ -33,63 +37,73 @@ public abstract class MokoViewNode extends ViewNode {
 	public boolean supportReloading() {
 		return true;
 	}
-	
-	@Override
-	public List<ViewItem> reload()  {
-		return doLoad(true);
-	}
 
-	private String getLoginKey() {
+	private String getLoginKey(Context context) {
 		if (TextUtils.isEmpty(loginKey)) {
 			// login
-			Response resp = null;
+//			Response resp = null;
 			try {
-				resp = Jsoup
-						.connect("http://www.moko.cc/jsps/common/login.action")
-						.method(Connection.Method.POST)
-						.data("usermingzi", "weizhiwei@gmail.com", "userkey", "85148415")
-						.execute();
-			} catch (IOException e) {
+//				resp = Jsoup
+//						.connect("http://www.moko.cc/jsps/common/login.action")
+//						.method(Connection.Method.POST)
+//						.data("usermingzi", "weizhiwei@gmail.com", "userkey", "85148415")
+//						.execute();
+            Ion.with(context)
+                    .load("http://www.moko.cc/jsps/common/login.action")
+                    .setBodyParameter("usermingzi", "weizhiwei@gmail.com")
+                    .setBodyParameter("userkey", "85148415")
+                    .asString()
+                    .get();
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			if (null != resp) {
-				loginKey = resp.cookie(LOGIN_KEY_COOKIE);
-			}
+//			if (null != resp) {
+//				loginKey = resp.cookie(LOGIN_KEY_COOKIE);
+//			}
+
+            for (HttpCookie cookie: Ion.getDefault(context).getCookieMiddleware().getCookieStore().get(URI.create(URL_PREFIX))) {
+                if (LOGIN_KEY_COOKIE.equals(cookie.getName())) {
+                    loginKey = cookie.getValue();
+                }
+            }
 		}
 		return loginKey;
 	}
-	
-	private List<ViewItem> doLoad(boolean reload) {
-		List<ViewItem> pageViewItems = null;
-		Document doc = null;
-		int newPageNo = reload ? 1 : pageNo + 1;
+
+    @Override
+	public List<ViewItem> load(Context context, final boolean reload, final LoadListener loadListener) {
+		final int newPageNo = reload ? 1 : pageNo + 1;
 
 		try {
-			doc = Jsoup
-					.connect(String.format(sourceUrl, perturbPageNo(newPageNo, reload)))
-					.cookie(LOGIN_KEY_COOKIE, null == getLoginKey() ? "" : getLoginKey())
-					.get();
-		} catch (IOException e) {
+            Ion.getDefault(context).getCookieMiddleware().getCookieManager().getCookieStore().add(
+                    URI.create(URL_PREFIX), new HttpCookie(LOGIN_KEY_COOKIE, null == getLoginKey(context) ? "" : getLoginKey(context)));
+            Ion.with(context)
+                    .load(String.format(sourceUrl, perturbPageNo(newPageNo, reload)))
+                    .asString()
+                    .setCallback(new FutureCallback<String>() {
+                        @Override
+                        public void onCompleted(Exception e, String result) {
+                            Document doc = Jsoup.parse(result);
+                            if (doc != null) {
+                                List<ViewItem> pageViewItems = extractViewItemsFromPage(doc);
+                                if (null != pageViewItems && pageViewItems.size() > 0) {
+                                    pageNo = newPageNo;
+                                    if (reload) {
+                                        viewItems.clear();
+                                    }
+                                    viewItems.addAll(pageViewItems);
+                                }
+                            }
+                            loadListener.onLoadDone(MokoViewNode.this);
+                        }
+                    });
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if (doc != null) {
-			pageViewItems = extractViewItemsFromPage(doc);
-			if (null != pageViewItems && pageViewItems.size() > 0) {
-				pageNo = newPageNo;
-				if (reload) {
-					viewItems.clear();
-				}
-				viewItems.addAll(pageViewItems);
-			}
-		}
-		return pageViewItems;
-	}
-	
-	@Override
-	public List<ViewItem> loadOneMorePage() {
-		return doLoad(false);
+
+		return null;
 	}
 
 	@Override

@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.text.Html;
 import android.text.SpannableString;
@@ -18,12 +20,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.nostra13.example.universalimageloader.R;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
@@ -49,139 +45,145 @@ public class FeedsViewNode extends ViewNode {
 	}
 	
 	@Override
-	public List<ViewItem> reload()  {
-		return doLoad(true);
-	}
-	
-	private List<ViewItem> doLoad(final boolean reload) {
-		int newPageNo = reload ? 0 : pageNo + 1;
+    public List<ViewItem> load(final Context context, final boolean reload, final LoadListener loadListener) {
+        new Thread(new Runnable () {
 
-        int needToDoLoadCount = SUBFEEDS.length;
-        if (!reload) {
-            needToDoLoadCount = 0;
-            for (Object subpage: Arrays.asList(subpages)) {
-                if (null == subpage || ((List<ViewItem>) subpage).isEmpty()) {
-                    ++needToDoLoadCount;
-                }
-            }
-        }
+            @Override
+            public void run() {
+                int newPageNo = reload ? 0 : pageNo + 1;
 
-        if (needToDoLoadCount > 0) {
-
-            final CountDownLatch latch = new CountDownLatch(needToDoLoadCount);
-            for (int i = 0; i < SUBFEEDS.length; ++i) {
-                if (reload || null == subpages[i] || ((List<ViewItem>) subpages[i]).isEmpty()) {
-                    final int index = i;
-                    new Thread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            ViewNode node = SUBFEEDS[index];
-                            List<ViewItem> page = reload ? node.reload() : node.loadOneMorePage();
-                            subpages[index] = page;
-                            latch.countDown();
+                int needToDoLoadCount = SUBFEEDS.length;
+                if (!reload) {
+                    needToDoLoadCount = 0;
+                    for (Object subpage : Arrays.asList(subpages)) {
+                        if (null == subpage || ((List<ViewItem>) subpage).isEmpty()) {
+                            ++needToDoLoadCount;
                         }
-                    }).start();
-                }
-            }
-
-            try {
-                latch.await();
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-
-        final List<ViewItem> albumViewItems = new ArrayList<ViewItem> ();
-        while (true) {
-            int index = -1;
-            Date date = new Date(0);
-            for (int i = 0; i < subpages.length; ++i) {
-                List<ViewItem> subpageViewItems = (List<ViewItem>) subpages[i];
-                if (null != subpageViewItems && !subpageViewItems.isEmpty()) {
-                    if (null != subpageViewItems.get(0).getPostedDate() &&
-                            subpageViewItems.get(0).getPostedDate().after(date)) {
-                        date = subpageViewItems.get(0).getPostedDate();
-                        index = i;
                     }
                 }
-            }
 
-            if (index == -1) { // nothing to add
-                break;
-            } else {
-                List<ViewItem> subpageViewItems = (List<ViewItem>) subpages[index];
-                albumViewItems.add(subpageViewItems.remove(0));
-                if (albumViewItems.size() > 5 ||
-                    subpageViewItems.isEmpty()) {
-                    // if we have exhausted any list, we need to stop to do a reload, in order to maintain the getPostedDate order
-                    break;
+                if (needToDoLoadCount > 0) {
+
+                    final CountDownLatch latch = new CountDownLatch(needToDoLoadCount);
+                    for (int i = 0; i < SUBFEEDS.length; ++i) {
+                        if (reload || null == subpages[i] || ((List<ViewItem>) subpages[i]).isEmpty()) {
+                            ViewNode node = SUBFEEDS[i];
+                            final int index = i;
+                            node.load(context, reload, new LoadListener() {
+                                @Override
+                                public void onLoadDone(ViewNode model) {
+                                    subpages[index] = model.getViewItems();
+                                    latch.countDown();
+                                }
+                            });
+                        }
+                    }
+
+                    try {
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 }
-            }
-        }
 
-        int albumCount = 0;
-        for (ViewItem viewItem: albumViewItems) {
-            if (viewItem.getViewType() != ViewItem.VIEW_TYPE_IMAGE_PAGER) {
-                ++albumCount;
-            }
-        }
+                final List<ViewItem> albumViewItems = new ArrayList<ViewItem>();
+                while (true) {
+                    int index = -1;
+                    Date date = new Date(0);
+                    for (int i = 0; i < subpages.length; ++i) {
+                        List<ViewItem> subpageViewItems = (List<ViewItem>) subpages[i];
+                        if (null != subpageViewItems && !subpageViewItems.isEmpty()) {
+                            if (null != subpageViewItems.get(0).getPostedDate() &&
+                                    subpageViewItems.get(0).getPostedDate().after(date)) {
+                                date = subpageViewItems.get(0).getPostedDate();
+                                index = i;
+                            }
+                        }
+                    }
 
-        // unfold albums
-        final Object[] subpages2 = new Object[albumViewItems.size()];
-        final CountDownLatch latch2 = new CountDownLatch(albumCount);
-        for (int i = 0; i < albumViewItems.size(); ++i) {
-            final ViewItem viewItem = albumViewItems.get(i);
-            if (viewItem.getViewType() == ViewItem.VIEW_TYPE_IMAGE_PAGER) {
-                List<ViewItem> page = new ArrayList<ViewItem> (1);
-                page.add(viewItem);
-                subpages2[i] = page;
-            } else {
-                final int index = i;
-                new Thread(new Runnable() {
+                    if (index == -1) { // nothing to add
+                        break;
+                    } else {
+                        List<ViewItem> subpageViewItems = (List<ViewItem>) subpages[index];
+                        albumViewItems.add(subpageViewItems.remove(0));
+                        if (albumViewItems.size() > 5 ||
+                                subpageViewItems.isEmpty()) {
+                            // if we have exhausted any list, we need to stop to do a reload, in order to maintain the getPostedDate order
+                            break;
+                        }
+                    }
+                }
+
+                int albumCount = 0;
+                for (ViewItem viewItem : albumViewItems) {
+                    if (viewItem.getViewType() != ViewItem.VIEW_TYPE_IMAGE_PAGER) {
+                        ++albumCount;
+                    }
+                }
+
+                // unfold albums
+                final Object[] subpages2 = new Object[albumViewItems.size()];
+                final CountDownLatch latch2 = new CountDownLatch(albumCount);
+                for (int i = 0; i < albumViewItems.size(); ++i) {
+                    final ViewItem viewItem = albumViewItems.get(i);
+                    if (viewItem.getViewType() == ViewItem.VIEW_TYPE_IMAGE_PAGER) {
+                        List<ViewItem> page = new ArrayList<ViewItem>(1);
+                        page.add(viewItem);
+                        subpages2[i] = page;
+                    } else {
+                        final int index = i;
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                viewItem.getViewNode().load(context, true, new LoadListener() {
+                                    @Override
+                                    public void onLoadDone(ViewNode model) {
+                                        latch2.countDown();
+                                        subpages2[index] = model.getViewItems();
+                                    }
+                                });
+                            }
+                        }).start();
+                    }
+                }
+
+                try {
+                    latch2.await();
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+
+                List<ViewItem> pageViewItems = new ArrayList<ViewItem>();
+                List<Integer> pageHeaders = new ArrayList<Integer>();
+                for (Object subpage : Arrays.asList(subpages2)) {
+                    if (null != subpage) {
+                        List<ViewItem> subpageViewItems = (List<ViewItem>) subpage;
+                        pageViewItems.addAll(subpageViewItems);
+                        pageHeaders.add(subpageViewItems.size());
+                    }
+                }
+
+                if (null != pageViewItems && pageViewItems.size() > 0) {
+                    pageNo = newPageNo;
+                    if (reload) {
+                        viewItems.clear();
+                        headers.clear();
+                    }
+                    viewItems.addAll(pageViewItems);
+                    headers.addAll(pageHeaders);
+                }
+
+                ((Activity)context).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        subpages2[index] = viewItem.getViewNode().reload();
-                        latch2.countDown();
+                        loadListener.onLoadDone(FeedsViewNode.this);
                     }
-                }).start();
+                });
             }
-        }
-
-        try {
-            latch2.await();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        List<ViewItem> pageViewItems = new ArrayList<ViewItem> ();
-        List<Integer> pageHeaders = new ArrayList<Integer> ();
-        for (Object subpage: Arrays.asList(subpages2)) {
-            if (null != subpage) {
-                List<ViewItem> subpageViewItems = (List<ViewItem>) subpage;
-                pageViewItems.addAll(subpageViewItems);
-                pageHeaders.add(subpageViewItems.size());
-            }
-        }
-
-        if (null != pageViewItems && pageViewItems.size() > 0) {
-            pageNo = newPageNo;
-            if (reload) {
-                viewItems.clear();
-                headers.clear();
-            }
-            viewItems.addAll(pageViewItems);
-            headers.addAll(pageHeaders);
-        }
-
-        return pageViewItems;
-	}
-	
-	@Override
-	public List<ViewItem> loadOneMorePage() {
-		return doLoad(false);
+        }).start();
+        return null;
 	}
 
 	@Override
@@ -229,17 +231,17 @@ public class FeedsViewNode extends ViewNode {
         if (null != viewItem.getAuthor()) {
         	if (!TextUtils.isEmpty(viewItem.getAuthor().getImageUrl())) {
         		((FeedsHeaderViewHolder)holder).imageView.setVisibility(View.VISIBLE);
-        		ImageLoader.getInstance().displayImage(viewItem.getAuthor().getImageUrl(),
-        				((FeedsHeaderViewHolder)holder).imageView,
-                                new DisplayImageOptions.Builder()
-                                .showImageOnLoading(R.drawable.ic_stub)
-                                .showImageForEmptyUri(R.drawable.ic_empty)
-                                .showImageOnFail(R.drawable.ic_error)
-                                .cacheInMemory(true)
-                                .cacheOnDisk(true)
-                                .considerExifParams(true)
-                                .displayer(new RoundedBitmapDisplayer(((FeedsHeaderViewHolder)holder).imageView.getLayoutParams().width/2))
-                                .build());
+//        		ImageLoader.getInstance().displayImage(viewItem.getAuthor().getImageUrl(),
+//        				((FeedsHeaderViewHolder)holder).imageView,
+//                                new DisplayImageOptions.Builder()
+//                                .showImageOnLoading(R.drawable.ic_stub)
+//                                .showImageForEmptyUri(R.drawable.ic_empty)
+//                                .showImageOnFail(R.drawable.ic_error)
+//                                .cacheInMemory(true)
+//                                .cacheOnDisk(true)
+//                                .considerExifParams(true)
+//                                .displayer(new RoundedBitmapDisplayer(((FeedsHeaderViewHolder)holder).imageView.getLayoutParams().width/2))
+//                                .build());
 			}
         }
 	}

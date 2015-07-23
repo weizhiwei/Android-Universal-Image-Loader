@@ -1,5 +1,7 @@
 package com.wzw.ic.mvc.root;
 
+import android.content.Context;
+
 import java.util.List;
 
 import com.nostra13.example.universalimageloader.IcDatabase;
@@ -19,13 +21,9 @@ public class HeartsViewNode extends ViewNode {
 	public boolean supportReloading() {
 		return true;
 	}
-	
-	@Override
-	public List<ViewItem> reload()  {
-		return doLoad(true);
-	}
-	
-	private List<ViewItem> doLoad(boolean reload) {
+
+    @Override
+    public List<ViewItem> load(Context context, boolean reload, LoadListener loadListener) {
 		int newPageNo = reload ? 0 : pageNo + 1;
 		final int PER_PAGE = 30;
 		
@@ -42,12 +40,10 @@ public class HeartsViewNode extends ViewNode {
 			}
 			viewItems.addAll(pageViewItems);
 		}
-		return pageViewItems;
-	}
-	
-	@Override
-	public List<ViewItem> loadOneMorePage() {
-		return doLoad(false);
+
+        loadListener.onLoadDone(this);
+
+        return pageViewItems;
 	}
 
 	@Override

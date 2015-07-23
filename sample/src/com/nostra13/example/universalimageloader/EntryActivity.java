@@ -19,7 +19,6 @@ public class EntryActivity extends ViewItemPagerActivity {
 	
 	@Override
 	public void onBackPressed() {
-		imageLoader.stop();
 //		IcDatabase.getInstance().close();
 		super.onBackPressed();
 	}

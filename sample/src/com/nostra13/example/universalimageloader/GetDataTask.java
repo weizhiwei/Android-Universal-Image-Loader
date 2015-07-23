@@ -1,5 +1,6 @@
 package com.nostra13.example.universalimageloader;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -11,12 +12,13 @@ import com.wzw.ic.mvc.ViewNode;
 import java.util.HashMap;
 import java.util.Map;
 
-class GetDataTask extends AsyncTask<Object, Integer, Void> {
+class GetDataTask {
 
 	public interface GetDataTaskFinishedListener {
 		public void onGetDataTaskFinished(ViewNode model);
 	}
-	
+
+    protected Context context;
 	protected ViewNode model;
 	protected SwipeRefreshLayout swipeRefreshLayout;
 	protected BaseAdapter itemAdapter;
@@ -24,106 +26,65 @@ class GetDataTask extends AsyncTask<Object, Integer, Void> {
 	protected PagerAdapter pagerAdapter;
 	protected GetDataTaskFinishedListener listener;
 
-    private static Map<ViewNode, GetDataTask> reentrantLocks = new HashMap<ViewNode, GetDataTask>();
-
-    protected void init(ViewNode model,
+    protected void init(Context context,
+                        ViewNode model,
                         SwipeRefreshLayout swipeRefreshLayout,
                         BaseAdapter itemAdapter,
                         RecyclerView.Adapter recyclerViewAdapter,
                         PagerAdapter pagerAdapter,
                         GetDataTaskFinishedListener listener,
                         boolean reload) {
+        this.context = context;
         this.model = model;
         this.swipeRefreshLayout = swipeRefreshLayout;
         this.itemAdapter = itemAdapter;
         this.recyclerViewAdapter = recyclerViewAdapter;
         this.pagerAdapter = pagerAdapter;
         this.listener = listener;
-        if (!reentrantLocks.containsKey(model)) {
-            reentrantLocks.put(model, this);
-            this.execute(reload);
-        } else {
-            onPostExecute(null);
+
+        model.detach();
+        if (null != swipeRefreshLayout) {
+            swipeRefreshLayout.setRefreshing(true);
         }
+
+        model.load(context, reload, new ViewNode.LoadListener() {
+            @Override
+            public void onLoadDone(ViewNode model) {
+                model.attach();
+                if (null != GetDataTask.this.itemAdapter) {
+                    GetDataTask.this.itemAdapter.notifyDataSetChanged();
+                }
+                if (null != GetDataTask.this.recyclerViewAdapter) {
+                    GetDataTask.this.recyclerViewAdapter.notifyDataSetChanged();
+                }
+                if (null != GetDataTask.this.pagerAdapter) {
+                    GetDataTask.this.pagerAdapter.notifyDataSetChanged();
+                }
+                if (null != GetDataTask.this.listener) {
+                    GetDataTask.this.listener.onGetDataTaskFinished(model);
+                }
+                if (null != GetDataTask.this.swipeRefreshLayout) {
+                    GetDataTask.this.swipeRefreshLayout.setRefreshing(false);
+                }
+            }
+        });
     }
 
-	public GetDataTask(ViewNode model,
+	public GetDataTask(Context context,
+            ViewNode model,
 			SwipeRefreshLayout swipeRefreshLayout,
 			BaseAdapter itemAdapter,
             RecyclerView.Adapter recyclerViewAdapter,
 			GetDataTaskFinishedListener listener,
             boolean reload) {
-		init(model, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, null, listener, reload);
+		init(context, model, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, null, listener, reload);
 	}
 	
-	public GetDataTask(ViewNode model,
+	public GetDataTask(Context context,
+            ViewNode model,
 			PagerAdapter pagerAdapter,
 			GetDataTaskFinishedListener listener,
             boolean reload) {
-        init(model, null, null, null, pagerAdapter, listener, reload);
-	}
-	
-	@Override
-	protected void onPreExecute() {
-		model.detach();
-		if (null != swipeRefreshLayout) {
-			swipeRefreshLayout.setRefreshing(true);
-		}
-	}
-	
-	@Override
-	protected Void doInBackground(Object... params) {
-		// Simulates a background job.
-		boolean reload = (Boolean) params[0];
-		if (reload) {
-            publishProgress(-1);
-			model.reload();
-		} else {
-			model.loadOneMorePage();
-		}
-		return null;
-	}
-
-    @Override
-    protected void onProgressUpdate(Integer... progress) {
-        if (-1 == progress[0]) { // simulates a clear before adding the results
-            model.clearDetachment();
-            if (null != itemAdapter) {
-                itemAdapter.notifyDataSetChanged();
-            }
-            if (null != recyclerViewAdapter) {
-                recyclerViewAdapter.notifyDataSetChanged();
-            }
-            if (null != pagerAdapter) {
-                pagerAdapter.notifyDataSetChanged();
-            }
-        }
-    }
-
-	@Override
-	protected void onCancelled(Void result) {
-		onPostExecute(result);
-	}
-	
-	@Override
-	protected void onPostExecute(Void result) {
-		model.attach();
-		if (null != itemAdapter) {
-			itemAdapter.notifyDataSetChanged();
-		}
-        if (null != recyclerViewAdapter) {
-            recyclerViewAdapter.notifyDataSetChanged();
-        }
-		if (null != pagerAdapter) {
-			pagerAdapter.notifyDataSetChanged();
-		}
-		if (null != listener) {
-			listener.onGetDataTaskFinished(model);
-		}
-		if (null != swipeRefreshLayout) {
-			swipeRefreshLayout.setRefreshing(false);
-		}
-
-        reentrantLocks.remove(model);
+        init(context, model, null, null, null, pagerAdapter, listener, reload);
 	}
 }

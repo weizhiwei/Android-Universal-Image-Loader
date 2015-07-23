@@ -36,11 +36,7 @@ import android.widget.ShareActionProvider;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.assist.ImageScaleType;
-import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
+import com.koushikdutta.ion.Ion;
 import com.wzw.ic.mvc.ViewItem;
 
 /**
@@ -48,8 +44,6 @@ import com.wzw.ic.mvc.ViewItem;
  */
 public class ImagePagerActivity extends BaseActivity {
 
-	DisplayImageOptions options;
-	
 	ViewPager pager;
 
 	@Override
@@ -62,17 +56,6 @@ public class ImagePagerActivity extends BaseActivity {
 		Bundle bundle = getIntent().getExtras();
 		assert bundle != null;
 
-		options = new DisplayImageOptions.Builder()
-			.showImageForEmptyUri(R.drawable.ic_empty)
-			.showImageOnFail(R.drawable.ic_error)
-			.resetViewBeforeLoading(true)
-			.cacheOnDisk(true)
-			.imageScaleType(ImageScaleType.EXACTLY)
-			.bitmapConfig(Bitmap.Config.RGB_565)
-			.considerExifParams(true)
-			.displayer(new FadeInBitmapDisplayer(300))
-			.build();
-
 		pager = (ViewPager) findViewById(R.id.ic_pagerview);
 //		pager.setOffscreenPageLimit(3);
 		final PagerAdapter pagerAdapter = new ImagePagerAdapter();
@@ -81,7 +64,7 @@ public class ImagePagerActivity extends BaseActivity {
 			@Override
 		    public void onPageSelected(int position) {
 				if (parentModel.supportPaging() && position >= pagerAdapter.getCount() - 5) {
-					new GetDataTask(parentModel, pagerAdapter, null, false);
+					new GetDataTask(ImagePagerActivity.this, parentModel, pagerAdapter, null, false);
 				}
 			}
 		});
@@ -143,7 +126,7 @@ public class ImagePagerActivity extends BaseActivity {
 		ShareActionProvider shareActionProvider = (ShareActionProvider)shareItem.getActionProvider();
 	    Intent intent = new Intent(Intent.ACTION_SEND);
 	    intent.setType("image/*");
-	    intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imageLoader.getDiskCache().get(viewItem.getImageUrl()))); // TODO null check
+//	    intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imageLoader.getDiskCache().get(viewItem.getImageUrl()))); // TODO null check
 	    shareActionProvider.setShareIntent(intent);
 	    
 	    /*
@@ -244,43 +227,48 @@ shareIntent.setType("image/*");
 		        	updateMenu();
 				}
 			});
-			
-			imageLoader.displayImage(viewItem.getImageUrl(), imageView, options, new SimpleImageLoadingListener() {
-				@Override
-				public void onLoadingStarted(String imageUri, View view) {
-					spinner.setVisibility(View.VISIBLE);
-				}
 
-				@Override
-				public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-					String message = null;
-					switch (failReason.getType()) {
-						case IO_ERROR:
-							message = "Input/Output error";
-							break;
-						case DECODING_ERROR:
-							message = "Image can't be decoded";
-							break;
-						case NETWORK_DENIED:
-							message = "Downloads are denied";
-							break;
-						case OUT_OF_MEMORY:
-							message = "Out Of Memory error";
-							break;
-						case UNKNOWN:
-							message = "Unknown error";
-							break;
-					}
-					Toast.makeText(ImagePagerActivity.this, message, Toast.LENGTH_SHORT).show();
+            Ion.with(imageView)
+                    .placeholder(R.drawable.ic_launcher)
+                    .error(R.drawable.ic_error)
+                    .load(viewItem.getImageUrl());
 
-					spinner.setVisibility(View.GONE);
-				}
-
-				@Override
-				public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-					spinner.setVisibility(View.GONE);
-				}
-			});
+//			imageLoader.displayImage(viewItem.getImageUrl(), imageView, options, new SimpleImageLoadingListener() {
+//				@Override
+//				public void onLoadingStarted(String imageUri, View view) {
+//					spinner.setVisibility(View.VISIBLE);
+//				}
+//
+//				@Override
+//				public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+//					String message = null;
+//					switch (failReason.getType()) {
+//						case IO_ERROR:
+//							message = "Input/Output error";
+//							break;
+//						case DECODING_ERROR:
+//							message = "Image can't be decoded";
+//							break;
+//						case NETWORK_DENIED:
+//							message = "Downloads are denied";
+//							break;
+//						case OUT_OF_MEMORY:
+//							message = "Out Of Memory error";
+//							break;
+//						case UNKNOWN:
+//							message = "Unknown error";
+//							break;
+//					}
+//					Toast.makeText(ImagePagerActivity.this, message, Toast.LENGTH_SHORT).show();
+//
+//					spinner.setVisibility(View.GONE);
+//				}
+//
+//				@Override
+//				public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//					spinner.setVisibility(View.GONE);
+//				}
+//			});
 
 			view.addView(imageLayout, 0);
 			return imageLayout;

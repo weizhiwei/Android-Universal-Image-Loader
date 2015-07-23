@@ -3,9 +3,15 @@ package com.wzw.ic.mvc;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.Context;
 import android.view.View;
 
 public class ViewNode extends IcObject {
+
+    public interface LoadListener {
+        public void onLoadDone(ViewNode model);
+    }
+
 	protected String sourceUrl;
 	
 	protected List<ViewItem> viewItems, viewItemsCopy;
@@ -82,18 +88,14 @@ public class ViewNode extends IcObject {
 		return false;
 	}
 	
-	public List<ViewItem> reload() {
+	public List<ViewItem> load(Context context, boolean reload, LoadListener loadListener) {
 		return null;
 	}
 	
 	public boolean supportPaging() {
 		return false;
 	}
-	
-	public List<ViewItem> loadOneMorePage() {
-		return null;
-	}
-	
+
 	public Object onAction(ViewNodeAction action) {
 		return null;
 	}
