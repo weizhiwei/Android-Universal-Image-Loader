@@ -34,51 +34,51 @@ public class WallpaperAlarmReceiver extends BroadcastReceiver {
 	}
 	
 	public static void setWallpaper(final Context context, String imageUrl) {
-        Ion.with(context).load(imageUrl).asBitmap().setCallback(new FutureCallback<Bitmap>() {
-            @Override
-            public void onCompleted(Exception e, Bitmap loadedImage) {
-                if (null == loadedImage) {
-                    return;
-                }
-
-                int imageWidth = loadedImage.getWidth();
-                int imageHeight = loadedImage.getHeight();
-
-                DisplayMetrics metrics = new DisplayMetrics();
-                ((WindowManager)context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(metrics);
-                int screenWidth = metrics.widthPixels;
-                int screenHeight = metrics.heightPixels;
-
-                if (screenWidth*imageHeight > imageWidth*screenHeight) {
-                    loadedImage = Bitmap.createScaledBitmap(loadedImage, screenHeight*imageWidth/imageHeight, screenHeight, false);
-                } else {
-                    loadedImage = Bitmap.createScaledBitmap(loadedImage, screenWidth, screenWidth*imageHeight/imageWidth, false);
-                }
-
-                WallpaperManager wallpaperMgr = WallpaperManager.getInstance(context);
-                Bitmap wallpaper = null;
-
-                // For compatibility
-                wallpaperMgr.suggestDesiredDimensions(screenWidth, screenHeight);
-
-                int desiredWidth = wallpaperMgr.getDesiredMinimumWidth();
-                int desiredHeight = wallpaperMgr.getDesiredMinimumHeight();
-                if (desiredWidth > 0 && desiredHeight > 0) {
-                    wallpaper = Bitmap.createBitmap(desiredWidth, desiredHeight, Config.ARGB_8888);
-                    Canvas canvas = new Canvas(wallpaper);
-                    canvas.drawBitmap(loadedImage, (desiredWidth - loadedImage.getWidth())/2, (desiredHeight - loadedImage.getHeight())/2, null);
-                } else {
-                    wallpaper = loadedImage;
-                }
-
-                try {
-                    wallpaperMgr.setBitmap(wallpaper);
-                } catch (IOException ioe) {
-                    // TODO Auto-generated catch block
-                    ioe.printStackTrace();
-                }
-            }
-        });
+//        Ion.with(context).load(imageUrl).asBitmap().setCallback(new FutureCallback<Bitmap>() {
+//            @Override
+//            public void onCompleted(Exception e, Bitmap loadedImage) {
+//                if (null == loadedImage) {
+//                    return;
+//                }
+//
+//                int imageWidth = loadedImage.getWidth();
+//                int imageHeight = loadedImage.getHeight();
+//
+//                DisplayMetrics metrics = new DisplayMetrics();
+//                ((WindowManager)context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(metrics);
+//                int screenWidth = metrics.widthPixels;
+//                int screenHeight = metrics.heightPixels;
+//
+//                if (screenWidth*imageHeight > imageWidth*screenHeight) {
+//                    loadedImage = Bitmap.createScaledBitmap(loadedImage, screenHeight*imageWidth/imageHeight, screenHeight, false);
+//                } else {
+//                    loadedImage = Bitmap.createScaledBitmap(loadedImage, screenWidth, screenWidth*imageHeight/imageWidth, false);
+//                }
+//
+//                WallpaperManager wallpaperMgr = WallpaperManager.getInstance(context);
+//                Bitmap wallpaper = null;
+//
+//                // For compatibility
+//                wallpaperMgr.suggestDesiredDimensions(screenWidth, screenHeight);
+//
+//                int desiredWidth = wallpaperMgr.getDesiredMinimumWidth();
+//                int desiredHeight = wallpaperMgr.getDesiredMinimumHeight();
+//                if (desiredWidth > 0 && desiredHeight > 0) {
+//                    wallpaper = Bitmap.createBitmap(desiredWidth, desiredHeight, Config.ARGB_8888);
+//                    Canvas canvas = new Canvas(wallpaper);
+//                    canvas.drawBitmap(loadedImage, (desiredWidth - loadedImage.getWidth())/2, (desiredHeight - loadedImage.getHeight())/2, null);
+//                } else {
+//                    wallpaper = loadedImage;
+//                }
+//
+//                try {
+//                    wallpaperMgr.setBitmap(wallpaper);
+//                } catch (IOException ioe) {
+//                    // TODO Auto-generated catch block
+//                    ioe.printStackTrace();
+//                }
+//            }
+//        });
 	}
 	
 	@Override

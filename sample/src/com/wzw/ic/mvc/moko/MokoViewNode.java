@@ -11,9 +11,15 @@ import org.jsoup.nodes.Document;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.error.VolleyError;
+import com.android.volley.request.StringRequest;
+import com.android.volley.toolbox.ImageLoader;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 import com.koushikdutta.ion.Response;
+import com.nostra13.example.universalimageloader.MyVolley;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 
@@ -76,14 +82,35 @@ public abstract class MokoViewNode extends ViewNode {
 		final int newPageNo = reload ? 1 : pageNo + 1;
 
 		try {
-            Ion.getDefault(context).getCookieMiddleware().getCookieManager().getCookieStore().add(
-                    URI.create(URL_PREFIX), new HttpCookie(LOGIN_KEY_COOKIE, null == getLoginKey(context) ? "" : getLoginKey(context)));
-            Ion.with(context)
-                    .load(String.format(sourceUrl, perturbPageNo(newPageNo, reload)))
-                    .asString()
-                    .setCallback(new FutureCallback<String>() {
+//            Ion.getDefault(context).getCookieMiddleware().getCookieManager().getCookieStore().add(
+//                    URI.create(URL_PREFIX), new HttpCookie(LOGIN_KEY_COOKIE, null == getLoginKey(context) ? "" : getLoginKey(context)));
+//            Ion.with(context)
+//                    .load(String.format(sourceUrl, perturbPageNo(newPageNo, reload)))
+//                    .asString()
+//                    .setCallback(new FutureCallback<String>() {
+//                        @Override
+//                        public void onCompleted(Exception e, String result) {
+//                            Document doc = Jsoup.parse(result);
+//                            if (doc != null) {
+//                                List<ViewItem> pageViewItems = extractViewItemsFromPage(doc);
+//                                if (null != pageViewItems && pageViewItems.size() > 0) {
+//                                    pageNo = newPageNo;
+//                                    if (reload) {
+//                                        viewItems.clear();
+//                                    }
+//                                    viewItems.addAll(pageViewItems);
+//                                }
+//                            }
+//                            loadListener.onLoadDone(MokoViewNode.this);
+//                        }
+//                    });
+
+            RequestQueue queue = MyVolley.getRequestQueue();
+            StringRequest myReq = new StringRequest(Request.Method.GET,
+                    String.format(sourceUrl, perturbPageNo(newPageNo, reload)),
+                    new com.android.volley.Response.Listener<String>() {
                         @Override
-                        public void onCompleted(Exception e, String result) {
+                        public void onResponse(String result) {
                             Document doc = Jsoup.parse(result);
                             if (doc != null) {
                                 List<ViewItem> pageViewItems = extractViewItemsFromPage(doc);
@@ -97,7 +124,17 @@ public abstract class MokoViewNode extends ViewNode {
                             }
                             loadListener.onLoadDone(MokoViewNode.this);
                         }
+                    },
+                    new com.android.volley.Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            //
+                        }
                     });
+
+            queue.add(myReq);
+
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

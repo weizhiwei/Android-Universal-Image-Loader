@@ -89,64 +89,26 @@ public class StreamViewNode2 extends ViewNode {
                     }
                 }
 
-                List<List<ViewItem>> picViewItems = new ArrayList<List<ViewItem>>();
-                final List<ViewItem> albumViewItems = new ArrayList<ViewItem>();
+                List<ViewItem> pageViewItems = new ArrayList<ViewItem>();
+                List<Integer> pageHeaders = new ArrayList<Integer>();
                 for (Object subpage : Arrays.asList(subpages)) {
                     if (null != subpage) {
                         List<ViewItem> subpageViewItems = (List<ViewItem>) subpage;
                         int n = Math.min(subpageViewItems.size(), 4);
                         for (int i = 0; i < n; ++i) {
                             ViewItem viewItem = subpageViewItems.get(i);
+                            pageViewItems.add(viewItem);
                             if (viewItem.getViewType() == ViewItem.VIEW_TYPE_IMAGE_PAGER) {
-                                List<ViewItem> dummy = new ArrayList<ViewItem>(1);
-                                dummy.add(viewItem);
-                                picViewItems.add(dummy);
+                                pageHeaders.add(1);
                             } else {
-                                albumViewItems.add(viewItem);
+                                pageViewItems.add(viewItem);
+                                pageHeaders.add(2);
                             }
                         }
                         for (int i = 0; i < n; ++i) {
                             subpageViewItems.remove(0); // pop out all the used items
                         }
                     }
-                }
-
-                // unfold albums
-                final Object[] subpages2 = new Object[albumViewItems.size()];
-                final CountDownLatch latch2 = new CountDownLatch(albumViewItems.size());
-                for (int i = 0; i < albumViewItems.size(); ++i) {
-                    final int index = i;
-                    ViewNode node = albumViewItems.get(index).getViewNode();
-                    node.load(context, true, new LoadListener() {
-                        @Override
-                        public void onLoadDone(ViewNode model) {
-                            subpages2[index] = model.getViewItems();
-                            latch2.countDown();
-                        }
-                    });
-                }
-
-                try {
-                    latch2.await();
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-
-                List<Object> subpageList2 = Arrays.asList(subpages2);
-                for (Object subpage2 : subpageList2) {
-                    if (null != subpage2) {
-                        picViewItems.add((List<ViewItem>) subpage2);
-                    }
-                }
-
-//        Collections.shuffle(picViewItems);
-
-                List<ViewItem> pageViewItems = new ArrayList<ViewItem>();
-                List<Integer> pageHeaders = new ArrayList<Integer>();
-                for (List<ViewItem> subpageViewItems : picViewItems) {
-                    pageViewItems.addAll(subpageViewItems);
-                    pageHeaders.add(subpageViewItems.size());
                 }
 
                 if (null != pageViewItems && pageViewItems.size() > 0) {

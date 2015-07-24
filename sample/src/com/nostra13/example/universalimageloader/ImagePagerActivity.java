@@ -36,6 +36,7 @@ import android.widget.ShareActionProvider;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.toolbox.ImageLoader;
 import com.koushikdutta.ion.Ion;
 import com.wzw.ic.mvc.ViewItem;
 
@@ -228,10 +229,15 @@ shareIntent.setType("image/*");
 				}
 			});
 
-            Ion.with(imageView)
-                    .placeholder(R.drawable.ic_launcher)
-                    .error(R.drawable.ic_error)
-                    .load(viewItem.getImageUrl());
+//            Ion.with(imageView)
+//                    .placeholder(R.drawable.ic_launcher)
+//                    .error(R.drawable.ic_error)
+//                    .load(viewItem.getImageUrl());
+
+            MyVolley.getImageLoader().get(viewItem.getImageUrl(),
+                    ImageLoader.getImageListener(imageView,
+                            R.drawable.ic_stub,
+                            R.drawable.ic_error));
 
 //			imageLoader.displayImage(viewItem.getImageUrl(), imageView, options, new SimpleImageLoadingListener() {
 //				@Override

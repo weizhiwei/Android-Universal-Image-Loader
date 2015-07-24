@@ -32,6 +32,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.android.volley.toolbox.ImageLoader;
 import com.koushikdutta.ion.Ion;
 import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
@@ -50,7 +51,6 @@ import java.util.Random;
 
 public class ViewItemPagerActivity extends BaseActivity {
 	ViewPager pager;
-    GetDataTask.GetDataTaskFinishedListener updateMapCameraCallback;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -456,10 +456,14 @@ public class ViewItemPagerActivity extends BaseActivity {
 			case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
 				if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
 					holder.imageView.setVisibility(View.VISIBLE);
-                    Ion.with(holder.imageView)
-                            .placeholder(R.drawable.ic_launcher)
-                            .error(R.drawable.ic_error)
-                            .load(viewItem.getImageUrl());
+                    MyVolley.getImageLoader().get(viewItem.getImageUrl(),
+                            ImageLoader.getImageListener(holder.imageView,
+                                    R.drawable.ic_stub,
+                                    R.drawable.ic_error));
+//                    Ion.with(holder.imageView)
+//                            .placeholder(R.drawable.ic_launcher)
+//                            .error(R.drawable.ic_error)
+//                            .load(viewItem.getImageUrl());
 //					imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, displayImageOptions, new SimpleImageLoadingListener() {
 //											 @Override
 //											 public void onLoadingStarted(String imageUri, View view) {
@@ -708,10 +712,14 @@ public class ViewItemPagerActivity extends BaseActivity {
 					break;
 				case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
 					if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-                        Ion.with(holder.image)
-                            .placeholder(R.drawable.ic_launcher)
-                            .error(R.drawable.ic_error)
-                            .load(viewItem.getImageUrl());
+//                        Ion.with(holder.image)
+//                            .placeholder(R.drawable.ic_launcher)
+//                            .error(R.drawable.ic_error)
+//                            .load(viewItem.getImageUrl());
+                          MyVolley.getImageLoader().get(viewItem.getImageUrl(),
+                                ImageLoader.getImageListener(holder.image,
+                                        R.drawable.ic_stub,
+                                        R.drawable.ic_error));
 					}
 					break;
 				default:
@@ -745,10 +753,14 @@ public class ViewItemPagerActivity extends BaseActivity {
                     case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
                         if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
                             holder.image.setVisibility(View.VISIBLE);
-                            Ion.with(holder.image)
-                                    .placeholder(R.drawable.ic_launcher)
-                                    .error(R.drawable.ic_error)
-                                    .load(viewItem.getImageUrl());
+                            MyVolley.getImageLoader().get(viewItem.getImageUrl(),
+                                    ImageLoader.getImageListener(holder.image,
+                                            R.drawable.ic_stub,
+                                            R.drawable.ic_error));
+//                            Ion.with(holder.image)
+//                                    .placeholder(R.drawable.ic_launcher)
+//                                    .error(R.drawable.ic_error)
+//                                    .load(viewItem.getImageUrl());
 //                            imageLoader.displayImage(viewItem.getImageUrl(), holder.image, displayImageOptions, new SimpleImageLoadingListener() {
 //                                        @Override
 //                                        public void onLoadingStarted(String imageUri, View view) {
@@ -812,10 +824,14 @@ public class ViewItemPagerActivity extends BaseActivity {
                         case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
                             if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
                                 holder.image.setVisibility(View.VISIBLE);
-                                Ion.with(holder.image)
-                                        .placeholder(R.drawable.ic_launcher)
-                                        .error(R.drawable.ic_error)
-                                        .load(viewItem.getImageUrl());
+                                MyVolley.getImageLoader().get(viewItem.getImageUrl(),
+                                        ImageLoader.getImageListener(holder.image,
+                                                R.drawable.ic_stub,
+                                                R.drawable.ic_error));
+//                                Ion.with(holder.image)
+//                                        .placeholder(R.drawable.ic_launcher)
+//                                        .error(R.drawable.ic_error)
+//                                        .load(viewItem.getImageUrl());
 //                                imageLoader.displayImage(viewItem.getImageUrl(), holder.image, displayImageOptions, new SimpleImageLoadingListener() {
 //                                            @Override
 //                                            public void onLoadingStarted(String imageUri, View view) {
@@ -848,101 +864,19 @@ public class ViewItemPagerActivity extends BaseActivity {
                     }
 
                 } else if (1 == getItemViewType(position)) {
-                    final int albumPicCount = model.getHeaders().get(position);
-                    final int hash = Math.abs(model.getViewItems().get(offset).hashCode());
 
-                    RecyclerView.Adapter<SimpleViewHolder> adapter = new RecyclerView.Adapter<SimpleViewHolder>() {
+                    ViewNode model2 = model.getViewItems().get(offset).getViewNode();
 
-                        @Override
-                        public int getItemCount() {
-                            return calcAlbumPicCountForHeader(albumPicCount, hash);
-                        }
-
-                        @Override
-                        public void onBindViewHolder(final SimpleViewHolder holder, int position) {
-                            final View itemView = holder.itemView;
-                            final SpannableGridLayoutManager.LayoutParams lp =
-                                    (SpannableGridLayoutManager.LayoutParams) itemView.getLayoutParams();
-
-                            final int[] SPANS = generateColRowSpans(getItemCount(), hash);
-
-                            int colSpan = SPANS[position*2];
-                            int rowSpan = SPANS[position*2+1];
-
-                            lp.rowSpan = rowSpan;
-                            lp.colSpan = colSpan;
-                            itemView.setLayoutParams(lp);
-
-                            final ViewItem viewItem = model.getViewItems().get(offset + position);
-                            if (!TextUtils.isEmpty(viewItem.getLabel())) {
-                                holder.text.setVisibility(View.VISIBLE);
-                                holder.text.setText(viewItem.getLabel());
-                            } else {
-                                holder.text.setVisibility(View.GONE);
-                            }
-                            switch (viewItem.getViewItemType()) {
-                                case ViewItem.VIEW_ITEM_TYPE_COLOR:
-                                    itemView.setBackgroundColor(viewItem.getViewItemColor());
-                                    holder.imageView.setVisibility(View.GONE);
-                                    holder.progressBar.setVisibility(View.GONE);
-                                    break;
-                                case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
-                                    holder.imageView.setVisibility(View.VISIBLE);
-                                    holder.imageView.setImageResource(viewItem.getViewItemImageResId());
-                                    holder.progressBar.setVisibility(View.GONE);
-                                    break;
-                                case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
-                                    if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-                                        holder.imageView.setVisibility(View.VISIBLE);
-                                        Ion.with(holder.imageView)
-                                                .placeholder(R.drawable.ic_launcher)
-                                                .error(R.drawable.ic_error)
-                                                .load(viewItem.getImageUrl());
-//                                        imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, displayImageOptions, new SimpleImageLoadingListener() {
-//                                                    @Override
-//                                                    public void onLoadingStarted(String imageUri, View view) {
-//                                                        holder.progressBar.setProgress(0);
-//                                                        holder.progressBar.setVisibility(View.VISIBLE);
-//                                                    }
-//
-//                                                    @Override
-//                                                    public void onLoadingFailed(String imageUri, View view,
-//                                                                                FailReason failReason) {
-//                                                        holder.progressBar.setVisibility(View.GONE);
-//                                                    }
-//
-//                                                    @Override
-//                                                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//                                                        holder.progressBar.setVisibility(View.GONE);
-//                                                    }
-//                                                }, new ImageLoadingProgressListener() {
-//                                                    @Override
-//                                                    public void onProgressUpdate(String imageUri, View view, int current,
-//                                                                                 int total) {
-//                                                        holder.progressBar.setProgress(Math.round(100.0f * current / total));
-//                                                    }
-//                                                }
-//                                        );
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-
-                        @Override
-                        public SimpleViewHolder onCreateViewHolder(ViewGroup parent, int arg1) {
-                            final View view = getLayoutInflater().inflate(R.layout.item_grid_image, parent, false);
-                            return new SimpleViewHolder(view);
-                        }
-
-                    };
+                    RecyclerView.Adapter<SimpleViewHolder> adapter = new RecyclerViewAdapter(model2, holder.spannableGrid);
                     holder.spannableGrid.setAdapter(adapter);
-                    adapter.notifyDataSetChanged();
 
-                    final ItemClickSupport itemClick = ItemClickSupport.addTo(holder.spannableGrid);
+                    if (null != model2.getViewItems() && model2.getViewItems().size() > 0) {
+                        adapter.notifyDataSetChanged();
+                    } else {
+                        new GetDataTask(ViewItemPagerActivity.this, model2, null, null, adapter, null, true);
+                    }
 
-                    itemClick.setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
+                    ItemClickSupport.addTo(holder.spannableGrid).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
                         @Override
                         public void onItemClick(RecyclerView parent, View child, int position, long id) {
                             // drill down
@@ -969,7 +903,109 @@ public class ViewItemPagerActivity extends BaseActivity {
 			text = (TextView) view.findViewById(R.id.text);
         }
     }
-	
+
+    private class RecyclerViewAdapter extends RecyclerView.Adapter<SimpleViewHolder> {
+
+        private ViewNode model;
+        private RecyclerView recyclerView;
+
+        public RecyclerViewAdapter(ViewNode model, RecyclerView recyclerView) {
+            this.model = model;
+            this.recyclerView = recyclerView;
+        }
+
+        @Override
+        public int getItemCount() {
+            if (null != model.getViewItems() && model.getViewItems().size() > 0) {
+                return calcAlbumPicCountForHeader(model.getViewItems().size(), Math.abs(model.getViewItems().get(0).hashCode()));
+            } else {
+                return 0;
+            }
+        }
+
+        @Override
+        public void onBindViewHolder(final SimpleViewHolder holder, int position) {
+            final View itemView = holder.itemView;
+            final SpannableGridLayoutManager.LayoutParams lp =
+                    (SpannableGridLayoutManager.LayoutParams) itemView.getLayoutParams();
+
+            final int[] SPANS = generateColRowSpans(getItemCount(), Math.abs(model.getViewItems().get(0).hashCode()));
+
+            int colSpan = SPANS[position*2];
+            int rowSpan = SPANS[position*2+1];
+
+            lp.rowSpan = rowSpan;
+            lp.colSpan = colSpan;
+            itemView.setLayoutParams(lp);
+
+            final ViewItem viewItem = model.getViewItems().get(position);
+            if (!TextUtils.isEmpty(viewItem.getLabel())) {
+                holder.text.setVisibility(View.VISIBLE);
+                holder.text.setText(viewItem.getLabel());
+            } else {
+                holder.text.setVisibility(View.GONE);
+            }
+            switch (viewItem.getViewItemType()) {
+                case ViewItem.VIEW_ITEM_TYPE_COLOR:
+                    itemView.setBackgroundColor(viewItem.getViewItemColor());
+                    holder.imageView.setVisibility(View.GONE);
+                    holder.progressBar.setVisibility(View.GONE);
+                    break;
+                case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
+                    holder.imageView.setVisibility(View.VISIBLE);
+                    holder.imageView.setImageResource(viewItem.getViewItemImageResId());
+                    holder.progressBar.setVisibility(View.GONE);
+                    break;
+                case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
+                    if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+                        holder.imageView.setVisibility(View.VISIBLE);
+                        MyVolley.getImageLoader().get(viewItem.getImageUrl(),
+                                ImageLoader.getImageListener(holder.imageView,
+                                        R.drawable.ic_stub,
+                                        R.drawable.ic_error));
+//                        Ion.with(holder.imageView)
+//                                .placeholder(R.drawable.ic_launcher)
+//                                .error(R.drawable.ic_error)
+//                                .load(viewItem.getImageUrl());
+//                                        imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, displayImageOptions, new SimpleImageLoadingListener() {
+//                                                    @Override
+//                                                    public void onLoadingStarted(String imageUri, View view) {
+//                                                        holder.progressBar.setProgress(0);
+//                                                        holder.progressBar.setVisibility(View.VISIBLE);
+//                                                    }
+//
+//                                                    @Override
+//                                                    public void onLoadingFailed(String imageUri, View view,
+//                                                                                FailReason failReason) {
+//                                                        holder.progressBar.setVisibility(View.GONE);
+//                                                    }
+//
+//                                                    @Override
+//                                                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//                                                        holder.progressBar.setVisibility(View.GONE);
+//                                                    }
+//                                                }, new ImageLoadingProgressListener() {
+//                                                    @Override
+//                                                    public void onProgressUpdate(String imageUri, View view, int current,
+//                                                                                 int total) {
+//                                                        holder.progressBar.setProgress(Math.round(100.0f * current / total));
+//                                                    }
+//                                                }
+//                                        );
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        @Override
+        public SimpleViewHolder onCreateViewHolder(ViewGroup parent, int arg1) {
+            final View view = getLayoutInflater().inflate(R.layout.item_grid_image, parent, false);
+            return new SimpleViewHolder(view);
+        }
+    };
+
 //	@Override
 //	public void onResume() {
 //		super.onResume();

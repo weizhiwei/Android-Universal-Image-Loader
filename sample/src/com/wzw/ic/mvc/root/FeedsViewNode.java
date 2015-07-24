@@ -115,53 +115,16 @@ public class FeedsViewNode extends ViewNode {
                     }
                 }
 
-                int albumCount = 0;
-                for (ViewItem viewItem : albumViewItems) {
-                    if (viewItem.getViewType() != ViewItem.VIEW_TYPE_IMAGE_PAGER) {
-                        ++albumCount;
-                    }
-                }
-
-                // unfold albums
-                final Object[] subpages2 = new Object[albumViewItems.size()];
-                final CountDownLatch latch2 = new CountDownLatch(albumCount);
-                for (int i = 0; i < albumViewItems.size(); ++i) {
-                    final ViewItem viewItem = albumViewItems.get(i);
-                    if (viewItem.getViewType() == ViewItem.VIEW_TYPE_IMAGE_PAGER) {
-                        List<ViewItem> page = new ArrayList<ViewItem>(1);
-                        page.add(viewItem);
-                        subpages2[i] = page;
-                    } else {
-                        final int index = i;
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                viewItem.getViewNode().load(context, true, new LoadListener() {
-                                    @Override
-                                    public void onLoadDone(ViewNode model) {
-                                        latch2.countDown();
-                                        subpages2[index] = model.getViewItems();
-                                    }
-                                });
-                            }
-                        }).start();
-                    }
-                }
-
-                try {
-                    latch2.await();
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-
                 List<ViewItem> pageViewItems = new ArrayList<ViewItem>();
                 List<Integer> pageHeaders = new ArrayList<Integer>();
-                for (Object subpage : Arrays.asList(subpages2)) {
-                    if (null != subpage) {
-                        List<ViewItem> subpageViewItems = (List<ViewItem>) subpage;
-                        pageViewItems.addAll(subpageViewItems);
-                        pageHeaders.add(subpageViewItems.size());
+                for (int i = 0; i < albumViewItems.size(); ++i) {
+                    final ViewItem viewItem = albumViewItems.get(i);
+                    pageViewItems.add(viewItem);
+                    if (viewItem.getViewType() == ViewItem.VIEW_TYPE_IMAGE_PAGER) {
+                        pageHeaders.add(1);
+                    } else {
+                        pageViewItems.add(viewItem);
+                        pageHeaders.add(2);
                     }
                 }
 
