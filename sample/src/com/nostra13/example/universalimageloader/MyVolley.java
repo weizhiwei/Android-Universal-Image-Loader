@@ -18,9 +18,15 @@ package com.nostra13.example.universalimageloader;
 import android.content.Context;
 
 import com.android.volley.RequestQueue;
+import com.android.volley.RequestTickle;
 import com.android.volley.cache.BitmapImageCache;
 import com.android.volley.cache.SimpleImageLoader;
+import com.android.volley.toolbox.HttpClientStack;
 import com.android.volley.toolbox.Volley;
+import com.android.volley.toolbox.VolleyTickle;
+
+import org.apache.http.impl.client.AbstractHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 
 /**
@@ -31,15 +37,18 @@ import com.android.volley.toolbox.Volley;
  */
 public class MyVolley {
     private static RequestQueue mRequestQueue;
+    private static RequestTickle mRequestTickle;
     private static SimpleImageLoader mImageLoader;
-
+    private static AbstractHttpClient mHttpClient;
 
     private MyVolley() {
         // no instances
     }
 
     public static void init(Context context) {
-        mRequestQueue = Volley.newRequestQueue(context);
+        mHttpClient = new DefaultHttpClient();
+        mRequestQueue = Volley.newRequestQueue(context, new HttpClientStack(mHttpClient));
+        mRequestTickle = VolleyTickle.newRequestTickle(context);
         mImageLoader = new SimpleImageLoader(mRequestQueue, BitmapImageCache.getInstance(null));
     }
 
@@ -48,6 +57,22 @@ public class MyVolley {
             return mRequestQueue;
         } else {
             throw new IllegalStateException("RequestQueue not initialized");
+        }
+    }
+
+    public static RequestTickle getRequestTickle() {
+        if (mRequestTickle != null) {
+            return mRequestTickle;
+        } else {
+            throw new IllegalStateException("RequestTickle not initialized");
+        }
+    }
+
+    public static AbstractHttpClient getHttpClient() {
+        if (mHttpClient != null) {
+            return mHttpClient;
+        } else {
+            throw new IllegalStateException("HttpClient not initialized");
         }
     }
 

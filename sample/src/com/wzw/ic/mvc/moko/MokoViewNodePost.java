@@ -41,7 +41,7 @@ public class MokoViewNodePost extends MokoViewNode {
 							userUrl,
 							null == i ? "" : i.attr("src"),
 							ViewItem.VIEW_TYPE_GRID,
-							new MokoViewNodeUser(userUrl));
+							new MokoViewNodeAuthor(userUrl));
 					authorViewItem.setOrigin(MOKO_NAME);
 					authorViewItem.setInitialZoomLevel(2);
 				}

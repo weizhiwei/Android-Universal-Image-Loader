@@ -1,5 +1,7 @@
 package com.wzw.ic.mvc.moko;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +22,7 @@ public class MokoViewNodeRoot extends MokoViewNode implements ViewNodeRoot {
 	public MokoViewNodeRoot() {
 		super("http://www.moko.cc/");
 		supportPaging = false;
-		stream = new ViewItem("New", "new", MOKO_ICON, ViewItem.VIEW_TYPE_GRID, new MokoViewNodeStream());
+		stream = new ViewItem("New", "new", MOKO_ICON, ViewItem.VIEW_TYPE_GRID, new MokoViewNodeBookmarks());
 	}
 
 	@Override
@@ -31,8 +33,9 @@ public class MokoViewNodeRoot extends MokoViewNode implements ViewNodeRoot {
 			viewItems = new ArrayList<ViewItem>();
 			for (int i = 0; i < aElems.size(); ++i) {
 				Element a = aElems.get(i);
-				String url = URL_PREFIX + a.attr("href").replace("/1.", "/%d.");
-				int color = 0;
+                String url = null;
+                url = a.attr("href").replace("=1", "=%d");
+                int color = 0;
 				for (String className: a.classNames()) {
 					if (className.matches("^c.+-bg$")) {
 						String colorString = className.substring(1, className.length() - 3);

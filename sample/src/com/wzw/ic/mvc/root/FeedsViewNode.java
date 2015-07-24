@@ -2,15 +2,12 @@ package com.wzw.ic.mvc.root;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.text.Html;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -23,14 +20,14 @@ import com.nostra13.example.universalimageloader.R;
 import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
-import com.wzw.ic.mvc.moko.MokoViewNodeUser;
+import com.wzw.ic.mvc.moko.MokoViewNodeAuthor;
 
 public class FeedsViewNode extends ViewNode {
 
 	protected int pageNo;
 	protected final ViewNode[] SUBFEEDS = new ViewNode[] {
-		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "davei1314") + "%d.html"),
-		new MokoViewNodeUser(String.format("http://www.moko.cc/post/%s/new/", "zhangqunyun") + "%d.html"),
+		new MokoViewNodeAuthor(String.format("http://www.moko.cc/post/%s/new/", "davei1314") + "%d.html"),
+		new MokoViewNodeAuthor(String.format("http://www.moko.cc/post/%s/new/", "zhangqunyun") + "%d.html"),
 	};
     protected final Object[] subpages;
 

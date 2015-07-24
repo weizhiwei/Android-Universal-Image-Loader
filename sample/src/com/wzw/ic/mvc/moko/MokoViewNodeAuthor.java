@@ -12,11 +12,11 @@ import android.text.TextUtils;
 
 import com.wzw.ic.mvc.ViewItem;
 
-public class MokoViewNodeUser extends MokoViewNode {
+public class MokoViewNodeAuthor extends MokoViewNode {
 	
 	private ViewItem authorViewItem;
 	
-	public MokoViewNodeUser(String sourceUrl) {
+	public MokoViewNodeAuthor(String sourceUrl) {
 		super(sourceUrl);
 		supportPaging = true;
 	}
@@ -40,7 +40,7 @@ public class MokoViewNodeUser extends MokoViewNode {
 							userUrl,
 							null == i ? "" : i.attr("src"),
 							ViewItem.VIEW_TYPE_GRID,
-							new MokoViewNodeUser(userUrl));
+							new MokoViewNodeAuthor(userUrl));
 					authorViewItem.setOrigin(MOKO_NAME);
 					authorViewItem.setInitialZoomLevel(2);
 				}
