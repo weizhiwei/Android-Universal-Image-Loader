@@ -20,6 +20,7 @@ import android.content.Context;
 import com.android.volley.RequestQueue;
 import com.android.volley.RequestTickle;
 import com.android.volley.cache.BitmapImageCache;
+import com.android.volley.cache.DiskLruBasedCache;
 import com.android.volley.cache.SimpleImageLoader;
 import com.android.volley.toolbox.HttpClientStack;
 import com.android.volley.toolbox.Volley;
@@ -48,8 +49,9 @@ public class MyVolley {
     public static void init(Context context) {
         mHttpClient = new DefaultHttpClient();
         mRequestQueue = Volley.newRequestQueue(context, new HttpClientStack(mHttpClient));
-        mRequestTickle = VolleyTickle.newRequestTickle(context);
-        mImageLoader = new SimpleImageLoader(mRequestQueue, BitmapImageCache.getInstance(null));
+//        DiskLruBasedCache.ImageCacheParams cacheParams = new DiskLruBasedCache.ImageCacheParams(context, "thumbs");
+//        cacheParams.setMemCacheSizePercent(0.25f);
+        mImageLoader = new SimpleImageLoader(context);
     }
 
     public static RequestQueue getRequestQueue() {
@@ -57,14 +59,6 @@ public class MyVolley {
             return mRequestQueue;
         } else {
             throw new IllegalStateException("RequestQueue not initialized");
-        }
-    }
-
-    public static RequestTickle getRequestTickle() {
-        if (mRequestTickle != null) {
-            return mRequestTickle;
-        } else {
-            throw new IllegalStateException("RequestTickle not initialized");
         }
     }
 

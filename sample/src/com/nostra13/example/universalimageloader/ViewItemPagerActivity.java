@@ -307,7 +307,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         // drill down
-                        model.onViewItemClicked((ViewItem) itemAdapter.getItem(position), ViewItemPagerActivity.this);
+                        childModel.onViewItemClicked((ViewItem) itemAdapter.getItem(position), ViewItemPagerActivity.this);
                     }
                 });
 

@@ -67,6 +67,7 @@ public abstract class MokoViewNode extends ViewNode {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         //
+                        loadListener.onLoadDone(MokoViewNode.this);
                     }
                 });
 
@@ -79,9 +80,11 @@ public abstract class MokoViewNode extends ViewNode {
                             for (Cookie cookie : MyVolley.getHttpClient().getCookieStore().getCookies()) {
                                 if (LOGIN_KEY_COOKIE.equals(cookie.getName())) {
                                     loginKey = cookie.getValue();
-
                                     MyVolley.getRequestQueue().add(myReq);
                                 }
+                            }
+                            if (TextUtils.isEmpty(loginKey)) {
+                                loadListener.onLoadDone(MokoViewNode.this);
                             }
                         }
                     },
@@ -89,6 +92,7 @@ public abstract class MokoViewNode extends ViewNode {
                         @Override
                         public void onErrorResponse(VolleyError error) {
                             // login error
+                            loadListener.onLoadDone(MokoViewNode.this);
                         }
                     }) {
 
