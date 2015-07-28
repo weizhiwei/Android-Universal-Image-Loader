@@ -18,29 +18,16 @@ import com.nostra13.example.universalimageloader.R;
 import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
-import com.wzw.ic.mvc.ViewNodeRoot;
+import com.wzw.ic.mvc.moko.MokoViewNodeBookmarks;
 
 public class StreamViewNode2 extends ViewNode {
 
 	protected int pageNo;
-	protected final ViewNode[] SUBSTREAMS;
+	protected final ViewNode[] SUBSTREAMS = { new MokoViewNodeBookmarks() };
     protected final Object[] subpages;
 
 	public StreamViewNode2(ViewItem gallery) {
 		super("stream");
-        List<ViewItem> galleryViewItems = gallery.getViewNode().getViewItems();
-        int substreamCount = 0;
-        for (int i = 0; i < galleryViewItems.size(); ++i) {
-            substreamCount += ((ViewNodeRoot)galleryViewItems.get(i).getViewNode()).getStream().size();
-        }
-        SUBSTREAMS = new ViewNode[substreamCount];
-        int k = 0;
-        for (int i = 0; i < galleryViewItems.size(); ++i) {
-            List<ViewItem> substreams = ((ViewNodeRoot)galleryViewItems.get(i).getViewNode()).getStream();
-            for (ViewItem substream: substreams) {
-                SUBSTREAMS[k++] = substream.getViewNode();
-            }
-        }
         subpages = new Object[SUBSTREAMS.length];
     }
 
