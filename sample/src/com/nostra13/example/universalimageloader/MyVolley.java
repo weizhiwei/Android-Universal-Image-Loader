@@ -38,7 +38,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
  */
 public class MyVolley {
     private static RequestQueue mRequestQueue;
-    private static RequestTickle mRequestTickle;
     private static SimpleImageLoader mImageLoader;
     private static AbstractHttpClient mHttpClient;
 

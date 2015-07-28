@@ -1,6 +1,5 @@
 package com.nostra13.example.universalimageloader;
 
-import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
@@ -33,8 +32,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.ImageLoader;
-import com.koushikdutta.ion.Ion;
-import com.wzw.ic.mvc.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 
@@ -44,8 +41,6 @@ import org.lucasr.twowayview.widget.TwoWayView;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -94,8 +89,6 @@ public class ViewItemPagerActivity extends BaseActivity {
         model = myViewItem.getViewNode();
 
         updateMenu(model);
-
-        updateTitleIconFromViewItem(myViewItem);
 
         ActionBar actionBar = getSupportActionBar();
         setActionBarSelection(actionBar, position);
@@ -828,10 +821,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                                         ImageLoader.getImageListener(holder.image,
                                                 R.drawable.ic_stub,
                                                 R.drawable.ic_error));
-//                                Ion.with(holder.image)
-//                                        .placeholder(R.drawable.ic_launcher)
-//                                        .error(R.drawable.ic_error)
-//                                        .load(viewItem.getImageUrl());
 //                                imageLoader.displayImage(viewItem.getImageUrl(), holder.image, displayImageOptions, new SimpleImageLoadingListener() {
 //                                            @Override
 //                                            public void onLoadingStarted(String imageUri, View view) {

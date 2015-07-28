@@ -27,7 +27,6 @@ public class ViewItem extends IcObject {
 	private String story;
 	private boolean heartsOn;
 	private ViewItem author;
-	private String origin;
 	private String webPageUrl;
 	private int initialZoomLevel;
 	private Date postedDate;
@@ -165,14 +164,6 @@ public class ViewItem extends IcObject {
 
 	public void setViewItemImageResId(int viewItemImageResId) {
 		this.viewItemImageResId = viewItemImageResId;
-	}
-
-	public String getOrigin() {
-		return origin;
-	}
-
-	public void setOrigin(String origin) {
-		this.origin = origin;
 	}
 
 	public int getInitialZoomLevel() {

@@ -1,4 +1,4 @@
-package com.wzw.ic.mvc;
+package com.nostra13.example.universalimageloader;
 
 import com.nostra13.example.universalimageloader.R;
 

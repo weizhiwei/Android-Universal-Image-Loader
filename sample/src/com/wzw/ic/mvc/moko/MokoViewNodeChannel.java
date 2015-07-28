@@ -35,7 +35,6 @@ public class MokoViewNodeChannel extends MokoViewNode {
 						img.attr("src2"),
 						ViewItem.VIEW_TYPE_GRID,
 						new MokoViewNodePost(URL_PREFIX + a.attr("href"), title));
-				viewItem.setOrigin(MOKO_NAME);
 				viewItem.setInitialZoomLevel(1);
 				viewItems.add(viewItem);
 			}

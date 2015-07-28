@@ -16,7 +16,7 @@ public class RootViewNode extends ViewNode {
 		
 		super("root", null);
 		
-		ViewItem moko = new ViewItem("Channels", MokoViewNode.MOKO_NAME, null, ViewItem.VIEW_TYPE_GRID, new MokoViewNodeRoot());
+		ViewItem moko = new ViewItem("Channels", null, null, ViewItem.VIEW_TYPE_GRID, new MokoViewNodeRoot());
 		moko.setViewItemType(ViewItem.VIEW_ITEM_TYPE_IMAGE_RES);
 		moko.setViewItemImageResId(R.drawable.moko);
 		

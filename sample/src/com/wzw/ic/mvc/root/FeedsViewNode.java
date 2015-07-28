@@ -17,7 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.nostra13.example.universalimageloader.R;
-import com.wzw.ic.mvc.HeaderViewHolder;
+import com.nostra13.example.universalimageloader.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.moko.MokoViewNodeAuthor;

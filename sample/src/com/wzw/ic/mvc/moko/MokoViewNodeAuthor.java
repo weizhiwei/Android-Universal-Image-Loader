@@ -41,7 +41,6 @@ public class MokoViewNodeAuthor extends MokoViewNode {
 							null == i ? "" : i.attr("src"),
 							ViewItem.VIEW_TYPE_GRID,
 							new MokoViewNodeAuthor(userUrl));
-					authorViewItem.setOrigin(MOKO_NAME);
 					authorViewItem.setInitialZoomLevel(2);
 				}
 			}
@@ -65,7 +64,6 @@ public class MokoViewNodeAuthor extends MokoViewNode {
 						img.attr("src2"),
 						ViewItem.VIEW_TYPE_GRID,
 						new MokoViewNodePost(URL_PREFIX + a.attr("href"), title));
-				viewItem.setOrigin(MOKO_NAME);
 				viewItem.setInitialZoomLevel(1);
 				viewItem.setAuthor(authorViewItem);
 				try {

@@ -6,10 +6,16 @@ import java.util.List;
 import android.content.Context;
 import android.view.View;
 
+import com.nostra13.example.universalimageloader.HeaderViewHolder;
+
 public class ViewNode extends IcObject {
 
     public interface LoadListener {
         public void onLoadDone(ViewNode model);
+    }
+
+    public interface ViewItemActivityStarter {
+        public void startViewItemActivity(ViewNode parent, ViewItem viewItem);
     }
 
 	protected String sourceUrl;
@@ -48,13 +54,6 @@ public class ViewNode extends IcObject {
         headerItemsCopy.addAll(headerItems);
         isDetached = true;
 	}
-
-    public void clearDetachment() {
-        viewItemsCopy.clear();
-        headersCopy.clear();
-        actionsCopy.clear();
-        headerItemsCopy.clear();
-    }
 
 	public void attach() {
 		isDetached = false;
@@ -109,10 +108,6 @@ public class ViewNode extends IcObject {
 	}
 	
 	public void updateHeaderView(View headerView, HeaderViewHolder holder, int position) {
-	}
-	
-	public interface ViewItemActivityStarter {
-		public void startViewItemActivity(ViewNode parent, ViewItem viewItem);
 	}
 	
 	public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {

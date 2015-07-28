@@ -141,41 +141,6 @@ public abstract class BaseActivity extends ActionBarActivity implements ViewNode
 		setFullscreen(!isFullscreen());
 	}
 	
-	protected void updateTitleIconFromViewItem(ViewItem viewItem) {
-//		if (null != viewItem) {
-//			setTitle(viewItem.getLabel());
-//			if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-//				imageLoader.loadImage(viewItem.getImageUrl(), new ImageLoadingListener() {
-//					
-//					@Override
-//					public void onLoadingStarted(String imageUri, View view) {
-//						// TODO Auto-generated method stub
-//						
-//					}
-//					
-//					@Override
-//					public void onLoadingFailed(String imageUri, View view,
-//							FailReason failReason) {
-//						// TODO Auto-generated method stub
-//						
-//					}
-//					
-//					@Override
-//					public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//						ImageView logo = (ImageView) findViewById(android.R.id.home);
-//						logo.setImageBitmap(loadedImage);
-//					}
-//					
-//					@Override
-//					public void onLoadingCancelled(String imageUri, View view) {
-//						// TODO Auto-generated method stub
-//						
-//					}
-//				});
-//			}
-//		}
-	}
-	
 	protected void setModelFromIntent() {
 		Bundle bundle = getIntent().getExtras();
 		if (null != bundle) {
@@ -183,9 +148,6 @@ public abstract class BaseActivity extends ActionBarActivity implements ViewNode
 			myViewItem = (ViewItem) bundle.getSerializable(Extra.VIEW_ITEM);
 			if (null != parentModel && null != myViewItem) {
 				model = myViewItem.getViewNode();
-			}
-			if (null != myViewItem) {
-				updateTitleIconFromViewItem(myViewItem);
 			}
 		}
 	}

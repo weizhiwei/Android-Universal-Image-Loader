@@ -1,22 +1,17 @@
 package com.wzw.ic.mvc.moko;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import android.graphics.Color;
+
+import com.wzw.ic.mvc.ViewItem;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import android.graphics.Color;
-
-import com.wzw.ic.mvc.ViewItem;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MokoViewNodeRoot extends MokoViewNode {
-	
-	private ViewItem stream;
 	
 	public MokoViewNodeRoot() {
 		super("http://www.moko.cc/");
@@ -46,13 +41,12 @@ public class MokoViewNodeRoot extends MokoViewNode {
 				ViewItem viewItem = new ViewItem(
 						a.ownText(),
 						url,
-						MOKO_ICON,
+						null,
 						ViewItem.VIEW_TYPE_GRID,
 						new MokoViewNodeChannel(url));
 				viewItem.setViewItemColor(color);
 				viewItem.setViewItemType(ViewItem.VIEW_ITEM_TYPE_COLOR);
 				viewItem.setShowingLabelInGrid(true);
-//				viewItem.setOrigin(MOKO_NAME);
 				viewItem.setInitialZoomLevel(2);
 				viewItems.add(viewItem);
 			}

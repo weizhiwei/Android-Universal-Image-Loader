@@ -33,7 +33,6 @@ public class EntryActivity extends ViewItemPagerActivity {
 		parentModel = RootViewNode.getInstance();
 		myViewItem = parentModel.getViewItems().get(0);
 		model = myViewItem.getViewNode();
-		updateTitleIconFromViewItem(myViewItem);
 	}
 	
 	@Override
