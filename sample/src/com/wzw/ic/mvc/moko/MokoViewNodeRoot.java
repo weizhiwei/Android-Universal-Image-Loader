@@ -14,7 +14,7 @@ import java.util.List;
 public class MokoViewNodeRoot extends MokoViewNode {
 	
 	public MokoViewNodeRoot() {
-		super("http://www.moko.cc/");
+		super(URL_PREFIX);
 		supportPaging = false;
 	}
 

@@ -5,8 +5,9 @@ import java.util.Arrays;
 import com.nostra13.example.universalimageloader.R;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
-import com.wzw.ic.mvc.moko.MokoViewNode;
+import com.wzw.ic.mvc.moko.MokoViewNodeBookmarks;
 import com.wzw.ic.mvc.moko.MokoViewNodeRoot;
+import com.wzw.ic.mvc.moko.MokoViewNodeStream;
 
 public class RootViewNode extends ViewNode {
 
@@ -14,21 +15,16 @@ public class RootViewNode extends ViewNode {
 	
 	protected RootViewNode() {
 		
-		super("root", null);
-		
-		ViewItem moko = new ViewItem("Channels", null, null, ViewItem.VIEW_TYPE_GRID, new MokoViewNodeRoot());
-		moko.setViewItemType(ViewItem.VIEW_ITEM_TYPE_IMAGE_RES);
-		moko.setViewItemImageResId(R.drawable.moko);
-		
-		ViewItem stream = new ViewItem("New", "stream", null, ViewItem.VIEW_TYPE_CARD_LIST, new StreamViewNode2(
-                new ViewItem("Gallery", "gallery", null, ViewItem.VIEW_TYPE_GRID, new ViewNode("", Arrays.asList(moko)))
-        ));
-        stream.setViewItemImageResId(R.drawable.ic_pictures);
-
-        ViewItem feeds = new ViewItem("Following", "feeds", null, ViewItem.VIEW_TYPE_CARD_LIST, new FeedsViewNode());
-		feeds.setViewItemImageResId(R.drawable.ic_user);
-
-        this.viewItems = Arrays.asList(feeds, moko, stream);
+		super("root", Arrays.asList(
+                new ViewItem("Channels", null, null, ViewItem.VIEW_TYPE_GRID, new MokoViewNodeRoot()),
+                new ViewItem("Bookmarks", null, null, ViewItem.VIEW_TYPE_CARD_LIST, new StreamViewNode(
+                        new MokoViewNodeBookmarks()
+                )),
+                new ViewItem("Following", null, null, ViewItem.VIEW_TYPE_CARD_LIST, new FeedsViewNode()),
+                new ViewItem("New", null, null, ViewItem.VIEW_TYPE_CARD_LIST, new StreamViewNode(
+                        new MokoViewNodeStream()
+                )
+                )));
 	}
 	
 	public static RootViewNode getInstance() {

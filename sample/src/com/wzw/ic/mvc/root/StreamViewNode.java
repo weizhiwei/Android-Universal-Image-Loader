@@ -18,16 +18,16 @@ import com.nostra13.example.universalimageloader.R;
 import com.nostra13.example.universalimageloader.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
-import com.wzw.ic.mvc.moko.MokoViewNodeBookmarks;
 
-public class StreamViewNode2 extends ViewNode {
+public class StreamViewNode extends ViewNode {
 
 	protected int pageNo;
-	protected final ViewNode[] SUBSTREAMS = { new MokoViewNodeBookmarks() };
+	protected final ViewNode[] SUBSTREAMS;
     protected final Object[] subpages;
 
-	public StreamViewNode2(ViewItem gallery) {
+	public StreamViewNode(ViewNode viewNode) {
 		super("stream");
+        SUBSTREAMS = new ViewNode[] { viewNode };
         subpages = new Object[SUBSTREAMS.length];
     }
 
@@ -111,7 +111,7 @@ public class StreamViewNode2 extends ViewNode {
                 ((Activity)context).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        loadListener.onLoadDone(StreamViewNode2.this);
+                        loadListener.onLoadDone(StreamViewNode.this);
                     }
                 });
             }

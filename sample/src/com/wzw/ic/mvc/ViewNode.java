@@ -113,8 +113,4 @@ public class ViewNode extends IcObject {
 	public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {
 		starter.startViewItemActivity(this, viewItem);
 	}
-
-    protected int perturbPageNo(int pageNo, boolean reload) {
-        return pageNo;
-    }
 }

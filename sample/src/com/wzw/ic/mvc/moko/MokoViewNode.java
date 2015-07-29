@@ -21,8 +21,6 @@ import java.util.Map;
 
 public abstract class MokoViewNode extends ViewNode {
 
-    public static String MOKO_ICON = "http://www.vitbbs.cn/uploads/allimg/c101125/12ZEK63410-14106.gif";
-
     protected int pageNo;
     protected boolean supportPaging;
     protected static String URL_PREFIX = "http://www.moko.cc";
@@ -44,7 +42,7 @@ public abstract class MokoViewNode extends ViewNode {
         final int newPageNo = reload ? 1 : pageNo + 1;
 
         final StringRequest myReq = new StringRequest(Request.Method.GET,
-                String.format(sourceUrl, perturbPageNo(newPageNo, reload)).replace("|", "%7C"),
+                String.format(sourceUrl, newPageNo).replace("|", "%7C"),
                 new com.android.volley.Response.Listener<String>() {
                     @Override
                     public void onResponse(String result) {
