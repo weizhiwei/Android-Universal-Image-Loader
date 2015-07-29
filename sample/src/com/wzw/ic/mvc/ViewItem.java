@@ -6,12 +6,13 @@ import android.text.TextUtils;
 
 public class ViewItem extends IcObject {
 	
-	public static final int VIEW_TYPE_LIST = 1;
-	public static final int VIEW_TYPE_GRID = 2;
-	public static final int VIEW_TYPE_IMAGE_PAGER = 3;
-	public static final int VIEW_TYPE_CARD_LIST = 4;
-    public static final int VIEW_TYPE_STORY_LIST = 5;
-    public static final int VIEW_TYPE_WEBVIEW = 6;
+	public static final int VIEW_TYPE_LIST_SIMPLE = 0;
+    public static final int VIEW_TYPE_LIST_TILES = 1;
+    public static final int VIEW_TYPE_LIST_COUNT = 2;
+
+    public static final int VIEW_TYPE_GRID = 10;
+	public static final int VIEW_TYPE_IMAGE_PAGER = 20;
+	public static final int VIEW_TYPE_WEBVIEW = 30;
 
 	public static final int VIEW_ITEM_TYPE_COLOR = 1;
 	public static final int VIEW_ITEM_TYPE_IMAGE_RES = 2;

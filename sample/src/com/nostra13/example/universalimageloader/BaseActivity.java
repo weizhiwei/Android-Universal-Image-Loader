@@ -236,7 +236,7 @@ public abstract class BaseActivity extends ActionBarActivity implements ViewNode
 		        PackageManager.DONT_KILL_APP);
 	}
 	
-	protected SpannableString buildPictureText(final ViewItem viewItem, boolean needTitle, boolean needAuthor, boolean needStory, boolean bigFont, boolean labelLinkOn, boolean ownerLinkOn) {
+	protected static SpannableString buildPictureText(final ViewItem viewItem, boolean needTitle, boolean needAuthor, boolean needStory, boolean bigFont, boolean labelLinkOn, boolean ownerLinkOn) {
 		String story = "";
 		if (needTitle && !TextUtils.isEmpty(viewItem.getLabel())) {
 			String LINK = labelLinkOn ? "<a href=\"%s\">%s</a>" : "%2$s";
@@ -266,7 +266,7 @@ public abstract class BaseActivity extends ActionBarActivity implements ViewNode
 
 					@Override
 					public void onClick(View arg0) {
-						startViewItemActivity(null, viewItem.getAuthor());
+//						startViewItemActivity(null, viewItem.getAuthor());
 					}
 					
 				}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);

@@ -103,9 +103,10 @@ public class FeedsViewNode extends ViewNode {
                         break;
                     } else {
                         List<ViewItem> subpageViewItems = (List<ViewItem>) subpages[index];
-                        albumViewItems.add(subpageViewItems.remove(0));
-                        if (albumViewItems.size() > 5 ||
-                                subpageViewItems.isEmpty()) {
+                        ViewItem viewItem = subpageViewItems.remove(0);
+                        viewItem.setViewType(ViewItem.VIEW_TYPE_LIST_TILES);
+                        albumViewItems.add(viewItem);
+                        if (albumViewItems.size() > 5 || subpageViewItems.isEmpty()) {
                             // if we have exhausted any list, we need to stop to do a reload, in order to maintain the getPostedDate order
                             break;
                         }
@@ -137,7 +138,7 @@ public class FeedsViewNode extends ViewNode {
 	}
 	
 	@Override
-	public int getHeaderViewResId(int header, int itemViewType /* card type */) {
+	public int getWrapperViewResId(int position) {
 		return R.layout.header;
 	}
 	

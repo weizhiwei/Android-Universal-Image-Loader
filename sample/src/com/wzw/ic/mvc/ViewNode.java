@@ -79,7 +79,7 @@ public class ViewNode extends IcObject {
 		return null;
 	}
 		
-	public int getHeaderViewResId(int header, int itemViewType /* card type */) {
+	public int getWrapperViewResId(int position) {
 		return 0;
 	}
 	

@@ -12,8 +12,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.Tab;
 import android.text.SpannableString;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
-import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +22,6 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -42,7 +40,6 @@ import org.lucasr.twowayview.widget.TwoWayView;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class ViewItemPagerActivity extends BaseActivity {
 	ViewPager pager;
@@ -63,7 +60,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
 //		pager.setOffscreenPageLimit(3);
-		final PagerAdapter pagerAdapter = new ViewItemPagerAdapter();
+		final PagerAdapter pagerAdapter = new ViewItemPagerAdapter(parentModel, pager, getLayoutInflater());
 		pager.setAdapter(pagerAdapter);
         pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener () {
 			@Override
@@ -102,9 +99,8 @@ public class ViewItemPagerActivity extends BaseActivity {
                 RecyclerView.Adapter recyclerViewAdapter = null;
                 GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener = null;
                 switch (myViewItem.getViewType()) {
-                    case ViewItem.VIEW_TYPE_LIST:
-                    case ViewItem.VIEW_TYPE_CARD_LIST:
-                    case ViewItem.VIEW_TYPE_STORY_LIST:
+                    case ViewItem.VIEW_TYPE_LIST_SIMPLE:
+                    case ViewItem.VIEW_TYPE_LIST_TILES:
                         absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
                         itemAdapter = (BaseAdapter) absListView.getAdapter();
                         break;
@@ -180,8 +176,15 @@ public class ViewItemPagerActivity extends BaseActivity {
 	}
 
 	private class ViewItemPagerAdapter extends PagerAdapter {
-		
-		ViewItemPagerAdapter() {
+
+        private ViewNode model;
+        private ViewPager viewPager;
+        private LayoutInflater layoutInflater;
+
+		ViewItemPagerAdapter(ViewNode model, ViewPager viewPager, LayoutInflater layoutInflater) {
+            this.model = model;
+            this.viewPager = viewPager;
+            this.layoutInflater = layoutInflater;
 		}
 
 		@Override
@@ -191,12 +194,12 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		@Override
 		public int getCount() {
-			return null == parentModel.getViewItems() ? 0 : parentModel.getViewItems().size();
+			return model.getViewItems().size();
 		}
 		
 		@Override
 		public Object instantiateItem(ViewGroup view, final int position) {
-			final ViewItem viewItem = parentModel.getViewItems().get(position);
+			final ViewItem viewItem = model.getViewItems().get(position);
 			final ViewNode childModel = viewItem.getViewNode();
 			
 			View contentView = null;
@@ -208,21 +211,20 @@ public class ViewItemPagerActivity extends BaseActivity {
             final GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener;
 
 			switch (viewItem.getViewType()) {
-			case ViewItem.VIEW_TYPE_LIST:
-            case ViewItem.VIEW_TYPE_CARD_LIST:
-            case ViewItem.VIEW_TYPE_STORY_LIST:
-				contentView = getLayoutInflater().inflate(R.layout.ac_image_list, view, false);
+			case ViewItem.VIEW_TYPE_LIST_SIMPLE:
+            case ViewItem.VIEW_TYPE_LIST_TILES:
+				contentView = layoutInflater.inflate(R.layout.ac_image_list, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
-				itemAdapter = new ListItemAdapter(childModel, viewItem.getViewType(), (ListView) absListView);
+				itemAdapter = new ListItemAdapter(childModel, (ListView) absListView, layoutInflater);
                 ((ListView) absListView).setAdapter(itemAdapter);
                 recyclerViewAdapter = null;
                 getDataTaskFinishedListener = null;
                 ((ListView) absListView).setDividerHeight(0);
                 break;
 			case ViewItem.VIEW_TYPE_GRID:
-				contentView = getLayoutInflater().inflate(R.layout.ac_image_grid, view, false);
+				contentView = layoutInflater.inflate(R.layout.ac_image_grid, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
-				itemAdapter = new GridItemAdapter(childModel, (GridView) absListView);
+				itemAdapter = new GridItemAdapter(childModel, (GridView) absListView, layoutInflater);
                 ((GridView) absListView).setAdapter(itemAdapter);
                 recyclerViewAdapter = null;
                 getDataTaskFinishedListener = null;
@@ -231,7 +233,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				}
 				break;
             case ViewItem.VIEW_TYPE_WEBVIEW:
-                contentView = getLayoutInflater().inflate(R.layout.ac_web_view, view, false);
+                contentView = layoutInflater.inflate(R.layout.ac_web_view, view, false);
                 itemAdapter = null;
                 recyclerViewAdapter = null;
                 final WebView webView = (WebView) contentView.findViewById(R.id.ic_webview);
@@ -368,56 +370,56 @@ public class ViewItemPagerActivity extends BaseActivity {
 //        return super.onKeyDown(keyCode, event);
 //    }
 
-	private static class GridViewHolder {
+	private static class GridItemViewHolder extends RecyclerView.ViewHolder {
 		ImageView imageView;
 		ProgressBar progressBar;
 		TextView text;
+
+        public GridItemViewHolder(View view) {
+            super(view);
+            imageView = (ImageView) view.findViewById(R.id.image);
+            progressBar = (ProgressBar) view.findViewById(R.id.progress);
+            text = (TextView) view.findViewById(R.id.text);
+        }
 	}
 	
-	private class GridItemAdapter extends BaseAdapter {
+	private static class GridItemAdapter extends BaseAdapter {
 		
 		private ViewNode model;
 		private GridView gridView;
+        private LayoutInflater layoutInflater;
 		
-		public GridItemAdapter(ViewNode model, GridView gridView) {
+		public GridItemAdapter(ViewNode model, GridView gridView, LayoutInflater layoutInflater) {
 			this.model = model;
 			this.gridView = gridView;
+            this.layoutInflater = layoutInflater;
 		}
 		
 		@Override
 		public int getCount() {
-			return null == model.getViewItems() ? 0 : model.getViewItems().size();
+			return model.getViewItems().size();
 		}
 
 		@Override
 		public Object getItem(int position) {
-			if (null == model.getViewItems()) {
-				return null;
-			}
-			ViewItem viewItem = model.getViewItems().get(position);
-			return viewItem;
+			return model.getViewItems().get(position);
 		}
 
 		@Override
 		public long getItemId(int position) {
-			Object item = getItem(position);
-			return item == null ? 0 : item.hashCode();
+            return position;
 		}
 		
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			final GridViewHolder holder;
+			final GridItemViewHolder holder;
 			View view = convertView;
 			if (view == null) {
-				view = getLayoutInflater().inflate(R.layout.item_grid_image, parent, false);
-				holder = new GridViewHolder();
-				assert view != null;
-				holder.imageView = (ImageView) view.findViewById(R.id.image);
-				holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
-				holder.text = (TextView) view.findViewById(R.id.text);
+				view = layoutInflater.inflate(R.layout.item_grid_image, parent, false);
+				holder = new GridItemViewHolder(view);
 				view.setTag(holder);
 			} else {
-				holder = (GridViewHolder) view.getTag();
+				holder = (GridItemViewHolder) view.getTag();
 			}
 			
 			int rowHeight;
@@ -434,117 +436,55 @@ public class ViewItemPagerActivity extends BaseActivity {
 			view.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.FILL_PARENT, rowHeight));
 			
 			final ViewItem viewItem = model.getViewItems().get(position);
-			
-			switch (viewItem.getViewItemType()) {
-			case ViewItem.VIEW_ITEM_TYPE_COLOR:
-				view.setBackgroundColor(viewItem.getViewItemColor());
-				holder.imageView.setVisibility(View.GONE);
-				holder.progressBar.setVisibility(View.GONE);
-				break;
-			case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
-				holder.imageView.setVisibility(View.VISIBLE);
-				holder.imageView.setImageResource(viewItem.getViewItemImageResId());
-				holder.progressBar.setVisibility(View.GONE);
-				break;
-			case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
-				if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-					holder.imageView.setVisibility(View.VISIBLE);
-                    MyVolley.getImageLoader().get(viewItem.getImageUrl(),
-                            ImageLoader.getImageListener(holder.imageView,
-                                    R.drawable.ic_stub,
-                                    R.drawable.ic_error));
-//                    Ion.with(holder.imageView)
-//                            .placeholder(R.drawable.ic_launcher)
-//                            .error(R.drawable.ic_error)
-//                            .load(viewItem.getImageUrl());
-//					imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, displayImageOptions, new SimpleImageLoadingListener() {
-//											 @Override
-//											 public void onLoadingStarted(String imageUri, View view) {
-//												 holder.progressBar.setProgress(0);
-//												 holder.progressBar.setVisibility(View.VISIBLE);
-//											 }
-//
-//											 @Override
-//											 public void onLoadingFailed(String imageUri, View view,
-//													 FailReason failReason) {
-//												 holder.progressBar.setVisibility(View.GONE);
-//											 }
-//
-//											 @Override
-//											 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//												 holder.progressBar.setVisibility(View.GONE);
-//											 }
-//										 }, new ImageLoadingProgressListener() {
-//											 @Override
-//											 public void onProgressUpdate(String imageUri, View view, int current,
-//													 int total) {
-//												 holder.progressBar.setProgress(Math.round(100.0f * current / total));
-//											 }
-//										 }
-//					);
-				}
-				break;
-			default:
-				break;
-			}
-
-			SpannableString text = buildPictureText(viewItem, true, true, false, false, false, false);
-			if (null != text && getGridViewNumColumns(gridView) < 3) {
-				holder.text.setVisibility(View.VISIBLE);
-				holder.text.setText(text);
-//				holder.text.setMovementMethod(LinkMovementMethod.getInstance());
-			} else {
-				holder.text.setVisibility(View.GONE);
-			}
+            updateGridItemView(viewItem, holder);
 			
 			return view;
 		}
 	}
 	
-	private static class ListViewHolder {
+	private static class ListItemViewHolder {
+        View itemView;
 		TextView text;
 		ImageView image;
-        ProgressBar progressBar;
 		TwoWayView spannableGrid;
 
         HeaderViewHolder headerViewHolder;
+
+        public ListItemViewHolder(View view) {
+            itemView = view;
+        }
     }
 	
 	private class ListItemAdapter extends BaseAdapter {
 
 		private ViewNode model;
-        private int viewType;
         private ListView listView;
+        private LayoutInflater layoutInflater;
 
-		public ListItemAdapter(ViewNode model, int viewType, ListView listView) {
+		public ListItemAdapter(ViewNode model, ListView listView, LayoutInflater layoutInflater) {
             this.model = model;
-            this.viewType = viewType;
             this.listView = listView;
+            this.layoutInflater = layoutInflater;
 		}
 
         @Override
         public int getViewTypeCount() {
-            return 2;
+            return ViewItem.VIEW_TYPE_LIST_COUNT;
         }
 
         @Override
         public int getItemViewType(int position) {
-            ViewItem item = (ViewItem)getItem(position);
-            if (null == item) {
-                return 0;
-            } else {
-                return item.getViewType() == ViewItem.VIEW_TYPE_IMAGE_PAGER ? 0 : 1;
-            }
+            return ((ViewItem)getItem(position)).getViewType();
         }
 
 		@Override
 		public int getCount() {
-			return null == model.getViewItems() ? 0 : model.getViewItems().size();
+			return model.getViewItems().size();
 		}
 
 		@Override
 		public Object getItem(int position) {
-            return null == model.getViewItems() ? null : model.getViewItems().get(position);
+            return model.getViewItems().get(position);
 		}
 
 		@Override
@@ -555,99 +495,34 @@ public class ViewItemPagerActivity extends BaseActivity {
 		@Override
 		public View getView(final int position, View convertView, ViewGroup parent) {
 			View view = convertView;
-			final ListViewHolder holder;
-			if (convertView == null) {
-				holder = new ListViewHolder();
-				switch (viewType) {
-				case ViewItem.VIEW_TYPE_LIST:
-					view = getLayoutInflater().inflate(R.layout.item_list_image, parent, false);
-					holder.text = (TextView) view.findViewById(R.id.text);
+			final ListItemViewHolder holder;
+
+            if (convertView == null) {
+
+				switch (getItemViewType(position)) {
+
+				case ViewItem.VIEW_TYPE_LIST_SIMPLE:
+					view = layoutInflater.inflate(R.layout.item_list_image, parent, false);
+                    holder = new ListItemViewHolder(view);
+                    holder.text = (TextView) view.findViewById(R.id.text);
 					holder.image = (ImageView) view.findViewById(R.id.image);
 					break;
-                case ViewItem.VIEW_TYPE_STORY_LIST:
-                    view = getLayoutInflater().inflate(R.layout.item_story_view, parent, false);
-                    holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
-                    holder.image = (ImageView) view.findViewById(R.id.image);
-                    holder.text = (TextView) view.findViewById(R.id.story);
 
-                    ViewGroup.LayoutParams lp = holder.image.getLayoutParams();
-                    lp.height = listView.getHeight();
-                    holder.image.setLayoutParams(lp);
+                case ViewItem.VIEW_TYPE_LIST_TILES:
+                    view = layoutInflater.inflate(R.layout.item_spannable_grid, parent, false);
+                    holder = new ListItemViewHolder(view);
+                    holder.spannableGrid = (TwoWayView) view.findViewById(R.id.ic_spannable_grid);
+                    holder.spannableGrid.setHasFixedSize(true);
+                    view.setLayoutParams(new AbsListView.LayoutParams(
+                            AbsListView.LayoutParams.MATCH_PARENT, listView.getWidth()
+                    ));
 
-                    if (model.getHeaderViewResId(position, getItemViewType(position)) > 0) {
+                    if (model.getWrapperViewResId(position) > 0) {
+                        view.setLayoutParams(new ListView.LayoutParams(
+                                ListView.LayoutParams.MATCH_PARENT, (listView.getWidth())
+                        ));
                         holder.headerViewHolder = model.createHolderFromHeaderView(
-                                getLayoutInflater().inflate(model.getHeaderViewResId(position, getItemViewType(position)), parent, false)
-                        );
-
-                        FrameLayout cardView = new FrameLayout(ViewItemPagerActivity.this);
-                        cardView.setLayoutParams(new ListView.LayoutParams(
-                                ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
-
-                        if (null != view.getParent()) {
-                            ((ViewGroup) view.getParent()).removeView(view);
-                        }
-                        cardView.addView(view);
-                        if (null != holder.headerViewHolder.header) {
-                            if (null != holder.headerViewHolder.header.getParent()) {
-                                ((ViewGroup) holder.headerViewHolder.header.getParent()).removeView(holder.headerViewHolder.header);
-                            }
-
-                            FrameLayout.LayoutParams lp2 = new FrameLayout.LayoutParams(
-                                    FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT,
-                                    Gravity.LEFT | Gravity.TOP);
-                            holder.headerViewHolder.header.setLayoutParams(lp2);
-                            cardView.addView(holder.headerViewHolder.header);
-                            ((FrameLayout.LayoutParams) holder.headerViewHolder.header.getLayoutParams()).setMargins(20, listView.getHeight() - 200, 0, 0);
-
-                            holder.headerViewHolder.header.setBackgroundColor(randomColorForHeader(Math.abs((new Random()).nextInt())) - 0x55000000);
-                        }
-
-                        view = cardView;
-                    }
-                    break;
-
-				case ViewItem.VIEW_TYPE_CARD_LIST:
-                    int itemViewType = getItemViewType(position);
-
-                    switch (itemViewType) {
-                        case 0:
-                            view = getLayoutInflater().inflate(R.layout.item_grid_image, parent, false);
-                            holder.image = (ImageView) view.findViewById(R.id.image);
-                            holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
-                            holder.text = (TextView) view.findViewById(R.id.text);
-                            view.setLayoutParams(new AbsListView.LayoutParams(
-                                    AbsListView.LayoutParams.MATCH_PARENT, AbsListView.LayoutParams.WRAP_CONTENT
-                            ));
-                            break;
-                        case 1:
-                            view = getLayoutInflater().inflate(R.layout.item_spannable_grid, parent, false);
-                            holder.spannableGrid = (TwoWayView) view.findViewById(R.id.ic_spannable_grid);
-                            holder.spannableGrid.setHasFixedSize(true);
-                            view.setLayoutParams(new AbsListView.LayoutParams(
-                                    AbsListView.LayoutParams.MATCH_PARENT, listView.getWidth()
-                            ));
-                            break;
-                        default:
-                            break;
-                    }
-
-                    if (model.getHeaderViewResId(position, itemViewType) > 0) {
-                        switch (itemViewType) {
-                            case 0:
-                                view.setLayoutParams(new ListView.LayoutParams(
-                                        ListView.LayoutParams.MATCH_PARENT, ListView.LayoutParams.WRAP_CONTENT
-                                ));
-                                break;
-                            case 1:
-                                view.setLayoutParams(new ListView.LayoutParams(
-                                        ListView.LayoutParams.MATCH_PARENT, (listView.getWidth())
-                                ));
-                                break;
-                            default:
-                                break;
-                        }
-                        holder.headerViewHolder = model.createHolderFromHeaderView(
-                                getLayoutInflater().inflate(model.getHeaderViewResId(position, itemViewType), parent, false)
+                                layoutInflater.inflate(model.getWrapperViewResId(position), parent, false)
                         );
 
                         LinearLayout cardView = new LinearLayout(ViewItemPagerActivity.this);
@@ -674,176 +549,58 @@ public class ViewItemPagerActivity extends BaseActivity {
                         view = cardView;
                     }
                     break;
+
                 default:
                     break;
 				}
 
 				view.setTag(holder);
 			} else {
-				holder = (ListViewHolder) view.getTag();
+				holder = (ListItemViewHolder) view.getTag();
 			}
 
-            if (viewType == ViewItem.VIEW_TYPE_LIST) {
-				
-				final ViewItem viewItem = model.getViewItems().get(position);
-				
-				holder.text.setText(viewItem.getLabel());
-	
-				switch (viewItem.getViewItemType()) {
-				case ViewItem.VIEW_ITEM_TYPE_COLOR:
-					holder.image.setBackgroundColor(viewItem.getViewItemColor());
-					break;
-				case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
-					holder.image.setImageResource(viewItem.getViewItemImageResId());
-					break;
-				case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
-					if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-//                        Ion.with(holder.image)
-//                            .placeholder(R.drawable.ic_launcher)
-//                            .error(R.drawable.ic_error)
-//                            .load(viewItem.getImageUrl());
-                          MyVolley.getImageLoader().get(viewItem.getImageUrl(),
-                                ImageLoader.getImageListener(holder.image,
-                                        R.drawable.ic_stub,
-                                        R.drawable.ic_error));
-					}
-					break;
-				default:
-					break;
-				}
-			} else if (viewType == ViewItem.VIEW_TYPE_STORY_LIST) {
-                if (model.getHeaderViewResId(position, getItemViewType(position)) > 0) {
-                    model.updateHeaderView(view, holder.headerViewHolder, position);
-                }
+            // update part
+            //
+            final ViewItem viewItem = model.getViewItems().get(position);
 
-                final ViewItem viewItem = model.getViewItems().get(position);
+            switch (getItemViewType(position)) {
 
-                view.setBackgroundColor(randomColorForHeader(Math.abs(viewItem.hashCode())));
+                case ViewItem.VIEW_TYPE_LIST_SIMPLE:
 
-                SpannableString text = buildPictureText(viewItem, true, false, true, true, true, false);
-                holder.text.setText(text);
-                holder.text.setMovementMethod(LinkMovementMethod.getInstance());
-                holder.text.setVisibility(View.VISIBLE);
-
-                switch (viewItem.getViewItemType()) {
-                    case ViewItem.VIEW_ITEM_TYPE_COLOR:
-                        view.setBackgroundColor(viewItem.getViewItemColor());
-                        holder.image.setVisibility(View.GONE);
-                        holder.progressBar.setVisibility(View.GONE);
-                        break;
-                    case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
-                        holder.image.setVisibility(View.VISIBLE);
-                        holder.image.setImageResource(viewItem.getViewItemImageResId());
-                        holder.progressBar.setVisibility(View.GONE);
-                        break;
-                    case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
-                        if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-                            holder.image.setVisibility(View.VISIBLE);
-                            MyVolley.getImageLoader().get(viewItem.getImageUrl(),
-                                    ImageLoader.getImageListener(holder.image,
-                                            R.drawable.ic_stub,
-                                            R.drawable.ic_error));
-//                            Ion.with(holder.image)
-//                                    .placeholder(R.drawable.ic_launcher)
-//                                    .error(R.drawable.ic_error)
-//                                    .load(viewItem.getImageUrl());
-//                            imageLoader.displayImage(viewItem.getImageUrl(), holder.image, displayImageOptions, new SimpleImageLoadingListener() {
-//                                        @Override
-//                                        public void onLoadingStarted(String imageUri, View view) {
-//                                            holder.progressBar.setProgress(0);
-//                                            holder.progressBar.setVisibility(View.VISIBLE);
-//                                        }
-//
-//                                        @Override
-//                                        public void onLoadingFailed(String imageUri, View view,
-//                                                                    FailReason failReason) {
-//                                            holder.progressBar.setVisibility(View.GONE);
-//                                        }
-//
-//                                        @Override
-//                                        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//                                            holder.progressBar.setVisibility(View.GONE);
-//                                        }
-//                                    }, new ImageLoadingProgressListener() {
-//                                        @Override
-//                                        public void onProgressUpdate(String imageUri, View view, int current,
-//                                                                     int total) {
-//                                            holder.progressBar.setProgress(Math.round(100.0f * current / total));
-//                                        }
-//                                    }
-//                            );
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            } else if (viewType == ViewItem.VIEW_TYPE_CARD_LIST) {
-
-                if (model.getHeaderViewResId(position, getItemViewType(position)) > 0) {
-                    model.updateHeaderView(view, holder.headerViewHolder, position);
-                }
-
-                final ViewItem viewItem = model.getViewItems().get(position);
-
-                view.setBackgroundColor(randomColorForHeader(Math.abs(viewItem.hashCode())));
-
-                if (0 == getItemViewType(position)) {
-                    holder.text.setVisibility(View.GONE);
+                    holder.text.setText(viewItem.getLabel());
 
                     switch (viewItem.getViewItemType()) {
                         case ViewItem.VIEW_ITEM_TYPE_COLOR:
-                            view.setBackgroundColor(viewItem.getViewItemColor());
-                            holder.image.setVisibility(View.GONE);
-                            holder.progressBar.setVisibility(View.GONE);
+                            holder.image.setBackgroundColor(viewItem.getViewItemColor());
                             break;
                         case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
-                            holder.image.setVisibility(View.VISIBLE);
                             holder.image.setImageResource(viewItem.getViewItemImageResId());
-                            holder.progressBar.setVisibility(View.GONE);
                             break;
                         case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
                             if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-                                holder.image.setVisibility(View.VISIBLE);
                                 MyVolley.getImageLoader().get(viewItem.getImageUrl(),
                                         ImageLoader.getImageListener(holder.image,
                                                 R.drawable.ic_stub,
                                                 R.drawable.ic_error));
-//                                imageLoader.displayImage(viewItem.getImageUrl(), holder.image, displayImageOptions, new SimpleImageLoadingListener() {
-//                                            @Override
-//                                            public void onLoadingStarted(String imageUri, View view) {
-//                                                holder.progressBar.setProgress(0);
-//                                                holder.progressBar.setVisibility(View.VISIBLE);
-//                                            }
-//
-//                                            @Override
-//                                            public void onLoadingFailed(String imageUri, View view,
-//                                                                        FailReason failReason) {
-//                                                holder.progressBar.setVisibility(View.GONE);
-//                                            }
-//
-//                                            @Override
-//                                            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//                                                holder.progressBar.setVisibility(View.GONE);
-//                                            }
-//                                        }, new ImageLoadingProgressListener() {
-//                                            @Override
-//                                            public void onProgressUpdate(String imageUri, View view, int current,
-//                                                                         int total) {
-//                                                holder.progressBar.setProgress(Math.round(100.0f * current / total));
-//                                            }
-//                                        }
-//                                );
                             }
                             break;
                         default:
                             break;
                     }
+                    break;
 
-                } else if (1 == getItemViewType(position)) {
+                case ViewItem.VIEW_TYPE_LIST_TILES:
+
+                    if (model.getWrapperViewResId(position) > 0) {
+                        model.updateHeaderView(view, holder.headerViewHolder, position);
+                    }
+
+                    view.setBackgroundColor(randomColorForHeader(Math.abs(viewItem.hashCode())));
+
 
                     ViewNode model2 = model.getViewItems().get(position).getViewNode();
 
-                    RecyclerView.Adapter<SimpleViewHolder> adapter = new RecyclerViewAdapter(model2, holder.spannableGrid);
+                    RecyclerView.Adapter<GridItemViewHolder> adapter = new RecyclerViewAdapter(model2, holder.spannableGrid, layoutInflater);
                     holder.spannableGrid.setAdapter(adapter);
 
                     if (null != model2.getViewItems() && model2.getViewItems().size() > 0) {
@@ -860,39 +617,30 @@ public class ViewItemPagerActivity extends BaseActivity {
                                     (ViewItem)model.getViewItems().get(position), ViewItemPagerActivity.this);
                         }
                     });
-                }
-			}
+                    break;
+                default:
+                    break;
+            }
 			
 			return view;
 		}
 	}
 
-	private static class SimpleViewHolder extends RecyclerView.ViewHolder {
-		ImageView imageView;
-		ProgressBar progressBar;
-		TextView text;
-
-        public SimpleViewHolder(View view) {
-            super(view);
-            imageView = (ImageView) view.findViewById(R.id.image);
-			progressBar = (ProgressBar) view.findViewById(R.id.progress);
-			text = (TextView) view.findViewById(R.id.text);
-        }
-    }
-
-    private class RecyclerViewAdapter extends RecyclerView.Adapter<SimpleViewHolder> {
+    private static class RecyclerViewAdapter extends RecyclerView.Adapter<GridItemViewHolder> {
 
         private ViewNode model;
         private RecyclerView recyclerView;
+        private LayoutInflater layoutInflater;
 
-        public RecyclerViewAdapter(ViewNode model, RecyclerView recyclerView) {
+        public RecyclerViewAdapter(ViewNode model, RecyclerView recyclerView, LayoutInflater layoutInflater) {
             this.model = model;
             this.recyclerView = recyclerView;
+            this.layoutInflater = layoutInflater;
         }
 
         @Override
         public int getItemCount() {
-            if (null != model.getViewItems() && model.getViewItems().size() > 0) {
+            if (model.getViewItems().size() > 0) {
                 return calcAlbumPicCountForHeader(model.getViewItems().size(), Math.abs(model.getViewItems().get(0).hashCode()));
             } else {
                 return 0;
@@ -900,7 +648,7 @@ public class ViewItemPagerActivity extends BaseActivity {
         }
 
         @Override
-        public void onBindViewHolder(final SimpleViewHolder holder, int position) {
+        public void onBindViewHolder(final GridItemViewHolder holder, int position) {
             final View itemView = holder.itemView;
             final SpannableGridLayoutManager.LayoutParams lp =
                     (SpannableGridLayoutManager.LayoutParams) itemView.getLayoutParams();
@@ -915,70 +663,13 @@ public class ViewItemPagerActivity extends BaseActivity {
             itemView.setLayoutParams(lp);
 
             final ViewItem viewItem = model.getViewItems().get(position);
-            if (!TextUtils.isEmpty(viewItem.getLabel())) {
-                holder.text.setVisibility(View.VISIBLE);
-                holder.text.setText(viewItem.getLabel());
-            } else {
-                holder.text.setVisibility(View.GONE);
-            }
-            switch (viewItem.getViewItemType()) {
-                case ViewItem.VIEW_ITEM_TYPE_COLOR:
-                    itemView.setBackgroundColor(viewItem.getViewItemColor());
-                    holder.imageView.setVisibility(View.GONE);
-                    holder.progressBar.setVisibility(View.GONE);
-                    break;
-                case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
-                    holder.imageView.setVisibility(View.VISIBLE);
-                    holder.imageView.setImageResource(viewItem.getViewItemImageResId());
-                    holder.progressBar.setVisibility(View.GONE);
-                    break;
-                case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
-                    if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-                        holder.imageView.setVisibility(View.VISIBLE);
-                        MyVolley.getImageLoader().get(viewItem.getImageUrl(),
-                                ImageLoader.getImageListener(holder.imageView,
-                                        R.drawable.ic_stub,
-                                        R.drawable.ic_error));
-//                        Ion.with(holder.imageView)
-//                                .placeholder(R.drawable.ic_launcher)
-//                                .error(R.drawable.ic_error)
-//                                .load(viewItem.getImageUrl());
-//                                        imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, displayImageOptions, new SimpleImageLoadingListener() {
-//                                                    @Override
-//                                                    public void onLoadingStarted(String imageUri, View view) {
-//                                                        holder.progressBar.setProgress(0);
-//                                                        holder.progressBar.setVisibility(View.VISIBLE);
-//                                                    }
-//
-//                                                    @Override
-//                                                    public void onLoadingFailed(String imageUri, View view,
-//                                                                                FailReason failReason) {
-//                                                        holder.progressBar.setVisibility(View.GONE);
-//                                                    }
-//
-//                                                    @Override
-//                                                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//                                                        holder.progressBar.setVisibility(View.GONE);
-//                                                    }
-//                                                }, new ImageLoadingProgressListener() {
-//                                                    @Override
-//                                                    public void onProgressUpdate(String imageUri, View view, int current,
-//                                                                                 int total) {
-//                                                        holder.progressBar.setProgress(Math.round(100.0f * current / total));
-//                                                    }
-//                                                }
-//                                        );
-                    }
-                    break;
-                default:
-                    break;
-            }
+            updateGridItemView(viewItem, holder);
         }
 
         @Override
-        public SimpleViewHolder onCreateViewHolder(ViewGroup parent, int arg1) {
-            final View view = getLayoutInflater().inflate(R.layout.item_grid_image, parent, false);
-            return new SimpleViewHolder(view);
+        public GridItemViewHolder onCreateViewHolder(ViewGroup parent, int arg1) {
+            final View view = layoutInflater.inflate(R.layout.item_grid_image, parent, false);
+            return new GridItemViewHolder(view);
         }
     };
 
@@ -1047,7 +738,9 @@ public class ViewItemPagerActivity extends BaseActivity {
     private static final int[] generateColRowSpans(int itemCount, int hash) {
         final int[][][] SPANS = {
                 {}, // 0
-                {}, // 1
+                {
+                        {6, 6}
+                }, // 1
                 {
                         {6, 3, 6, 3}, {3, 6, 3, 6}
                 }, // 2
@@ -1082,6 +775,8 @@ public class ViewItemPagerActivity extends BaseActivity {
     private static int calcAlbumPicCountForHeader(int albumPicCount, int hash) {
         final int[] ITEM_COUNT_FOR_LARGE_ALBUMS = {4, 5, 6, 9};
         switch (albumPicCount) {
+            case 1:
+                return 1;
             case 2:
                 return 2;
             case 3:
@@ -1116,5 +811,69 @@ public class ViewItemPagerActivity extends BaseActivity {
             if (width > 0) columns = gv.getWidth() / width;
         }
         return columns;
+    }
+
+    private static void updateGridItemView(ViewItem viewItem, GridItemViewHolder holder) {
+        switch (viewItem.getViewItemType()) {
+            case ViewItem.VIEW_ITEM_TYPE_COLOR:
+                holder.itemView.setBackgroundColor(viewItem.getViewItemColor());
+                holder.imageView.setVisibility(View.GONE);
+                holder.progressBar.setVisibility(View.GONE);
+                break;
+            case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
+                holder.imageView.setVisibility(View.VISIBLE);
+                holder.imageView.setImageResource(viewItem.getViewItemImageResId());
+                holder.progressBar.setVisibility(View.GONE);
+                break;
+            case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
+                if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+                    holder.imageView.setVisibility(View.VISIBLE);
+                    MyVolley.getImageLoader().get(viewItem.getImageUrl(),
+                            ImageLoader.getImageListener(holder.imageView,
+                                    R.drawable.ic_stub,
+                                    R.drawable.ic_error));
+//                    Ion.with(holder.imageView)
+//                            .placeholder(R.drawable.ic_launcher)
+//                            .error(R.drawable.ic_error)
+//                            .load(viewItem.getImageUrl());
+//					imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, displayImageOptions, new SimpleImageLoadingListener() {
+//											 @Override
+//											 public void onLoadingStarted(String imageUri, View view) {
+//												 holder.progressBar.setProgress(0);
+//												 holder.progressBar.setVisibility(View.VISIBLE);
+//											 }
+//
+//											 @Override
+//											 public void onLoadingFailed(String imageUri, View view,
+//													 FailReason failReason) {
+//												 holder.progressBar.setVisibility(View.GONE);
+//											 }
+//
+//											 @Override
+//											 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//												 holder.progressBar.setVisibility(View.GONE);
+//											 }
+//										 }, new ImageLoadingProgressListener() {
+//											 @Override
+//											 public void onProgressUpdate(String imageUri, View view, int current,
+//													 int total) {
+//												 holder.progressBar.setProgress(Math.round(100.0f * current / total));
+//											 }
+//										 }
+//					);
+                }
+                break;
+            default:
+                break;
+        }
+
+        SpannableString text = buildPictureText(viewItem, true, true, false, false, false, false);
+//        if (null != text && getGridViewNumColumns(gridView) < 3) {
+//            holder.text.setVisibility(View.VISIBLE);
+//            holder.text.setText(text);
+////				holder.text.setMovementMethod(LinkMovementMethod.getInstance());
+//        } else {
+//            holder.text.setVisibility(View.GONE);
+//        }
     }
 }

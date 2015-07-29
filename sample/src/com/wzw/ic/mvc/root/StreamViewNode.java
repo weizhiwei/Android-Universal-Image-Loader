@@ -83,6 +83,7 @@ public class StreamViewNode extends ViewNode {
                         int n = Math.min(subpageViewItems.size(), 4);
                         for (int i = 0; i < n; ++i) {
                             ViewItem viewItem = subpageViewItems.get(i);
+                            viewItem.setViewType(ViewItem.VIEW_TYPE_LIST_TILES);
                             pageViewItems.add(viewItem);
                         }
                         for (int i = 0; i < n; ++i) {
@@ -117,7 +118,7 @@ public class StreamViewNode extends ViewNode {
 	}
 	
 	@Override
-	public int getHeaderViewResId(int header, int itemViewType /* card type */) {
+	public int getWrapperViewResId(int position) {
 		return R.layout.header;
 	}
 	
