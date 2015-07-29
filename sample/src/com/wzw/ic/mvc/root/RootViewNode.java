@@ -16,14 +16,10 @@ public class RootViewNode extends ViewNode {
 		
 		super("root", Arrays.asList(
                 new ViewItem("Channels", null, null, ViewItem.VIEW_TYPE_GRID, new MokoViewNodeRoot()),
-                new ViewItem("Bookmarks", null, null, ViewItem.VIEW_TYPE_LIST_TILES, new StreamViewNode(
-                        new MokoViewNodeBookmarks()
-                )),
+                new ViewItem("Bookmarks", null, null, ViewItem.VIEW_TYPE_LIST_TILES, new MokoViewNodeBookmarks()),
                 new ViewItem("Following", null, null, ViewItem.VIEW_TYPE_LIST_TILES, new FeedsViewNode()),
-                new ViewItem("New", null, null, ViewItem.VIEW_TYPE_LIST_TILES, new StreamViewNode(
-                        new MokoViewNodeStream()
-                )
-                )));
+                new ViewItem("New", null, null, ViewItem.VIEW_TYPE_LIST_TILES, new MokoViewNodeStream())
+                ));
 	}
 	
 	public static RootViewNode getInstance() {

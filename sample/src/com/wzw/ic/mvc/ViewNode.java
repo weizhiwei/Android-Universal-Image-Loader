@@ -5,17 +5,41 @@ import java.util.List;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-import com.nostra13.example.universalimageloader.HeaderViewHolder;
+import com.nostra13.example.universalimageloader.R;
 
 public class ViewNode extends IcObject {
 
-    public interface LoadListener {
+    public static interface LoadListener {
         public void onLoadDone(ViewNode model);
     }
 
-    public interface ViewItemActivityStarter {
+    public static interface ViewItemActivityStarter {
         public void startViewItemActivity(ViewNode parent, ViewItem viewItem);
+    }
+
+    public static class WrapperViewHolder {
+        public View wrapperView;
+
+        public View header;
+        public View divider;
+        public View footer;
+
+        public TextView textView;
+        public ImageView imageView;
+
+        public WrapperViewHolder(View wrapperView) {
+            this.wrapperView = wrapperView;
+
+            header = wrapperView.findViewById(R.id.header);
+            divider = wrapperView.findViewById(R.id.divider);
+            footer = wrapperView.findViewById(R.id.footer);
+
+            textView = (TextView)wrapperView.findViewById(R.id.text);
+            imageView = (ImageView)wrapperView.findViewById(R.id.image);
+        }
     }
 
 	protected String sourceUrl;
@@ -78,16 +102,16 @@ public class ViewNode extends IcObject {
 	public Object onAction(ViewNodeAction action) {
 		return null;
 	}
-		
-	public int getWrapperViewResId(int position) {
-		return 0;
-	}
+
+    public int getWrapperViewResId(int position) {
+        return R.layout.header;
+    }
+
+    public WrapperViewHolder createHolderFromHeaderView(View headerView) {
+        return new WrapperViewHolder(headerView);
+    }
 	
-	public HeaderViewHolder createHolderFromHeaderView(View headerView) {
-		return null;
-	}
-	
-	public void updateHeaderView(View headerView, HeaderViewHolder holder, int position) {
+	public void updateHeaderView(View headerView, WrapperViewHolder holder, int position) {
 	}
 	
 	public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {

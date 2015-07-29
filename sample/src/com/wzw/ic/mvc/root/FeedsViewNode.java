@@ -13,11 +13,7 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.nostra13.example.universalimageloader.R;
-import com.nostra13.example.universalimageloader.HeaderViewHolder;
 import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.moko.MokoViewNodeAuthor;
@@ -138,17 +134,7 @@ public class FeedsViewNode extends ViewNode {
 	}
 	
 	@Override
-	public int getWrapperViewResId(int position) {
-		return R.layout.header;
-	}
-	
-	@Override
-	public HeaderViewHolder createHolderFromHeaderView(View headerView) {
-        return new FeedsHeaderViewHolder(headerView);
-	}
-	
-	@Override
-	public void updateHeaderView(View headerView, final HeaderViewHolder holder, int position) {
+	public void updateHeaderView(View headerView, final WrapperViewHolder holder, int position) {
 		ViewItem viewItem = viewItems.get(position);
 		
 		String caption = "";
@@ -166,13 +152,13 @@ public class FeedsViewNode extends ViewNode {
 							DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE);
 		}
 		if (!TextUtils.isEmpty(caption)) {
-			((FeedsHeaderViewHolder)holder).textView.setText(new SpannableString(Html.fromHtml(caption)));
+			holder.textView.setText(new SpannableString(Html.fromHtml(caption)));
 		}
 		
-		((FeedsHeaderViewHolder)holder).imageView.setVisibility(View.GONE);
+		holder.imageView.setVisibility(View.GONE);
         if (null != viewItem.getAuthor()) {
         	if (!TextUtils.isEmpty(viewItem.getAuthor().getImageUrl())) {
-        		((FeedsHeaderViewHolder)holder).imageView.setVisibility(View.VISIBLE);
+        		holder.imageView.setVisibility(View.VISIBLE);
 //        		ImageLoader.getInstance().displayImage(viewItem.getAuthor().getImageUrl(),
 //        				((FeedsHeaderViewHolder)holder).imageView,
 //                                new DisplayImageOptions.Builder()
@@ -187,18 +173,6 @@ public class FeedsViewNode extends ViewNode {
 			}
         }
 	}
-	
-	private static class FeedsHeaderViewHolder extends HeaderViewHolder {
-		public TextView textView;
-        public ImageView imageView;
-
-        public FeedsHeaderViewHolder(View convertView) {
-			super(convertView);
-			
-			textView = (TextView)convertView.findViewById(R.id.text);
-	        imageView = (ImageView)convertView.findViewById(R.id.image);
-		}
-    }
 	
 	@Override
 	public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {

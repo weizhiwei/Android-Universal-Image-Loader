@@ -448,7 +448,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		ImageView image;
 		TwoWayView spannableGrid;
 
-        HeaderViewHolder headerViewHolder;
+        ViewNode.WrapperViewHolder wrapperViewHolder;
 
         public ListItemViewHolder(View view) {
             itemView = view;
@@ -521,7 +521,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                         view.setLayoutParams(new ListView.LayoutParams(
                                 ListView.LayoutParams.MATCH_PARENT, (listView.getWidth())
                         ));
-                        holder.headerViewHolder = model.createHolderFromHeaderView(
+                        holder.wrapperViewHolder = model.createHolderFromHeaderView(
                                 layoutInflater.inflate(model.getWrapperViewResId(position), parent, false)
                         );
 
@@ -530,27 +530,28 @@ public class ViewItemPagerActivity extends BaseActivity {
                                 ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
                         cardView.setOrientation(LinearLayout.VERTICAL);
 
-                        if (null != holder.headerViewHolder.header) {
-                            if (null != holder.headerViewHolder.header.getParent()) {
-                                ((ViewGroup) holder.headerViewHolder.header.getParent()).removeView(holder.headerViewHolder.header);
+                        if (null != holder.wrapperViewHolder.header) {
+                            if (null != holder.wrapperViewHolder.header.getParent()) {
+                                ((ViewGroup) holder.wrapperViewHolder.header.getParent()).removeView(holder.wrapperViewHolder.header);
                             }
-                            cardView.addView(holder.headerViewHolder.header);
+                            cardView.addView(holder.wrapperViewHolder.header);
                         }
                         if (null != view.getParent()) {
                             ((ViewGroup) view.getParent()).removeView(view);
                         }
                         cardView.addView(view);
-                        if (null != holder.headerViewHolder.footer) {
-                            if (null != holder.headerViewHolder.footer.getParent()) {
-                                ((ViewGroup) holder.headerViewHolder.footer.getParent()).removeView(holder.headerViewHolder.footer);
+                        if (null != holder.wrapperViewHolder.footer) {
+                            if (null != holder.wrapperViewHolder.footer.getParent()) {
+                                ((ViewGroup) holder.wrapperViewHolder.footer.getParent()).removeView(holder.wrapperViewHolder.footer);
                             }
-                            cardView.addView(holder.headerViewHolder.footer);
+                            cardView.addView(holder.wrapperViewHolder.footer);
                         }
                         view = cardView;
                     }
                     break;
 
                 default:
+                    holder = null;
                     break;
 				}
 
@@ -592,7 +593,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                 case ViewItem.VIEW_TYPE_LIST_TILES:
 
                     if (model.getWrapperViewResId(position) > 0) {
-                        model.updateHeaderView(view, holder.headerViewHolder, position);
+                        model.updateHeaderView(view, holder.wrapperViewHolder, position);
                     }
 
                     view.setBackgroundColor(randomColorForHeader(Math.abs(viewItem.hashCode())));

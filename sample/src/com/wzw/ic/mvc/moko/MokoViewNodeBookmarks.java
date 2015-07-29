@@ -35,7 +35,7 @@ public class MokoViewNodeBookmarks extends MokoViewNode {
                         title,
                         URL_PREFIX + a.attr("href"),
                         img.attr("src2"),
-                        ViewItem.VIEW_TYPE_GRID,
+                        ViewItem.VIEW_TYPE_LIST_TILES,
                         new MokoViewNodePost(URL_PREFIX + a.attr("href"), title));
                 viewItem.setInitialZoomLevel(1);
                 viewItems.add(viewItem);
