@@ -529,29 +529,22 @@ public class ViewItemPagerActivity extends BaseActivity {
 
         @Override
         public int getItemViewType(int position) {
-            if (null != model.getHeaders() && !model.getHeaders().isEmpty()) {
-                return model.getHeaders().get(position) == 1 ? 0 : 1;
-            } else {
+            ViewItem item = (ViewItem)getItem(position);
+            if (null == item) {
                 return 0;
+            } else {
+                return item.getViewType() == ViewItem.VIEW_TYPE_IMAGE_PAGER ? 0 : 1;
             }
         }
 
 		@Override
 		public int getCount() {
-			if (null != model.getHeaders() && !model.getHeaders().isEmpty()) {
-                return model.getHeaders().size();
-			} else {
-				return null == model.getViewItems() ? 0 : model.getViewItems().size();
-			}
+			return null == model.getViewItems() ? 0 : model.getViewItems().size();
 		}
 
 		@Override
 		public Object getItem(int position) {
-            if (null != model.getHeaders() && !model.getHeaders().isEmpty()) {
-                return null == model.getHeaderItems() ? null : model.getHeaderItems().get(position);
-            } else {
-                return null == model.getViewItems() ? null : model.getViewItems().get(position);
-            }
+            return null == model.getViewItems() ? null : model.getViewItems().get(position);
 		}
 
 		@Override
@@ -790,13 +783,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     model.updateHeaderView(view, holder.headerViewHolder, position);
                 }
 
-                int o = 0;
-				for (int i = 0; i < position; ++i) {
-					o += model.getHeaders().get(i);
-				}
-				final int offset = o;
-
-                final ViewItem viewItem = model.getViewItems().get(offset);
+                final ViewItem viewItem = model.getViewItems().get(position);
 
                 view.setBackgroundColor(randomColorForHeader(Math.abs(viewItem.hashCode())));
 
@@ -854,7 +841,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
                 } else if (1 == getItemViewType(position)) {
 
-                    ViewNode model2 = model.getViewItems().get(offset).getViewNode();
+                    ViewNode model2 = model.getViewItems().get(position).getViewNode();
 
                     RecyclerView.Adapter<SimpleViewHolder> adapter = new RecyclerViewAdapter(model2, holder.spannableGrid);
                     holder.spannableGrid.setAdapter(adapter);
@@ -870,7 +857,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                         public void onItemClick(RecyclerView parent, View child, int position, long id) {
                             // drill down
                             model.onViewItemClicked(
-                                    (ViewItem)model.getViewItems().get(offset + position), ViewItemPagerActivity.this);
+                                    (ViewItem)model.getViewItems().get(position), ViewItemPagerActivity.this);
                         }
                     });
                 }

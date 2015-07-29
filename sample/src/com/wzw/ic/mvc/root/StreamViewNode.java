@@ -77,7 +77,6 @@ public class StreamViewNode extends ViewNode {
                 }
 
                 List<ViewItem> pageViewItems = new ArrayList<ViewItem>();
-                List<Integer> pageHeaders = new ArrayList<Integer>();
                 for (Object subpage : Arrays.asList(subpages)) {
                     if (null != subpage) {
                         List<ViewItem> subpageViewItems = (List<ViewItem>) subpage;
@@ -85,12 +84,6 @@ public class StreamViewNode extends ViewNode {
                         for (int i = 0; i < n; ++i) {
                             ViewItem viewItem = subpageViewItems.get(i);
                             pageViewItems.add(viewItem);
-                            if (viewItem.getViewType() == ViewItem.VIEW_TYPE_IMAGE_PAGER) {
-                                pageHeaders.add(1);
-                            } else {
-                                pageViewItems.add(viewItem);
-                                pageHeaders.add(2);
-                            }
                         }
                         for (int i = 0; i < n; ++i) {
                             subpageViewItems.remove(0); // pop out all the used items
@@ -102,10 +95,8 @@ public class StreamViewNode extends ViewNode {
                     pageNo = newPageNo;
                     if (reload) {
                         viewItems.clear();
-                        headers.clear();
                     }
                     viewItems.addAll(pageViewItems);
-                    headers.addAll(pageHeaders);
                 }
 
                 ((Activity)context).runOnUiThread(new Runnable() {
@@ -137,11 +128,7 @@ public class StreamViewNode extends ViewNode {
 	
 	@Override
 	public void updateHeaderView(View headerView, HeaderViewHolder holder, int position) {
-		int n = 0;
-		for (int i = 0; i < position; ++i) {
-			n += headers.get(i);
-		}
-		ViewItem viewItem = viewItems.get(n);
+		ViewItem viewItem = viewItems.get(position);
 		String caption = "";
         if (!TextUtils.isEmpty(viewItem.getLabel())) {
             caption += String.format("<b>%s</b>", viewItem.getLabel());

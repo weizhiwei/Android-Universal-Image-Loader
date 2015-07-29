@@ -112,27 +112,12 @@ public class FeedsViewNode extends ViewNode {
                     }
                 }
 
-                List<ViewItem> pageViewItems = new ArrayList<ViewItem>();
-                List<Integer> pageHeaders = new ArrayList<Integer>();
-                for (int i = 0; i < albumViewItems.size(); ++i) {
-                    final ViewItem viewItem = albumViewItems.get(i);
-                    pageViewItems.add(viewItem);
-                    if (viewItem.getViewType() == ViewItem.VIEW_TYPE_IMAGE_PAGER) {
-                        pageHeaders.add(1);
-                    } else {
-                        pageViewItems.add(viewItem);
-                        pageHeaders.add(2);
-                    }
-                }
-
-                if (null != pageViewItems && pageViewItems.size() > 0) {
+                if (null != albumViewItems && albumViewItems.size() > 0) {
                     pageNo = newPageNo;
                     if (reload) {
                         viewItems.clear();
-                        headers.clear();
                     }
-                    viewItems.addAll(pageViewItems);
-                    headers.addAll(pageHeaders);
+                    viewItems.addAll(albumViewItems);
                 }
 
                 ((Activity)context).runOnUiThread(new Runnable() {
@@ -163,17 +148,13 @@ public class FeedsViewNode extends ViewNode {
 	
 	@Override
 	public void updateHeaderView(View headerView, final HeaderViewHolder holder, int position) {
-		int n = 0;
-		for (int i = 0; i < position; ++i) {
-			n += headers.get(i);
-		}
-		ViewItem viewItem = viewItems.get(n);
+		ViewItem viewItem = viewItems.get(position);
 		
 		String caption = "";
 		String authorName = (viewItem.getAuthor() == null ? null : viewItem.getAuthor().getLabel());
 		if (!TextUtils.isEmpty(authorName)) {
-			caption += String.format(
-                    "<b>%s</b> posted %d picture%s", authorName, headers.get(position), headers.get(position) > 1 ? "s" : "");
+//			caption += String.format(
+//                    "<b>%s</b> posted %d picture%s", authorName, headers.get(position), headers.get(position) > 1 ? "s" : "");
 		}
 		if (null != viewItem.getPostedDate()) {
 			if (!TextUtils.isEmpty(caption)) {
@@ -216,36 +197,6 @@ public class FeedsViewNode extends ViewNode {
 			textView = (TextView)convertView.findViewById(R.id.text);
 	        imageView = (ImageView)convertView.findViewById(R.id.image);
 		}
-    }
-	
-	public void onHeaderClicked(int header, ViewItemActivityStarter starter) {
-		int n = 0;
-		for (int i = 0; i < header; ++i) {
-			n += headers.get(i);
-		}
-		ViewItem viewItem = viewItems.get(n);
-		
-        if (null != viewItem.getAuthor()) {
-        	starter.startViewItemActivity(null, viewItem.getAuthor());
-        }
-	}
-	
-	public void onFooterClicked(int footer, ViewItemActivityStarter starter) {
-		int n = 0;
-		for (int i = 0; i < footer; ++i) {
-			n += headers.get(i);
-		}
-		ViewItem viewItem = viewItems.get(n);
-		
-        if (null != viewItem.getAuthor()) {
-        	for (ViewNode pplNode: SUBFEEDS) {
-				if (pplNode.getSourceUrl().equals(viewItem.getAuthor().getViewNode().getSourceUrl())) {
-					starter.startViewItemActivity(null,
-							new ViewItem(null, null, null, ViewItem.VIEW_TYPE_GRID, pplNode));
-					break;
-				}
-			}
-        }
     }
 	
 	@Override
