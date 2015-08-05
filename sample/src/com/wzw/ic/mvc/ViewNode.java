@@ -88,7 +88,7 @@ public class ViewNode extends IcObject {
 		return false;
 	}
 	
-	public List<ViewItem> load(Context context, boolean reload, LoadListener loadListener) {
+	public List<ViewItem> load(boolean reload, LoadListener loadListener) {
 		return null;
 	}
 	

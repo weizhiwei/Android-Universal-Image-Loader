@@ -68,7 +68,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		    public void onPageSelected(int position) {
                 updateCurrentPage();
 				if (parentModel.supportPaging() && position >= pagerAdapter.getCount() - 5) {
-					new GetDataTask(ViewItemPagerActivity.this, parentModel, pagerAdapter, new GetDataTask.GetDataTaskFinishedListener() {
+					new GetDataTask(parentModel, pagerAdapter, new GetDataTask.GetDataTaskFinishedListener() {
 							@Override
 							public void onGetDataTaskFinished(ViewNode model) {
 								ActionBar actionBar = getSupportActionBar();
@@ -126,7 +126,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                         break;
                 }
 
-                new GetDataTask(this, model, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
+                new GetDataTask(model, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
             }
 		}
 	}
@@ -273,7 +273,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 		                // Your code to refresh the list here.
 		                // Make sure you call swipeContainer.setRefreshing(false) when
 		                // once the network request has completed successfully.
-						new GetDataTask(ViewItemPagerActivity.this, childModel, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
+						new GetDataTask(childModel, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
 		            }
 			});
 			swipeRefreshLayout.setEnabled(childModel.supportReloading());
@@ -287,7 +287,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				onScrollListeners.add(new EndlessScrollListener() {
                     @Override
                     public void onLoadMore(int page, int totalItemsCount) {
-                        new GetDataTask(ViewItemPagerActivity.this, childModel, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, new GetDataTask.GetDataTaskFinishedListener() {
+                        new GetDataTask(childModel, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, new GetDataTask.GetDataTaskFinishedListener() {
 
                             @Override
                             public void onGetDataTaskFinished(ViewNode model) {
@@ -589,7 +589,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     if (null != model2.getViewItems() && model2.getViewItems().size() > 0) {
                         adapter.notifyDataSetChanged();
                     } else {
-                        new GetDataTask(ViewItemPagerActivity.this, model2, null, null, adapter, null, true);
+                        new GetDataTask(model2, null, null, adapter, null, true);
                     }
 
                     ItemClickSupport.addTo(holder.spannableGrid).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {

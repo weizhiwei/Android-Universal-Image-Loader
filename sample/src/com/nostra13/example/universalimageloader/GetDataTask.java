@@ -1,7 +1,6 @@
 package com.nostra13.example.universalimageloader;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
@@ -9,32 +8,26 @@ import android.widget.BaseAdapter;
 
 import com.wzw.ic.mvc.ViewNode;
 
-import java.util.HashMap;
-import java.util.Map;
-
 class GetDataTask {
 
 	public interface GetDataTaskFinishedListener {
 		public void onGetDataTaskFinished(ViewNode model);
 	}
 
-    protected Context context;
-	protected ViewNode model;
+    protected ViewNode model;
 	protected SwipeRefreshLayout swipeRefreshLayout;
 	protected BaseAdapter itemAdapter;
     protected RecyclerView.Adapter recyclerViewAdapter;
 	protected PagerAdapter pagerAdapter;
 	protected GetDataTaskFinishedListener listener;
 
-    protected void init(Context context,
-                        ViewNode model,
+    protected void init(ViewNode model,
                         SwipeRefreshLayout swipeRefreshLayout,
                         BaseAdapter itemAdapter,
                         RecyclerView.Adapter recyclerViewAdapter,
                         PagerAdapter pagerAdapter,
                         GetDataTaskFinishedListener listener,
                         boolean reload) {
-        this.context = context;
         this.model = model;
         this.swipeRefreshLayout = swipeRefreshLayout;
         this.itemAdapter = itemAdapter;
@@ -47,7 +40,7 @@ class GetDataTask {
             swipeRefreshLayout.setRefreshing(true);
         }
 
-        model.load(context, reload, new ViewNode.LoadListener() {
+        model.load(reload, new ViewNode.LoadListener() {
             @Override
             public void onLoadDone(ViewNode model) {
                 model.attach();
@@ -70,21 +63,19 @@ class GetDataTask {
         });
     }
 
-	public GetDataTask(Context context,
-            ViewNode model,
+	public GetDataTask(ViewNode model,
 			SwipeRefreshLayout swipeRefreshLayout,
 			BaseAdapter itemAdapter,
             RecyclerView.Adapter recyclerViewAdapter,
 			GetDataTaskFinishedListener listener,
             boolean reload) {
-		init(context, model, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, null, listener, reload);
+		init(model, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, null, listener, reload);
 	}
 	
-	public GetDataTask(Context context,
-            ViewNode model,
+	public GetDataTask(ViewNode model,
 			PagerAdapter pagerAdapter,
 			GetDataTaskFinishedListener listener,
             boolean reload) {
-        init(context, model, null, null, null, pagerAdapter, listener, reload);
+        init(model, null, null, null, pagerAdapter, listener, reload);
 	}
 }

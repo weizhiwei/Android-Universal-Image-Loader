@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import android.app.Activity;
-import android.content.Context;
+import android.os.AsyncTask;
 import android.text.Html;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -36,13 +36,12 @@ public class FeedsViewNode extends ViewNode {
 	public boolean supportReloading() {
 		return true;
 	}
-	
-	@Override
-    public List<ViewItem> load(final Context context, final boolean reload, final LoadListener loadListener) {
-        new Thread(new Runnable () {
 
+	@Override
+    public List<ViewItem> load(final boolean reload, final LoadListener loadListener) {
+        new AsyncTask<Void, Void, Void> () {
             @Override
-            public void run() {
+            protected Void doInBackground(Void... params) {
                 int newPageNo = reload ? 0 : pageNo + 1;
 
                 int needToDoLoadCount = SUBFEEDS.length;
@@ -62,7 +61,7 @@ public class FeedsViewNode extends ViewNode {
                         if (reload || null == subpages[i] || ((List<ViewItem>) subpages[i]).isEmpty()) {
                             ViewNode node = SUBFEEDS[i];
                             final int index = i;
-                            node.load(context, reload, new LoadListener() {
+                            node.load(reload, new LoadListener() {
                                 @Override
                                 public void onLoadDone(ViewNode model) {
                                     subpages[index] = model.getViewItems();
@@ -117,14 +116,15 @@ public class FeedsViewNode extends ViewNode {
                     viewItems.addAll(albumViewItems);
                 }
 
-                ((Activity)context).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        loadListener.onLoadDone(FeedsViewNode.this);
-                    }
-                });
+                return null;
             }
-        }).start();
+
+            @Override
+            protected void onPostExecute(Void result) {
+                loadListener.onLoadDone(FeedsViewNode.this);
+            }
+        }.execute();
+
         return null;
 	}
 

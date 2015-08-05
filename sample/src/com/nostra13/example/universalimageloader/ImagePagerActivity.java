@@ -65,7 +65,7 @@ public class ImagePagerActivity extends BaseActivity {
 			@Override
 		    public void onPageSelected(int position) {
 				if (parentModel.supportPaging() && position >= pagerAdapter.getCount() - 5) {
-					new GetDataTask(ImagePagerActivity.this, parentModel, pagerAdapter, null, false);
+					new GetDataTask(parentModel, pagerAdapter, null, false);
 				}
 			}
 		});
