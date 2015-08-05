@@ -22,10 +22,8 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -519,7 +517,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     ));
 
                     if (model.getWrapperViewResId(position) > 0) {
-                        holder.wrapperViewHolder = model.createHolderFromWrapperView(
+                        holder.wrapperViewHolder = model.createWrapperView(
                                 layoutInflater.inflate(model.getWrapperViewResId(position), parent, false)
                         );
 

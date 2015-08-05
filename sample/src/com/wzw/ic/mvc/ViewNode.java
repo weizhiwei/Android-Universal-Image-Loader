@@ -104,7 +104,7 @@ public class ViewNode extends IcObject {
         return R.layout.wrapper;
     }
 
-    public WrapperViewHolder createHolderFromWrapperView(View headerView) {
+    public WrapperViewHolder createWrapperView(View headerView) {
         return new WrapperViewHolder(headerView);
     }
 	
