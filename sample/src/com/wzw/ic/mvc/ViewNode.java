@@ -17,10 +17,6 @@ public class ViewNode extends IcObject {
         public void onLoadDone(ViewNode model);
     }
 
-    public static interface ViewItemActivityStarter {
-        public void startViewItemActivity(ViewNode parent, ViewItem viewItem);
-    }
-
     public static class WrapperViewHolder {
         public View wrapperView;
 
@@ -109,9 +105,5 @@ public class ViewNode extends IcObject {
     }
 	
 	public void updateWrapperView(View headerView, WrapperViewHolder holder, int position) {
-	}
-	
-	public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {
-		starter.startViewItemActivity(this, viewItem);
 	}
 }

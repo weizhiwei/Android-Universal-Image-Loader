@@ -46,7 +46,7 @@ import java.util.Arrays;
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
-public abstract class BaseActivity extends ActionBarActivity implements ViewNode.ViewItemActivityStarter {
+public abstract class BaseActivity extends ActionBarActivity {
 
 	protected ViewNode parentModel;
 	protected ViewNode model;

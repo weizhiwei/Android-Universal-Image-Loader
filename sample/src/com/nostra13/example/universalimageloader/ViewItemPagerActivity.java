@@ -301,7 +301,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         // drill down
-                        childModel.onViewItemClicked((ViewItem) itemAdapter.getItem(position), ViewItemPagerActivity.this);
+                        startViewItemActivity(childModel, (ViewItem)parent.getAdapter().getItem(position));
                     }
                 });
 
@@ -579,9 +579,9 @@ public class ViewItemPagerActivity extends BaseActivity {
                     view.setBackgroundColor(randomColorForHeader(Math.abs(viewItem.hashCode())));
 
 
-                    ViewNode model2 = model.getViewItems().get(position).getViewNode();
+                    final ViewNode model2 = viewItem.getViewNode();
 
-                    RecyclerView.Adapter<GridItemViewHolder> adapter = new RecyclerViewAdapter(model2, holder.spannableGrid, layoutInflater);
+                    final RecyclerViewAdapter adapter = new RecyclerViewAdapter(model2, holder.spannableGrid, layoutInflater);
                     holder.spannableGrid.setAdapter(adapter);
 
                     if (null != model2.getViewItems() && model2.getViewItems().size() > 0) {
@@ -594,8 +594,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                         @Override
                         public void onItemClick(RecyclerView parent, View child, int position, long id) {
                             // drill down
-                            model.onViewItemClicked(
-                                    (ViewItem)model.getViewItems().get(position), ViewItemPagerActivity.this);
+                            startViewItemActivity(model2, (ViewItem)((RecyclerViewAdapter) parent.getAdapter()).getItem(position));
                         }
                     });
                     break;
@@ -627,6 +626,12 @@ public class ViewItemPagerActivity extends BaseActivity {
                 return 0;
             }
         }
+
+        /* @Override */
+        public Object getItem(int position) {
+            return model.getViewItems().get(position);
+        }
+
 
         @Override
         public void onBindViewHolder(final GridItemViewHolder holder, int position) {

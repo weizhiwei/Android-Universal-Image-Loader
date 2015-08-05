@@ -173,16 +173,4 @@ public class FeedsViewNode extends ViewNode {
 			}
         }
 	}
-	
-	@Override
-	public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {
-		if (null != viewItem.getAuthor()) {
-			for (ViewNode pplNode: SUBFEEDS) {
-				if (pplNode.getSourceUrl().equals(viewItem.getAuthor().getViewNode().getSourceUrl())) {
-					starter.startViewItemActivity(pplNode, viewItem);
-					break;
-				}
-			}
-        }
-	}
 }
