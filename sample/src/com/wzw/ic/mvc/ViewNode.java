@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,9 +24,7 @@ public class ViewNode extends IcObject {
     public static class WrapperViewHolder {
         public View wrapperView;
 
-        public View header;
-        public View divider;
-        public View footer;
+        public FrameLayout placeholder;
 
         public TextView textView;
         public ImageView imageView;
@@ -33,9 +32,7 @@ public class ViewNode extends IcObject {
         public WrapperViewHolder(View wrapperView) {
             this.wrapperView = wrapperView;
 
-            header = wrapperView.findViewById(R.id.header);
-            divider = wrapperView.findViewById(R.id.divider);
-            footer = wrapperView.findViewById(R.id.footer);
+            placeholder = (FrameLayout)wrapperView.findViewById(R.id.placeholder);
 
             textView = (TextView)wrapperView.findViewById(R.id.text);
             imageView = (ImageView)wrapperView.findViewById(R.id.image);
@@ -104,14 +101,14 @@ public class ViewNode extends IcObject {
 	}
 
     public int getWrapperViewResId(int position) {
-        return R.layout.header;
+        return R.layout.wrapper;
     }
 
-    public WrapperViewHolder createHolderFromHeaderView(View headerView) {
+    public WrapperViewHolder createHolderFromWrapperView(View headerView) {
         return new WrapperViewHolder(headerView);
     }
 	
-	public void updateHeaderView(View headerView, WrapperViewHolder holder, int position) {
+	public void updateWrapperView(View headerView, WrapperViewHolder holder, int position) {
 	}
 	
 	public void onViewItemClicked(ViewItem viewItem, ViewItemActivityStarter starter) {

@@ -22,6 +22,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -518,35 +519,16 @@ public class ViewItemPagerActivity extends BaseActivity {
                     ));
 
                     if (model.getWrapperViewResId(position) > 0) {
-                        view.setLayoutParams(new ListView.LayoutParams(
-                                ListView.LayoutParams.MATCH_PARENT, (listView.getWidth())
-                        ));
-                        holder.wrapperViewHolder = model.createHolderFromHeaderView(
+                        holder.wrapperViewHolder = model.createHolderFromWrapperView(
                                 layoutInflater.inflate(model.getWrapperViewResId(position), parent, false)
                         );
 
-                        LinearLayout cardView = new LinearLayout(ViewItemPagerActivity.this);
-                        cardView.setLayoutParams(new ListView.LayoutParams(
-                                ListView.LayoutParams.FILL_PARENT, ListView.LayoutParams.WRAP_CONTENT));
-                        cardView.setOrientation(LinearLayout.VERTICAL);
-
-                        if (null != holder.wrapperViewHolder.header) {
-                            if (null != holder.wrapperViewHolder.header.getParent()) {
-                                ((ViewGroup) holder.wrapperViewHolder.header.getParent()).removeView(holder.wrapperViewHolder.header);
-                            }
-                            cardView.addView(holder.wrapperViewHolder.header);
-                        }
                         if (null != view.getParent()) {
                             ((ViewGroup) view.getParent()).removeView(view);
                         }
-                        cardView.addView(view);
-                        if (null != holder.wrapperViewHolder.footer) {
-                            if (null != holder.wrapperViewHolder.footer.getParent()) {
-                                ((ViewGroup) holder.wrapperViewHolder.footer.getParent()).removeView(holder.wrapperViewHolder.footer);
-                            }
-                            cardView.addView(holder.wrapperViewHolder.footer);
-                        }
-                        view = cardView;
+                        holder.wrapperViewHolder.placeholder.addView(view);
+
+                        view = holder.wrapperViewHolder.wrapperView;
                     }
                     break;
 
@@ -593,7 +575,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                 case ViewItem.VIEW_TYPE_LIST_TILES:
 
                     if (model.getWrapperViewResId(position) > 0) {
-                        model.updateHeaderView(view, holder.wrapperViewHolder, position);
+                        model.updateWrapperView(view, holder.wrapperViewHolder, position);
                     }
 
                     view.setBackgroundColor(randomColorForHeader(Math.abs(viewItem.hashCode())));

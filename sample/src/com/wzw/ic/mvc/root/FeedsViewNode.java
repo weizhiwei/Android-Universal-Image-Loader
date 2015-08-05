@@ -134,7 +134,7 @@ public class FeedsViewNode extends ViewNode {
 	}
 	
 	@Override
-	public void updateHeaderView(View headerView, final WrapperViewHolder holder, int position) {
+	public void updateWrapperView(View headerView, final WrapperViewHolder holder, int position) {
 		ViewItem viewItem = viewItems.get(position);
 		
 		String caption = "";
