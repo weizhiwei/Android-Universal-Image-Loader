@@ -2,7 +2,6 @@ package com.wzw.ic.mvc.root;
 
 import java.util.Arrays;
 
-import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.moko.MokoViewNodeBookmarks;
 import com.wzw.ic.mvc.moko.MokoViewNodeFollowing;
@@ -16,11 +15,11 @@ public class RootViewNode extends ViewNode {
 	protected RootViewNode() {
 		
 		super("root", Arrays.asList(
-                new ViewItem("Channels", null, null, ViewItem.VIEW_TYPE_GRID, new MokoViewNodeRoot()),
-                new ViewItem("Bookmarks", null, null, ViewItem.VIEW_TYPE_LIST_TILES, new MokoViewNodeBookmarks()),
-                new ViewItem("Following", null, null, ViewItem.VIEW_TYPE_LIST_SIMPLE, new MokoViewNodeFollowing()),
-                new ViewItem("Update", null, null, ViewItem.VIEW_TYPE_LIST_TILES, new FeedsViewNode()),
-                new ViewItem("New", null, null, ViewItem.VIEW_TYPE_LIST_TILES, new MokoViewNodeStream())
+                new ViewItem("Channels", null, null, VIEW_TYPE_GRID, new MokoViewNodeRoot()),
+                new ViewItem("Bookmarks", null, null, VIEW_TYPE_LIST_TILES, new MokoViewNodeBookmarks()),
+                new ViewItem("Following", null, null, VIEW_TYPE_LIST_SIMPLE, new MokoViewNodeFollowing()),
+                new ViewItem("Update", null, null, VIEW_TYPE_LIST_TILES, new FeedsViewNode()),
+                new ViewItem("New", null, null, VIEW_TYPE_LIST_TILES, new MokoViewNodeStream())
                 ));
 	}
 	

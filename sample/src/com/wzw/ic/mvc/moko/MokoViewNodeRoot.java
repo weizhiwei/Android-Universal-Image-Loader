@@ -2,7 +2,7 @@ package com.wzw.ic.mvc.moko;
 
 import android.graphics.Color;
 
-import com.wzw.ic.mvc.ViewItem;
+import com.wzw.ic.mvc.ViewNode;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -19,11 +19,11 @@ public class MokoViewNodeRoot extends MokoViewNode {
 	}
 
 	@Override
-	protected List<ViewItem> extractViewItemsFromPage(Document page) {
-		List<ViewItem> viewItems = null;
+	protected List<ViewNode> extractViewItemsFromPage(Document page) {
+		List<ViewNode> viewItems = null;
 		Elements aElems = page.select("a.mark");
 		if (null != aElems && aElems.size() > 0) {
-			viewItems = new ArrayList<ViewItem>();
+			viewItems = new ArrayList<ViewNode>();
 			for (int i = 0; i < aElems.size(); ++i) {
 				Element a = aElems.get(i);
                 String url = null;
@@ -38,14 +38,14 @@ public class MokoViewNodeRoot extends MokoViewNode {
 						color = Color.parseColor("#" + colorString);
 					}
 				}
-				ViewItem viewItem = new ViewItem(
+                ViewNode viewItem = new ViewNode(
 						a.ownText(),
 						url,
 						null,
-						ViewItem.VIEW_TYPE_GRID,
+						VIEW_TYPE_GRID,
 						new MokoViewNodeChannel(url));
 				viewItem.setViewItemColor(color);
-				viewItem.setViewItemType(ViewItem.VIEW_ITEM_TYPE_COLOR);
+				viewItem.setViewItemType(VIEW_ITEM_TYPE_COLOR);
 				viewItem.setShowingLabelInGrid(true);
 				viewItem.setInitialZoomLevel(2);
 				viewItems.add(viewItem);

@@ -17,8 +17,6 @@ package com.nostra13.example.universalimageloader;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -34,11 +32,9 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.ShareActionProvider;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.toolbox.ImageLoader;
-import com.koushikdutta.ion.Ion;
-import com.wzw.ic.mvc.ViewItem;
+import com.wzw.ic.mvc.ViewNode;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -59,17 +55,17 @@ public class ImagePagerActivity extends BaseActivity {
 
 		pager = (ViewPager) findViewById(R.id.ic_pagerview);
 //		pager.setOffscreenPageLimit(3);
-		final PagerAdapter pagerAdapter = new ImagePagerAdapter();
+		final PagerAdapter pagerAdapter = new ImagePagerAdapter(viewNode.getParent(), getLayoutInflater());
 		pager.setAdapter(pagerAdapter);
 		pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener () {
 			@Override
 		    public void onPageSelected(int position) {
-				if (parentModel.supportPaging() && position >= pagerAdapter.getCount() - 5) {
-					new GetDataTask(parentModel, pagerAdapter, null, false);
+				if (viewNode.getParent().supportPaging() && position >= pagerAdapter.getCount() - 5) {
+					new GetDataTask(viewNode.getParent(), pagerAdapter, null, false);
 				}
 			}
 		});
-		pager.setCurrentItem((null != parentModel && null != parentModel.getViewItems()) ? parentModel.getViewItems().indexOf(myViewItem) : 0);
+		pager.setCurrentItem((null != viewNode.getParent()) ? viewNode.getParent().getChildren().indexOf(viewNode) : 0);
 		
 		setFullscreen(true);
 	}
@@ -82,24 +78,24 @@ public class ImagePagerActivity extends BaseActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case R.id.item_hearts_toggle:
-			{
-				ViewItem viewItem = parentModel.getViewItems().get(pager.getCurrentItem());
-				viewItem.setHeartsOn(!viewItem.isHeartsOn());
-				if (viewItem.isHeartsOn()) {
-					IcDatabase.getInstance().addViewItemToHearts(viewItem);
-				} else {
-					IcDatabase.getInstance().removeViewItemFromHearts(viewItem);
-				}
-	        	updateMenu();
-				return true;
-			}
-			case R.id.item_set_wallpaper:
-			{
-				ViewItem viewItem = parentModel.getViewItems().get(pager.getCurrentItem());
-				WallpaperAlarmReceiver.setWallpaper(this, viewItem.getImageUrl());
-				return true;
-			}
+//			case R.id.item_hearts_toggle:
+//			{
+//				ViewItem viewItem = parentModel.getChildren().get(pager.getCurrentItem());
+//				viewItem.setHeartsOn(!viewItem.isHeartsOn());
+//				if (viewItem.isHeartsOn()) {
+//					IcDatabase.getInstance().addViewItemToHearts(viewItem);
+//				} else {
+//					IcDatabase.getInstance().removeViewItemFromHearts(viewItem);
+//				}
+//	        	updateMenu();
+//				return true;
+//			}
+//			case R.id.item_set_wallpaper:
+//			{
+//				ViewItem viewItem = parentModel.getChildren().get(pager.getCurrentItem());
+//				WallpaperAlarmReceiver.setWallpaper(this, viewItem.getImageUrl());
+//				return true;
+//			}
 			default:
 				return super.onOptionsItemSelected(item);
 		}
@@ -110,7 +106,7 @@ public class ImagePagerActivity extends BaseActivity {
 		if (null == menu)
 			return;
 		
-		ViewItem viewItem = parentModel.getViewItems().get(pager.getCurrentItem());
+		ViewNode viewItem = viewNode.getSibling(pager.getCurrentItem());
 		
 		MenuItem heartsItem = menu.findItem(R.id.item_hearts_toggle);
 		heartsItem.setVisible(true);
@@ -145,12 +141,14 @@ shareIntent.setType("image/*");
 		setWallpaperItem.setVisible(true);
 	}
 	
-	private class ImagePagerAdapter extends PagerAdapter {
-		
+	private static class ImagePagerAdapter extends PagerAdapter {
+
+        private ViewNode model;
 		private LayoutInflater inflater;
 
-		ImagePagerAdapter() {
-			inflater = getLayoutInflater();
+		ImagePagerAdapter(ViewNode model, LayoutInflater inflater) {
+            this.model = model;
+			this.inflater = inflater;
 		}
 
 		@Override
@@ -160,18 +158,25 @@ shareIntent.setType("image/*");
 
 		@Override
 		public int getCount() {
-			return null == parentModel.getViewItems() ? 0 : parentModel.getViewItems().size();
+			return model.getChildren().size();
 		}
+
+        /* @Override */
+        public Object getItem(int position) {
+            return model.getChildren().get(position);
+        }
 
 		@Override
 	    public void setPrimaryItem(ViewGroup container, int position, Object object) {
 	        super.setPrimaryItem(container, position, object);
 
-	        if (myViewItem == parentModel.getViewItems().get(position)) {
-	        	return;
-	        }
-	        
-	        myViewItem = parentModel.getViewItems().get(position);
+            final ViewNode child = (ViewNode)getItem(position);
+
+//            if (viewNode == child) {
+//	        	return;
+//	        }
+//
+//	        viewNode = child;
 
 	        View imageLayout = (View) object;
 	        ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
@@ -188,6 +193,9 @@ shareIntent.setType("image/*");
 		
 		@Override
 		public Object instantiateItem(ViewGroup view, int position) {
+
+            final ViewNode child = (ViewNode)getItem(position);
+
 			View imageLayout = inflater.inflate(R.layout.item_pager_image, view, false);
 			assert imageLayout != null;
 			imageLayout.setTag(position);
@@ -195,10 +203,7 @@ shareIntent.setType("image/*");
 			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
 			final TextView textView = (TextView) imageLayout.findViewById(R.id.story);
 
-			final ViewItem viewItem = parentModel.getViewItems().get(position);
-			viewItem.setHeartsOn(IcDatabase.getInstance().isViewItemInHearts(viewItem));
-			
-			SpannableString text = buildPictureText(viewItem, true, true, true, true, true, true);
+			SpannableString text = buildPictureText(child, true, true, true, true, true, true);
 			if (null != text) {
 				textView.setText(text);
 				textView.setMovementMethod(LinkMovementMethod.getInstance());
@@ -222,7 +227,7 @@ shareIntent.setType("image/*");
 //                    .error(R.drawable.ic_error)
 //                    .load(viewItem.getImageUrl());
 
-            MyVolley.getImageLoader().get(viewItem.getImageUrl(),
+            MyVolley.getImageLoader().get(child.getImageUrl(),
                     ImageLoader.getImageListener(imageView,
                             R.drawable.ic_stub,
                             R.drawable.ic_error));

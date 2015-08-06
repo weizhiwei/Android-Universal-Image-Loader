@@ -2,17 +2,13 @@ package com.nostra13.example.universalimageloader;
 
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.OnNavigationListener;
-import android.support.v7.app.ActionBar.Tab;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.wzw.ic.mvc.ViewItem;
+import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.root.RootViewNode;
 
 public class EntryActivity extends ViewItemPagerActivity {
@@ -30,9 +26,7 @@ public class EntryActivity extends ViewItemPagerActivity {
 	
 	@Override
 	protected void setModelFromIntent() {
-		parentModel = RootViewNode.getInstance();
-		myViewItem = parentModel.getViewItems().get(0);
-		model = myViewItem.getViewNode();
+		viewNode = RootViewNode.getInstance().getChildren().get(0);
 	}
 	
 	@Override
@@ -44,24 +38,24 @@ public class EntryActivity extends ViewItemPagerActivity {
 
 			@Override
 			public int getCount() {
-				return null == parentModel.getViewItems() ? 0 : parentModel.getViewItems().size();
+				return null == viewNode.getParent()? 0 : viewNode.getParent().getChildren().size();
 			}
 
 			@Override
 			public Object getItem(int position) {
-				return parentModel.getViewItems().get(position);
+				return viewNode.getParent().getChildren().get(position);
 			}
 
 			@Override
 			public long getItemId(int position) {
-				return parentModel.getViewItems().get(position).hashCode();
+				return position;
 			}
 
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
-				ViewItem viewItem = parentModel.getViewItems().get(position);
+				ViewNode viewItem = (ViewNode)getItem(position);
 				TextView textView = new TextView(EntryActivity.this);
-				textView.setText(viewItem.getLabel());
+				textView.setText(viewItem.getTitle());
 //				textView.setTextSize(16);
 //				textView.setCompoundDrawablesWithIntrinsicBounds(viewItem.getViewItemImageResId(), 0, 0, 0);
 //				textView.setCompoundDrawablePadding(20);

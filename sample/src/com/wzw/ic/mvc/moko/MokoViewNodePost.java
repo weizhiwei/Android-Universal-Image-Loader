@@ -40,7 +40,7 @@ public class MokoViewNodePost extends MokoViewNode {
 							e.text(),
 							userUrl,
 							null == i ? "" : i.attr("src"),
-							ViewItem.VIEW_TYPE_GRID,
+							VIEW_TYPE_GRID,
 							new MokoViewNodeAuthor(userUrl));
 					authorViewItem.setInitialZoomLevel(2);
 				}
@@ -53,7 +53,7 @@ public class MokoViewNodePost extends MokoViewNode {
 			viewItems = new ArrayList<ViewItem>();
 			for (int i = 0; i < imgElems.size(); ++i) {
 				Element img = imgElems.get(i);
-				ViewItem viewItem = new ViewItem(pageTitle, sourceUrl, img.attr("src2"), ViewItem.VIEW_TYPE_IMAGE_PAGER, this);
+				ViewItem viewItem = new ViewItem(pageTitle, sourceUrl, img.attr("src2"), VIEW_TYPE_IMAGE_PAGER, this);
 				viewItem.setAuthor(authorViewItem);
 				viewItems.add(viewItem);
 			}

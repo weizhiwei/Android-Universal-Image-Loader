@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import com.wzw.ic.mvc.ViewItem;
+import com.wzw.ic.mvc.ViewNode;
 
 public class IcDatabase {
 	private static final String TAG = "IcDatabase";
@@ -56,62 +56,62 @@ public class IcDatabase {
         mDbHelper.close();
     }
     
-    public long addViewItemToHearts(ViewItem item) {
-    	removeViewItemFromHearts(item);
-    	
-        ContentValues initialValues = new ContentValues();
-        initialValues.put("label", item.getLabel());
-        initialValues.put("imageUrl", item.getImageUrl());
-        initialValues.put("story", item.getStory());
-        initialValues.put("nodeUrl", item.getNodeUrl());
-        return mDb.insert("hearts", null, initialValues);
-    }
-    
-    public boolean removeViewItemFromHearts(ViewItem item) {
-    	return mDb.delete("hearts", "imageUrl='"+item.getImageUrl()+"'", null) > 0;
-    }
-    
-    public boolean isViewItemInHearts(ViewItem item) {
-		Cursor mCursor = mDb.query(true, "hearts", new String[] {"_id"}, "imageUrl='"+item.getImageUrl()+"'", null, null, null, null, "1");
-		boolean isIn = (mCursor != null && mCursor.moveToFirst());
-		if (mCursor != null) {
-			mCursor.close();
-		}
-		return isIn;
-    }
-
-    public int getViewItemsInHeartsCount() {
-    	Cursor cursor = mDb.query("hearts", null, null, null, null, null, null);
-    	if (cursor != null) {
-    		int count = cursor.getCount();
-    		cursor.close();
-    		return count;
-    	}
-    	return -1;
-    }
-    
-    public List<ViewItem> fetchAllViewItemsInHearts(int offset, int limit) {
-    	List<ViewItem> pageViewItems = null;
-		
-    	Cursor cursor = mDb.query("hearts", null, null, null, null, null, null, offset+","+limit);
-    	if (cursor != null) {
-			cursor.moveToFirst();
-			pageViewItems = new ArrayList<ViewItem>();
-			while (cursor.isAfterLast() == false) {
-				String label = cursor.getString(cursor.getColumnIndex("label"));
-				String nodeUrl = cursor.getString(cursor.getColumnIndex("nodeUrl"));
-				String imageUrl = cursor.getString(cursor.getColumnIndex("imageUrl"));
-				String story = cursor.getString(cursor.getColumnIndex("story"));
-				ViewItem item = new ViewItem(label, nodeUrl, imageUrl, 0, null);
-				item.setStory(story);
-				pageViewItems.add(item);
-				cursor.moveToNext();
-	        }
-			cursor.close();
-		}
-    	
-    	return pageViewItems;
-    }
+//    public long addViewItemToHearts(ViewItem item) {
+//    	removeViewItemFromHearts(item);
+//
+//        ContentValues initialValues = new ContentValues();
+//        initialValues.put("label", item.getTitle());
+//        initialValues.put("imageUrl", item.getImageUrl());
+//        initialValues.put("story", item.getStory());
+//        initialValues.put("nodeUrl", item.getNodeUrl());
+//        return mDb.insert("hearts", null, initialValues);
+//    }
+//
+//    public boolean removeViewItemFromHearts(ViewItem item) {
+//    	return mDb.delete("hearts", "imageUrl='"+item.getImageUrl()+"'", null) > 0;
+//    }
+//
+//    public boolean isViewItemInHearts(ViewItem item) {
+//		Cursor mCursor = mDb.query(true, "hearts", new String[] {"_id"}, "imageUrl='"+item.getImageUrl()+"'", null, null, null, null, "1");
+//		boolean isIn = (mCursor != null && mCursor.moveToFirst());
+//		if (mCursor != null) {
+//			mCursor.close();
+//		}
+//		return isIn;
+//    }
+//
+//    public int getViewItemsInHeartsCount() {
+//    	Cursor cursor = mDb.query("hearts", null, null, null, null, null, null);
+//    	if (cursor != null) {
+//    		int count = cursor.getCount();
+//    		cursor.close();
+//    		return count;
+//    	}
+//    	return -1;
+//    }
+//
+//    public List<ViewItem> fetchAllViewItemsInHearts(int offset, int limit) {
+//    	List<ViewItem> pageViewItems = null;
+//
+//    	Cursor cursor = mDb.query("hearts", null, null, null, null, null, null, offset+","+limit);
+//    	if (cursor != null) {
+//			cursor.moveToFirst();
+//			pageViewItems = new ArrayList<ViewItem>();
+//			while (cursor.isAfterLast() == false) {
+//				String label = cursor.getString(cursor.getColumnIndex("label"));
+//				String nodeUrl = cursor.getString(cursor.getColumnIndex("nodeUrl"));
+//				String imageUrl = cursor.getString(cursor.getColumnIndex("imageUrl"));
+//				String story = cursor.getString(cursor.getColumnIndex("story"));
+//				ViewItem item = new ViewItem(label, nodeUrl, imageUrl, 0, null);
+//				item.setStory(story);
+//				pageViewItems.add(item);
+//				cursor.moveToNext();
+//	        }
+//			cursor.close();
+//		}
+//
+//    	return pageViewItems;
+//    }
     
     private static class DatabaseOpenHelper extends SQLiteOpenHelper {
     	DatabaseOpenHelper(Context context) {

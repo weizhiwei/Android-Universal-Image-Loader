@@ -1,9 +1,9 @@
 package com.wzw.ic.mvc;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import android.content.Context;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -12,6 +12,16 @@ import android.widget.TextView;
 import com.nostra13.example.universalimageloader.R;
 
 public class ViewNode extends IcObject {
+
+    public static final int VIEW_TYPE_LIST_SIMPLE = 0;
+    public static final int VIEW_TYPE_LIST_TILES = 1;
+    public static final int VIEW_TYPE_LIST_COUNT = 2;
+    public static final int VIEW_TYPE_GRID = 10;
+    public static final int VIEW_TYPE_IMAGE_PAGER = 20;
+    public static final int VIEW_TYPE_WEBVIEW = 30;
+    public static final int VIEW_ITEM_TYPE_COLOR = 1;
+    public static final int VIEW_ITEM_TYPE_IMAGE_RES = 2;
+    public static final int VIEW_ITEM_TYPE_IMAGE_URL = 3;
 
     public static interface LoadListener {
         public void onLoadDone(ViewNode model);
@@ -36,27 +46,28 @@ public class ViewNode extends IcObject {
     }
 
 	protected String sourceUrl;
-	
-	protected List<ViewItem> viewItems, viewItemsCopy;
+
+    protected ViewNode parent;
+	protected List<ViewNode> children, viewItemsCopy;
 	protected List<ViewNodeAction> actions, actionsCopy;
 
     protected boolean isDetached = false;
 	
 	public ViewNode(String sourceUrl) {
 		this.sourceUrl = sourceUrl;
-		this.viewItems = new ArrayList<ViewItem>();
+		this.children = new ArrayList<ViewNode>();
 		this.actions = new ArrayList<ViewNodeAction>();
 	}
 
-	public ViewNode(String sourceUrl, List<ViewItem> viewItems) {
+	public ViewNode(String sourceUrl, List<ViewNode> children) {
 		this.sourceUrl = sourceUrl;
-		this.viewItems = viewItems;
+		this.children = children;
 		this.actions = new ArrayList<ViewNodeAction>();
 	}
 	
 	public void detach() {
-		viewItemsCopy = new ArrayList<ViewItem>(viewItems.size());
-		viewItemsCopy.addAll(viewItems);
+		viewItemsCopy = new ArrayList<ViewNode>(children.size());
+		viewItemsCopy.addAll(children);
 		actionsCopy = new ArrayList<ViewNodeAction>(actions.size());
 		actionsCopy.addAll(actions);
         isDetached = true;
@@ -67,13 +78,19 @@ public class ViewNode extends IcObject {
 		viewItemsCopy = null;
 		actionsCopy = null;
 	}
-	
-	public String getSourceUrl() {
-		return sourceUrl;
-	}
-	
-	public List<ViewItem> getViewItems() {
-		return isDetached ? viewItemsCopy : viewItems;
+
+    public ViewNode getParent() { return parent; }
+
+    public int getSiblingCount() {
+        return null == parent ? 0 : parent.getChildren().size();
+    }
+
+    public ViewNode getSibling(int i) {
+        return parent.getChildren().get(i);
+    }
+
+	public List<ViewNode> getChildren() {
+		return isDetached ? viewItemsCopy : children;
 	}
 
 	public List<ViewNodeAction> getActions() {
@@ -84,8 +101,7 @@ public class ViewNode extends IcObject {
 		return false;
 	}
 	
-	public List<ViewItem> load(boolean reload, LoadListener loadListener) {
-		return null;
+	public void load(boolean reload, LoadListener loadListener) {
 	}
 	
 	public boolean supportPaging() {
@@ -96,7 +112,7 @@ public class ViewNode extends IcObject {
 		return null;
 	}
 
-    public int getWrapperViewResId(int position) {
+    public int getWrapperViewResId() {
         return R.layout.wrapper;
     }
 
@@ -106,4 +122,132 @@ public class ViewNode extends IcObject {
 	
 	public void updateWrapperView(View headerView, WrapperViewHolder holder, int position) {
 	}
+
+    private String title;
+    private String nodeUrl;
+    private String imageUrl;
+    private boolean showingLabelInGrid;
+    private int viewItemType;
+    private int viewItemColor;
+    private int viewItemImageResId;
+    private String story;
+    private boolean heartsOn;
+    private ViewNode author;
+    private String webPageUrl;
+    private int initialZoomLevel;
+    private Date postedDate;
+
+    private int viewType;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getNodeUrl() {
+        return nodeUrl;
+    }
+
+    public void setNodeUrl(String nodeUrl) {
+        this.nodeUrl = nodeUrl;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public boolean isShowingLabelInGrid() {
+        return showingLabelInGrid;
+    }
+
+    public void setShowingLabelInGrid(boolean showingLabelInGrid) {
+        this.showingLabelInGrid = showingLabelInGrid;
+    }
+
+    public String getStory() {
+        return story;
+    }
+
+    public void setStory(String story) {
+        this.story = story;
+    }
+
+    public boolean isHeartsOn() {
+        return heartsOn;
+    }
+
+    public void setHeartsOn(boolean heartsOn) {
+        this.heartsOn = heartsOn;
+    }
+
+    public int getViewType() {
+        return viewType;
+    }
+
+    public void setViewType(int viewType) {
+        this.viewType = viewType;
+    }
+
+    public ViewNode getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(ViewNode author) {
+        this.author = author;
+    }
+
+    public String getWebPageUrl() {
+        return webPageUrl;
+    }
+
+    public void setWebPageUrl(String webPageUrl) {
+        this.webPageUrl = webPageUrl;
+    }
+
+    public int getViewItemType() {
+        return viewItemType;
+    }
+
+    public void setViewItemType(int viewItemType) {
+        this.viewItemType = viewItemType;
+    }
+
+    public int getViewItemColor() {
+        return viewItemColor;
+    }
+
+    public void setViewItemColor(int viewItemColor) {
+        this.viewItemColor = viewItemColor;
+    }
+
+    public int getViewItemImageResId() {
+        return viewItemImageResId;
+    }
+
+    public void setViewItemImageResId(int viewItemImageResId) {
+        this.viewItemImageResId = viewItemImageResId;
+    }
+
+    public int getInitialZoomLevel() {
+        return initialZoomLevel;
+    }
+
+    public void setInitialZoomLevel(int initialZoomLevel) {
+        this.initialZoomLevel = initialZoomLevel;
+    }
+
+    public Date getPostedDate() {
+        return postedDate;
+    }
+
+    public void setPostedDate(Date postedDate) {
+        this.postedDate = postedDate;
+    }
 }

@@ -6,7 +6,6 @@ import com.android.volley.Request;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.StringRequest;
 import com.nostra13.example.universalimageloader.MyVolley;
-import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 
 import org.apache.http.cookie.Cookie;
@@ -36,7 +35,7 @@ public abstract class MokoViewNode extends ViewNode {
     }
 
     @Override
-    public List<ViewItem> load(final boolean reload, final LoadListener loadListener) {
+    public void load(final boolean reload, final LoadListener loadListener) {
         final int newPageNo = reload ? 1 : pageNo + 1;
 
         final StringRequest myReq = new StringRequest(Request.Method.GET,
@@ -46,13 +45,13 @@ public abstract class MokoViewNode extends ViewNode {
                     public void onResponse(String result) {
                         Document doc = Jsoup.parse(result);
                         if (doc != null) {
-                            List<ViewItem> pageViewItems = extractViewItemsFromPage(doc);
+                            List<ViewNode> pageViewItems = extractViewItemsFromPage(doc);
                             if (null != pageViewItems && pageViewItems.size() > 0) {
                                 pageNo = newPageNo;
                                 if (reload) {
-                                    viewItems.clear();
+                                    children.clear();
                                 }
-                                viewItems.addAll(pageViewItems);
+                                children.addAll(pageViewItems);
                             }
                         }
                         loadListener.onLoadDone(MokoViewNode.this);
@@ -91,20 +90,17 @@ public abstract class MokoViewNode extends ViewNode {
                         }
                     }) {
 
+                @Override
                 protected Map<String, String> getParams() throws com.android.volley.error.AuthFailureError {
                     Map<String, String> params = new HashMap<String, String>();
                     params.put("usermingzi", "weizhiwei@gmail.com");
                     params.put("userkey", "85148415");
                     return params;
                 }
-
-                ;
             });
         } else {
             MyVolley.getRequestQueue().add(myReq);
         }
-
-        return null;
     }
 
     @Override
@@ -112,5 +108,5 @@ public abstract class MokoViewNode extends ViewNode {
         return supportPaging;
     }
 
-    protected abstract List<ViewItem> extractViewItemsFromPage(Document page);
+    protected abstract List<ViewNode> extractViewItemsFromPage(Document page);
 }

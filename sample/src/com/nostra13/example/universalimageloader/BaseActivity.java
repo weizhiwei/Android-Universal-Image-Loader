@@ -34,7 +34,6 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.nostra13.example.universalimageloader.Constants.Extra;
-import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.ViewNodeAction;
 
@@ -48,9 +47,7 @@ import java.util.Arrays;
  */
 public abstract class BaseActivity extends ActionBarActivity {
 
-	protected ViewNode parentModel;
-	protected ViewNode model;
-	protected ViewItem myViewItem;
+	protected ViewNode viewNode;
 	protected Menu menu;
 	private boolean wallpaperServiceEnabled = false;
 	
@@ -144,11 +141,7 @@ public abstract class BaseActivity extends ActionBarActivity {
 	protected void setModelFromIntent() {
 		Bundle bundle = getIntent().getExtras();
 		if (null != bundle) {
-			parentModel = (ViewNode) bundle.getSerializable(Extra.PARENT_MODEL);
-			myViewItem = (ViewItem) bundle.getSerializable(Extra.VIEW_ITEM);
-			if (null != parentModel && null != myViewItem) {
-				model = myViewItem.getViewNode();
-			}
+			viewNode = (ViewNode) bundle.getSerializable(Extra.VIEWNODE);
 		}
 	}
 	
@@ -165,13 +158,6 @@ public abstract class BaseActivity extends ActionBarActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main_menu, menu);
-		if (null != model && null != model.getActions()) {
-			for (ViewNodeAction action: model.getActions()) {
-				MenuItem item = menu.add(Menu.NONE, action.getId(), Menu.FIRST, action.getTitle());
-//				item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-				item.setVisible(action.isVisible());
-			}
-		}
 		this.menu = menu;
 		return super.onCreateOptionsMenu(menu);
 	}
@@ -187,29 +173,14 @@ public abstract class BaseActivity extends ActionBarActivity {
             case R.id.item_settings:
                 return true;
 			default:
-				if (null != model && null != model.getActions()) {
-					for (ViewNodeAction action: model.getActions()) {
-						if (action.getId() == item.getItemId()) {
-							Object actionResult = model.onAction(action);
-							if (null != actionResult) {
-								if (actionResult instanceof ViewItem) {
-									startViewItemActivity(null, (ViewItem) actionResult);
-								}
-							}
-							return true;
-						} else {
-							// other action results here...
-						}
-					}
-				}
 				return false;
 		}
 	}
 	
-	public void startViewItemActivity(ViewNode parent, ViewItem viewItem) {
+	public void startViewItemActivity(ViewNode node) {
 		Intent intent;
-		switch (viewItem.getViewType()) {
-		case ViewItem.VIEW_TYPE_IMAGE_PAGER:
+		switch (node.getViewType()) {
+		case ViewNode.VIEW_TYPE_IMAGE_PAGER:
 			intent = new Intent(this, ImagePagerActivity.class);
 			break;
 		default:
@@ -217,11 +188,7 @@ public abstract class BaseActivity extends ActionBarActivity {
 			break;
 		}
 		if (null != intent) {
-			if (null == parent) {
-				parent = new ViewNode("", Arrays.asList(viewItem));
-			}
-			intent.putExtra(Extra.PARENT_MODEL, parent);
-			intent.putExtra(Extra.VIEW_ITEM, viewItem);
+			intent.putExtra(Extra.VIEWNODE, node);
 			startActivity(intent);
 		}
 	}
@@ -236,14 +203,14 @@ public abstract class BaseActivity extends ActionBarActivity {
 		        PackageManager.DONT_KILL_APP);
 	}
 	
-	protected static SpannableString buildPictureText(final ViewItem viewItem, boolean needTitle, boolean needAuthor, boolean needStory, boolean bigFont, boolean labelLinkOn, boolean ownerLinkOn) {
+	protected static SpannableString buildPictureText(final ViewNode viewItem, boolean needTitle, boolean needAuthor, boolean needStory, boolean bigFont, boolean labelLinkOn, boolean ownerLinkOn) {
 		String story = "";
-		if (needTitle && !TextUtils.isEmpty(viewItem.getLabel())) {
+		if (needTitle && !TextUtils.isEmpty(viewItem.getTitle())) {
 			String LINK = labelLinkOn ? "<a href=\"%s\">%s</a>" : "%2$s";
 			String FONT = String.format(bigFont ? "<big><b>%s</b></big>" : "%s", LINK);
-			story += String.format(FONT, viewItem.getNodeUrl(), TextUtils.htmlEncode(viewItem.getLabel()));
+			story += String.format(FONT, viewItem.getNodeUrl(), TextUtils.htmlEncode(viewItem.getTitle()));
 		}
-		String authorName = (viewItem.getAuthor() == null ? null : viewItem.getAuthor().getLabel());
+		String authorName = (viewItem.getAuthor() == null ? null : viewItem.getAuthor().getTitle());
 		if (needAuthor && !TextUtils.isEmpty(authorName)) {
 			String FONT = String.format(bigFont ? "<big>%s</big>" : "%s", "<i>%s</i>");
 			story += String.format(" by " + FONT, TextUtils.htmlEncode(authorName));

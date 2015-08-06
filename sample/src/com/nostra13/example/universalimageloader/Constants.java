@@ -28,7 +28,6 @@ public final class Constants {
 	}
 	
 	public static class Extra {
-		public static final String VIEW_ITEM = "com.nostra13.example.universalimageloader.VIEW_ITEM";
-		public static final String PARENT_MODEL = "com.nostra13.example.universalimageloader.PARENT_MODEL";
+		public static final String VIEWNODE = "com.nostra13.example.universalimageloader.VIEWNODE";
 	}
 }

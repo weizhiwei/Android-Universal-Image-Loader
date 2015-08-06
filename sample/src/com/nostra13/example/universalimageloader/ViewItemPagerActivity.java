@@ -29,7 +29,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.ImageLoader;
-import com.wzw.ic.mvc.ViewItem;
 import com.wzw.ic.mvc.ViewNode;
 
 import org.lucasr.twowayview.ItemClickSupport;
@@ -59,14 +58,13 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
 //		pager.setOffscreenPageLimit(3);
-		final PagerAdapter pagerAdapter = new ViewItemPagerAdapter(parentModel, pager, getLayoutInflater());
+		final PagerAdapter pagerAdapter = new ViewItemPagerAdapter(viewNode.getParent(), getLayoutInflater());
 		pager.setAdapter(pagerAdapter);
         pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener () {
 			@Override
 		    public void onPageSelected(int position) {
-                updateCurrentPage();
-				if (parentModel.supportPaging() && position >= pagerAdapter.getCount() - 5) {
-					new GetDataTask(parentModel, pagerAdapter, new GetDataTask.GetDataTaskFinishedListener() {
+                if (viewNode.getParent().supportPaging() && position >= pagerAdapter.getCount() - 5) {
+					new GetDataTask(viewNode.getParent(), pagerAdapter, new GetDataTask.GetDataTaskFinishedListener() {
 							@Override
 							public void onGetDataTaskFinished(ViewNode model) {
 								ActionBar actionBar = getSupportActionBar();
@@ -77,60 +75,9 @@ public class ViewItemPagerActivity extends BaseActivity {
 		    }
 		});
 	}
-
-	private void updateCurrentPage() {
-        int position = pager.getCurrentItem();
-
-        myViewItem = parentModel.getViewItems().get(position);
-        model = myViewItem.getViewNode();
-
-        updateMenu(model);
-
-        ActionBar actionBar = getSupportActionBar();
-        setActionBarSelection(actionBar, position);
-
-        if (model.supportReloading() && model.getViewItems().isEmpty()) {
-        	View contentView = pager.findViewWithTag(position);
-        	SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
-            if (!swipeRefreshLayout.isRefreshing()) {
-                AbsListView absListView = null;
-                BaseAdapter itemAdapter = null;
-                RecyclerView.Adapter recyclerViewAdapter = null;
-                GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener = null;
-                switch (myViewItem.getViewType()) {
-                    case ViewItem.VIEW_TYPE_LIST_SIMPLE:
-                    case ViewItem.VIEW_TYPE_LIST_TILES:
-                        absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
-                        itemAdapter = (BaseAdapter) absListView.getAdapter();
-                        break;
-                    case ViewItem.VIEW_TYPE_GRID:
-                        absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
-                        itemAdapter = (BaseAdapter) absListView.getAdapter();
-                        break;
-                    case ViewItem.VIEW_TYPE_WEBVIEW:
-                        final WebView webView = (WebView) contentView.findViewById(R.id.ic_webview);
-                        getDataTaskFinishedListener = new GetDataTask.GetDataTaskFinishedListener () {
-
-                            @Override
-                            public void onGetDataTaskFinished(ViewNode model) {
-                                List<ViewItem> viewItems = model.getViewItems();
-                                if (null != viewItems && !viewItems.isEmpty()) {
-                                    webView.loadUrl(viewItems.get(0).getNodeUrl());
-                                }
-                            }
-                        };
-                        break;
-                    default:
-                        break;
-                }
-
-                new GetDataTask(model, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
-            }
-		}
-	}
 		
 	protected void initActionBar(ActionBar actionBar) {
-		if (parentModel.getViewItems().size() <= 1) {
+		if (viewNode.getSiblingCount() <= 1) {
 			return;
 		}
 		
@@ -153,11 +100,11 @@ public class ViewItemPagerActivity extends BaseActivity {
 			}
 	    };
 	    
-	    for (int i = actionBar.getTabCount(); i < parentModel.getViewItems().size(); ++i) {
-	    	ViewItem viewItem = parentModel.getViewItems().get(i);
+	    for (int i = actionBar.getTabCount(); i < viewNode.getSiblingCount(); ++i) {
+	    	ViewNode viewItem = viewNode.getSibling(i);
 	    	final Tab tab = actionBar.newTab();
             tab.setTabListener(tabListener);
-            tab.setText(viewItem.getLabel());
+            tab.setText(viewItem.getTitle());
             actionBar.addTab(tab);
 		}
 	    
@@ -168,7 +115,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 	}
 	
 	protected void setActionBarSelection(ActionBar actionBar, int position) {
-		if (parentModel.getViewItems().size() <= 1) {
+		if (null == viewNode.getParent() || viewNode.getParent().getChildren().size() <= 1) {
 			return;
 		}
 		actionBar.setSelectedNavigationItem(position);
@@ -177,12 +124,10 @@ public class ViewItemPagerActivity extends BaseActivity {
 	private class ViewItemPagerAdapter extends PagerAdapter {
 
         private ViewNode model;
-        private ViewPager viewPager;
         private LayoutInflater layoutInflater;
 
-		ViewItemPagerAdapter(ViewNode model, ViewPager viewPager, LayoutInflater layoutInflater) {
+		ViewItemPagerAdapter(ViewNode model, LayoutInflater layoutInflater) {
             this.model = model;
-            this.viewPager = viewPager;
             this.layoutInflater = layoutInflater;
 		}
 
@@ -193,45 +138,49 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		@Override
 		public int getCount() {
-			return model.getViewItems().size();
+			return model.getChildren().size();
 		}
-		
+
+        /* @Override */
+        public Object getItem(int position) {
+            return model.getChildren().get(position);
+        }
+
 		@Override
 		public Object instantiateItem(ViewGroup view, final int position) {
-			final ViewItem viewItem = model.getViewItems().get(position);
-			final ViewNode childModel = viewItem.getViewNode();
+			final ViewNode child = (ViewNode)getItem(position);
 			
 			View contentView = null;
             final SwipeRefreshLayout swipeRefreshLayout;
 			AbsListView absListView = null;
-            final List<EndlessScrollListener> onScrollListeners = new ArrayList<EndlessScrollListener>();
+            final List<EndlessScrollListener> onScrollListeners = new ArrayList<>();
 			final BaseAdapter itemAdapter;
             final RecyclerView.Adapter recyclerViewAdapter;
             final GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener;
 
-			switch (viewItem.getViewType()) {
-			case ViewItem.VIEW_TYPE_LIST_SIMPLE:
-            case ViewItem.VIEW_TYPE_LIST_TILES:
+			switch (child.getViewType()) {
+			case ViewNode.VIEW_TYPE_LIST_SIMPLE:
+            case ViewNode.VIEW_TYPE_LIST_TILES:
 				contentView = layoutInflater.inflate(R.layout.ac_image_list, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
-				itemAdapter = new ListItemAdapter(childModel, (ListView) absListView, layoutInflater);
+				itemAdapter = new ListItemAdapter(child, (ListView) absListView, layoutInflater);
                 ((ListView) absListView).setAdapter(itemAdapter);
                 recyclerViewAdapter = null;
                 getDataTaskFinishedListener = null;
                 ((ListView) absListView).setDividerHeight(0);
                 break;
-			case ViewItem.VIEW_TYPE_GRID:
+			case ViewNode.VIEW_TYPE_GRID:
 				contentView = layoutInflater.inflate(R.layout.ac_image_grid, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
-				itemAdapter = new GridItemAdapter(childModel, (GridView) absListView, layoutInflater);
+				itemAdapter = new GridItemAdapter(child, (GridView) absListView, layoutInflater);
                 ((GridView) absListView).setAdapter(itemAdapter);
                 recyclerViewAdapter = null;
                 getDataTaskFinishedListener = null;
-				if (viewItem.getInitialZoomLevel() > 0 && viewItem.getInitialZoomLevel() <= 3) {
-					((GridView) absListView).setNumColumns(viewItem.getInitialZoomLevel());
+				if (child.getInitialZoomLevel() > 0 && child.getInitialZoomLevel() <= 3) {
+					((GridView) absListView).setNumColumns(child.getInitialZoomLevel());
 				}
 				break;
-            case ViewItem.VIEW_TYPE_WEBVIEW:
+            case ViewNode.VIEW_TYPE_WEBVIEW:
                 contentView = layoutInflater.inflate(R.layout.ac_web_view, view, false);
                 itemAdapter = null;
                 recyclerViewAdapter = null;
@@ -241,7 +190,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
                     @Override
                     public void onGetDataTaskFinished(ViewNode model) {
-                        List<ViewItem> viewItems = model.getViewItems();
+                        List<ViewNode> viewItems = model.getChildren();
                         if (null != viewItems && !viewItems.isEmpty()) {
                             webView.loadUrl(viewItems.get(0).getNodeUrl());
                         }
@@ -271,21 +220,21 @@ public class ViewItemPagerActivity extends BaseActivity {
 		                // Your code to refresh the list here.
 		                // Make sure you call swipeContainer.setRefreshing(false) when
 		                // once the network request has completed successfully.
-						new GetDataTask(childModel, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
+						new GetDataTask(child, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
 		            }
 			});
-			swipeRefreshLayout.setEnabled(childModel.supportReloading());
+			swipeRefreshLayout.setEnabled(child.supportReloading());
 			// Configure the refreshing colors
 //			swipeRefreshLayout.setColorScheme(android.R.color.holo_blue_bright,
 //	                android.R.color.holo_green_light,
 //	                android.R.color.holo_orange_light,
 //	                android.R.color.holo_red_light);
 
-			if (childModel.supportPaging()) {
+			if (child.supportPaging()) {
 				onScrollListeners.add(new EndlessScrollListener() {
                     @Override
                     public void onLoadMore(int page, int totalItemsCount) {
-                        new GetDataTask(childModel, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, new GetDataTask.GetDataTaskFinishedListener() {
+                        new GetDataTask(child, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, new GetDataTask.GetDataTaskFinishedListener() {
 
                             @Override
                             public void onGetDataTaskFinished(ViewNode model) {
@@ -301,7 +250,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         // drill down
-                        startViewItemActivity(childModel, (ViewItem)parent.getAdapter().getItem(position));
+                        startViewItemActivity(child);
                     }
                 });
 
@@ -396,12 +345,12 @@ public class ViewItemPagerActivity extends BaseActivity {
 		
 		@Override
 		public int getCount() {
-			return model.getViewItems().size();
+			return model.getChildren().size();
 		}
 
 		@Override
 		public Object getItem(int position) {
-			return model.getViewItems().get(position);
+			return model.getChildren().get(position);
 		}
 
 		@Override
@@ -434,8 +383,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 			}
 			view.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.FILL_PARENT, rowHeight));
 			
-			final ViewItem viewItem = model.getViewItems().get(position);
-            updateGridItemView(viewItem, holder);
+			final ViewNode child = (ViewNode)getItem(position);
+            updateGridItemView(child, holder);
 			
 			return view;
 		}
@@ -468,22 +417,22 @@ public class ViewItemPagerActivity extends BaseActivity {
 
         @Override
         public int getViewTypeCount() {
-            return ViewItem.VIEW_TYPE_LIST_COUNT;
+            return ViewNode.VIEW_TYPE_LIST_COUNT;
         }
 
         @Override
         public int getItemViewType(int position) {
-            return ((ViewItem)getItem(position)).getViewType();
+            return ((ViewNode)getItem(position)).getViewType();
         }
 
 		@Override
 		public int getCount() {
-			return model.getViewItems().size();
+			return model.getChildren().size();
 		}
 
 		@Override
 		public Object getItem(int position) {
-            return model.getViewItems().get(position);
+            return model.getChildren().get(position);
 		}
 
 		@Override
@@ -492,22 +441,22 @@ public class ViewItemPagerActivity extends BaseActivity {
 		}
 
 		@Override
-		public View getView(final int position, View convertView, ViewGroup parent) {
-			View view = convertView;
-			final ListItemViewHolder holder;
+		public View getView(final int position, View view, ViewGroup parent) {
+            final ViewNode child = (ViewNode)getItem(position);
 
-            if (convertView == null) {
+			final ListItemViewHolder holder;
+            if (view == null) {
 
 				switch (getItemViewType(position)) {
 
-				case ViewItem.VIEW_TYPE_LIST_SIMPLE:
+				case ViewNode.VIEW_TYPE_LIST_SIMPLE:
 					view = layoutInflater.inflate(R.layout.item_list_image, parent, false);
                     holder = new ListItemViewHolder(view);
                     holder.text = (TextView) view.findViewById(R.id.text);
 					holder.image = (ImageView) view.findViewById(R.id.image);
 					break;
 
-                case ViewItem.VIEW_TYPE_LIST_TILES:
+                case ViewNode.VIEW_TYPE_LIST_TILES:
                     view = layoutInflater.inflate(R.layout.item_spannable_grid, parent, false);
                     holder = new ListItemViewHolder(view);
                     holder.spannableGrid = (TwoWayView) view.findViewById(R.id.ic_spannable_grid);
@@ -516,9 +465,9 @@ public class ViewItemPagerActivity extends BaseActivity {
                             AbsListView.LayoutParams.MATCH_PARENT, listView.getWidth()
                     ));
 
-                    if (model.getWrapperViewResId(position) > 0) {
-                        holder.wrapperViewHolder = model.createWrapperView(
-                                layoutInflater.inflate(model.getWrapperViewResId(position), parent, false)
+                    if (child.getWrapperViewResId() > 0) {
+                        holder.wrapperViewHolder = child.createWrapperView(
+                                layoutInflater.inflate(child.getWrapperViewResId(), parent, false)
                         );
 
                         if (null != view.getParent()) {
@@ -542,24 +491,22 @@ public class ViewItemPagerActivity extends BaseActivity {
 
             // update part
             //
-            final ViewItem viewItem = model.getViewItems().get(position);
-
             switch (getItemViewType(position)) {
 
-                case ViewItem.VIEW_TYPE_LIST_SIMPLE:
+                case ViewNode.VIEW_TYPE_LIST_SIMPLE:
 
-                    holder.text.setText(viewItem.getLabel());
+                    holder.text.setText(child.getTitle());
 
-                    switch (viewItem.getViewItemType()) {
-                        case ViewItem.VIEW_ITEM_TYPE_COLOR:
-                            holder.image.setBackgroundColor(viewItem.getViewItemColor());
+                    switch (child.getViewItemType()) {
+                        case ViewNode.VIEW_ITEM_TYPE_COLOR:
+                            holder.image.setBackgroundColor(child.getViewItemColor());
                             break;
-                        case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
-                            holder.image.setImageResource(viewItem.getViewItemImageResId());
+                        case ViewNode.VIEW_ITEM_TYPE_IMAGE_RES:
+                            holder.image.setImageResource(child.getViewItemImageResId());
                             break;
-                        case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
-                            if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-                                MyVolley.getImageLoader().get(viewItem.getImageUrl(),
+                        case ViewNode.VIEW_ITEM_TYPE_IMAGE_URL:
+                            if (!TextUtils.isEmpty(child.getImageUrl())) {
+                                MyVolley.getImageLoader().get(child.getImageUrl(),
                                         ImageLoader.getImageListener(holder.image,
                                                 R.drawable.ic_stub,
                                                 R.drawable.ic_error));
@@ -570,31 +517,28 @@ public class ViewItemPagerActivity extends BaseActivity {
                     }
                     break;
 
-                case ViewItem.VIEW_TYPE_LIST_TILES:
+                case ViewNode.VIEW_TYPE_LIST_TILES:
 
-                    if (model.getWrapperViewResId(position) > 0) {
-                        model.updateWrapperView(view, holder.wrapperViewHolder, position);
+                    if (child.getWrapperViewResId() > 0) {
+                        child.updateWrapperView(view, holder.wrapperViewHolder, position);
                     }
 
-                    view.setBackgroundColor(randomColorForHeader(Math.abs(viewItem.hashCode())));
+                    view.setBackgroundColor(randomColorForHeader(Math.abs(child.hashCode())));
 
-
-                    final ViewNode model2 = viewItem.getViewNode();
-
-                    final RecyclerViewAdapter adapter = new RecyclerViewAdapter(model2, holder.spannableGrid, layoutInflater);
+                    RecyclerViewAdapter adapter = new RecyclerViewAdapter(child, layoutInflater);
                     holder.spannableGrid.setAdapter(adapter);
 
-                    if (null != model2.getViewItems() && model2.getViewItems().size() > 0) {
+                    if (child.getChildren().size() > 0) {
                         adapter.notifyDataSetChanged();
                     } else {
-                        new GetDataTask(model2, null, null, adapter, null, true);
+                        new GetDataTask(child, null, null, adapter, null, true);
                     }
 
                     ItemClickSupport.addTo(holder.spannableGrid).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
                         @Override
-                        public void onItemClick(RecyclerView parent, View child, int position, long id) {
+                        public void onItemClick(RecyclerView parent, View view, int position, long id) {
                             // drill down
-                            startViewItemActivity(model2, (ViewItem)((RecyclerViewAdapter) parent.getAdapter()).getItem(position));
+                            startViewItemActivity(child);
                         }
                     });
                     break;
@@ -609,19 +553,17 @@ public class ViewItemPagerActivity extends BaseActivity {
     private static class RecyclerViewAdapter extends RecyclerView.Adapter<GridItemViewHolder> {
 
         private ViewNode model;
-        private RecyclerView recyclerView;
         private LayoutInflater layoutInflater;
 
-        public RecyclerViewAdapter(ViewNode model, RecyclerView recyclerView, LayoutInflater layoutInflater) {
+        public RecyclerViewAdapter(ViewNode model, LayoutInflater layoutInflater) {
             this.model = model;
-            this.recyclerView = recyclerView;
             this.layoutInflater = layoutInflater;
         }
 
         @Override
         public int getItemCount() {
-            if (model.getViewItems().size() > 0) {
-                return calcAlbumPicCountForHeader(model.getViewItems().size(), Math.abs(model.getViewItems().get(0).hashCode()));
+            if (model.getChildren().size() > 0) {
+                return calcAlbumPicCountForHeader(model.getChildren().size(), Math.abs(model.getChildren().get(0).hashCode()));
             } else {
                 return 0;
             }
@@ -629,7 +571,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
         /* @Override */
         public Object getItem(int position) {
-            return model.getViewItems().get(position);
+            return model.getChildren().get(position);
         }
 
 
@@ -639,7 +581,7 @@ public class ViewItemPagerActivity extends BaseActivity {
             final SpannableGridLayoutManager.LayoutParams lp =
                     (SpannableGridLayoutManager.LayoutParams) itemView.getLayoutParams();
 
-            final int[] SPANS = generateColRowSpans(getItemCount(), Math.abs(model.getViewItems().get(0).hashCode()));
+            final int[] SPANS = generateColRowSpans(getItemCount(), Math.abs(model.getChildren().get(0).hashCode()));
 
             int colSpan = SPANS[position*2];
             int rowSpan = SPANS[position*2+1];
@@ -648,8 +590,8 @@ public class ViewItemPagerActivity extends BaseActivity {
             lp.colSpan = colSpan;
             itemView.setLayoutParams(lp);
 
-            final ViewItem viewItem = model.getViewItems().get(position);
-            updateGridItemView(viewItem, holder);
+            final ViewNode child = (ViewNode)getItem(position);
+            updateGridItemView(child, holder);
         }
 
         @Override
@@ -685,8 +627,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 		super.updateMenu(model);
 		if (null != menu) {
 			MenuItem item = menu.findItem(R.id.item_zoom_in);
-			if (null != myViewItem) {
-				item.setVisible(myViewItem.getViewType() == ViewItem.VIEW_TYPE_GRID);
+			if (null != viewNode) {
+				item.setVisible(viewNode.getViewType() == ViewNode.VIEW_TYPE_GRID);
 			}
 		}
 	}
@@ -712,7 +654,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 	}
 	
 	protected void zoomGridView(boolean in, boolean circular) {
-		if (myViewItem.getViewType() == ViewItem.VIEW_TYPE_GRID) {
+		if (viewNode.getViewType() == ViewNode.VIEW_TYPE_GRID) {
 			View contentView = pager.findViewWithTag(pager.getCurrentItem());
 			GridView gridView = (GridView) contentView.findViewById(R.id.ic_gridview);
 			setGridViewColumns(gridView, in ?
@@ -799,19 +741,19 @@ public class ViewItemPagerActivity extends BaseActivity {
         return columns;
     }
 
-    private static void updateGridItemView(ViewItem viewItem, GridItemViewHolder holder) {
+    private static void updateGridItemView(ViewNode viewItem, GridItemViewHolder holder) {
         switch (viewItem.getViewItemType()) {
-            case ViewItem.VIEW_ITEM_TYPE_COLOR:
+            case ViewNode.VIEW_ITEM_TYPE_COLOR:
                 holder.itemView.setBackgroundColor(viewItem.getViewItemColor());
                 holder.imageView.setVisibility(View.GONE);
                 holder.progressBar.setVisibility(View.GONE);
                 break;
-            case ViewItem.VIEW_ITEM_TYPE_IMAGE_RES:
+            case ViewNode.VIEW_ITEM_TYPE_IMAGE_RES:
                 holder.imageView.setVisibility(View.VISIBLE);
                 holder.imageView.setImageResource(viewItem.getViewItemImageResId());
                 holder.progressBar.setVisibility(View.GONE);
                 break;
-            case ViewItem.VIEW_ITEM_TYPE_IMAGE_URL:
+            case ViewNode.VIEW_ITEM_TYPE_IMAGE_URL:
                 if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
                     holder.imageView.setVisibility(View.VISIBLE);
                     MyVolley.getImageLoader().get(viewItem.getImageUrl(),
