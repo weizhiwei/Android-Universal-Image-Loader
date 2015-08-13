@@ -192,7 +192,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     public void onGetDataTaskFinished(ViewNode model) {
                         List<ViewNode> viewItems = model.getChildren();
                         if (null != viewItems && !viewItems.isEmpty()) {
-                            webView.loadUrl(viewItems.get(0).getNodeUrl());
+                            webView.loadUrl(viewItems.get(0).getWebPageUrl());
                         }
                     }
                 };

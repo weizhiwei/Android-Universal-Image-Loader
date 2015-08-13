@@ -11,8 +11,8 @@ import com.wzw.ic.mvc.ViewNode;
 
 public class MokoViewNodeChannel extends MokoViewNode {
 
-	public MokoViewNodeChannel(String sourceUrl) {
-		super(sourceUrl);
+	public MokoViewNodeChannel(ViewNode parent, String sourceUrl) {
+		super(parent, sourceUrl);
 		supportPaging = true;
 	}
 	
@@ -29,12 +29,10 @@ public class MokoViewNodeChannel extends MokoViewNode {
 				Element img = imgElems.get(i);
 				Element a = aElems.get(i);
 				String title = img.attr("alt");
-                ViewNode viewItem = new ViewNode(
-						title,
-						URL_PREFIX + a.attr("href"),
-						img.attr("src2"),
-						VIEW_TYPE_GRID,
-						new MokoViewNodePost(URL_PREFIX + a.attr("href"), title));
+                ViewNode viewItem = new MokoViewNodePost(this, URL_PREFIX + a.attr("href"), title);
+                viewItem.setTitle(title);
+				viewItem.setImageUrl(img.attr("src2"));
+				viewItem.setViewType(VIEW_TYPE_GRID);
 				viewItem.setInitialZoomLevel(1);
 				viewItems.add(viewItem);
 			}

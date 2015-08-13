@@ -208,7 +208,7 @@ public abstract class BaseActivity extends ActionBarActivity {
 		if (needTitle && !TextUtils.isEmpty(viewItem.getTitle())) {
 			String LINK = labelLinkOn ? "<a href=\"%s\">%s</a>" : "%2$s";
 			String FONT = String.format(bigFont ? "<big><b>%s</b></big>" : "%s", LINK);
-			story += String.format(FONT, viewItem.getNodeUrl(), TextUtils.htmlEncode(viewItem.getTitle()));
+			story += String.format(FONT, viewItem.getWebPageUrl(), TextUtils.htmlEncode(viewItem.getTitle()));
 		}
 		String authorName = (viewItem.getAuthor() == null ? null : viewItem.getAuthor().getTitle());
 		if (needAuthor && !TextUtils.isEmpty(authorName)) {

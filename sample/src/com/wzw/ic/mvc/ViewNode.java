@@ -19,6 +19,7 @@ public class ViewNode extends IcObject {
     public static final int VIEW_TYPE_GRID = 10;
     public static final int VIEW_TYPE_IMAGE_PAGER = 20;
     public static final int VIEW_TYPE_WEBVIEW = 30;
+
     public static final int VIEW_ITEM_TYPE_COLOR = 1;
     public static final int VIEW_ITEM_TYPE_IMAGE_RES = 2;
     public static final int VIEW_ITEM_TYPE_IMAGE_URL = 3;
@@ -45,23 +46,15 @@ public class ViewNode extends IcObject {
         }
     }
 
-	protected String sourceUrl;
-
     protected ViewNode parent;
 	protected List<ViewNode> children, viewItemsCopy;
 	protected List<ViewNodeAction> actions, actionsCopy;
 
     protected boolean isDetached = false;
 	
-	public ViewNode(String sourceUrl) {
-		this.sourceUrl = sourceUrl;
+	public ViewNode(ViewNode parent) {
+        this.parent = parent;
 		this.children = new ArrayList<ViewNode>();
-		this.actions = new ArrayList<ViewNodeAction>();
-	}
-
-	public ViewNode(String sourceUrl, List<ViewNode> children) {
-		this.sourceUrl = sourceUrl;
-		this.children = children;
 		this.actions = new ArrayList<ViewNodeAction>();
 	}
 	
@@ -124,10 +117,9 @@ public class ViewNode extends IcObject {
 	}
 
     private String title;
-    private String nodeUrl;
     private String imageUrl;
     private boolean showingLabelInGrid;
-    private int viewItemType;
+    private int viewItemType = VIEW_ITEM_TYPE_IMAGE_URL;
     private int viewItemColor;
     private int viewItemImageResId;
     private String story;
@@ -145,14 +137,6 @@ public class ViewNode extends IcObject {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getNodeUrl() {
-        return nodeUrl;
-    }
-
-    public void setNodeUrl(String nodeUrl) {
-        this.nodeUrl = nodeUrl;
     }
 
     public String getImageUrl() {

@@ -16,10 +16,6 @@ import android.graphics.Canvas;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
-import com.koushikdutta.async.future.FutureCallback;
-import com.koushikdutta.ion.Ion;
-import com.wzw.ic.mvc.ViewItem;
-
 public class WallpaperAlarmReceiver extends BroadcastReceiver {
 	
 	public static void enableWallpaperAlarms(Context context, boolean enabled) {
@@ -84,16 +80,16 @@ public class WallpaperAlarmReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(final Context context, Intent intent) {
 		
-		int heartCount = IcDatabase.getInstance().getViewItemsInHeartsCount();
-		if (heartCount <= 0) {
-			return;
-		}
-		
-		List<ViewItem> pageViewItems = IcDatabase.getInstance().fetchAllViewItemsInHearts(
-				(new Random()).nextInt(heartCount), 1);
-		
-		if (null != pageViewItems && pageViewItems.size() > 0) {
-			setWallpaper(context, pageViewItems.get(0).getImageUrl());
-		}
+//		int heartCount = IcDatabase.getInstance().getViewItemsInHeartsCount();
+//		if (heartCount <= 0) {
+//			return;
+//		}
+//
+//		List<ViewItem> pageViewItems = IcDatabase.getInstance().fetchAllViewItemsInHearts(
+//				(new Random()).nextInt(heartCount), 1);
+//
+//		if (null != pageViewItems && pageViewItems.size() > 0) {
+//			setWallpaper(context, pageViewItems.get(0).getImageUrl());
+//		}
 	}
 }

@@ -141,7 +141,7 @@ shareIntent.setType("image/*");
 		setWallpaperItem.setVisible(true);
 	}
 	
-	private static class ImagePagerAdapter extends PagerAdapter {
+	private class ImagePagerAdapter extends PagerAdapter {
 
         private ViewNode model;
 		private LayoutInflater inflater;

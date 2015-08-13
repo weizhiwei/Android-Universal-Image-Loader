@@ -14,16 +14,16 @@ import com.wzw.ic.mvc.ViewNode;
 
 public class MokoViewNodeAuthor extends MokoViewNode {
 	
-	private ViewNode authorViewItem;
+	private ViewNode authorViewNode;
 	
-	public MokoViewNodeAuthor(String sourceUrl) {
-		super(sourceUrl);
+	public MokoViewNodeAuthor(ViewNode parent, String sourceUrl) {
+		super(parent, sourceUrl);
 		supportPaging = true;
 	}
 	
 	@Override
 	protected List<ViewNode> extractViewItemsFromPage(Document page) {
-		if (null == authorViewItem) {
+		if (null == authorViewNode) {
 			Elements a = page.select("a#workNickName");
 			if (null != a && a.size() > 0) {
 				Element e = a.get(0);
@@ -35,13 +35,11 @@ public class MokoViewNodeAuthor extends MokoViewNode {
 						i = is.get(0);
 					}
 					String userUrl = String.format("http://www.moko.cc/post/%s/new/", userId) + "%d.html";
-					authorViewItem = new ViewNode(
-							e.text(),
-							userUrl,
-							null == i ? "" : i.attr("src"),
-							VIEW_TYPE_GRID,
-							new MokoViewNodeAuthor(userUrl));
-					authorViewItem.setInitialZoomLevel(2);
+					authorViewNode = new MokoViewNodeAuthor(null, userUrl);
+                    authorViewNode.setTitle(e.text());
+                    authorViewNode.setImageUrl(null == i ? "" : i.attr("src"));
+                    authorViewNode.setViewType(VIEW_TYPE_GRID);
+					authorViewNode.setInitialZoomLevel(2);
 				}
 			}
 		}
@@ -58,24 +56,22 @@ public class MokoViewNodeAuthor extends MokoViewNode {
 				Element img = imgElems.get(i);
 				Element a = aElems.get(i);
 				String title = img.attr("alt");
-                ViewNode viewItem = new ViewNode(
-						title,
-						URL_PREFIX + a.attr("href"),
-						img.attr("src2"),
-						VIEW_TYPE_GRID,
-						new MokoViewNodePost(URL_PREFIX + a.attr("href"), title));
-				viewItem.setInitialZoomLevel(1);
-				viewItem.setAuthor(authorViewItem);
+                ViewNode viewNode = new MokoViewNodePost(this, URL_PREFIX + a.attr("href"), title);
+                viewNode.setTitle(title);
+                viewNode.setImageUrl(img.attr("src2"));
+                viewNode.setViewType(VIEW_TYPE_GRID);
+				viewNode.setInitialZoomLevel(1);
+				viewNode.setAuthor(authorViewNode);
 				try {
 					String dateStr = dateElems.get(i).text().split(" ")[1];
 					String[] dateStrs = dateStr.split("-");
-					viewItem.setPostedDate(new Date(
-							Integer.parseInt(dateStrs[0]) - 1900,
-							Integer.parseInt(dateStrs[1]) - 1,
-							Integer.parseInt(dateStrs[2])));
+					viewNode.setPostedDate(new Date(
+                            Integer.parseInt(dateStrs[0]) - 1900,
+                            Integer.parseInt(dateStrs[1]) - 1,
+                            Integer.parseInt(dateStrs[2])));
 				} catch (Exception e) {
 				}
-				viewItems.add(viewItem);
+				viewItems.add(viewNode);
 			}
 		}
 		return viewItems;

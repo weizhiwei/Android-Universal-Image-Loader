@@ -18,6 +18,7 @@ import java.util.Map;
 
 public abstract class MokoViewNode extends ViewNode {
 
+    protected String sourceUrl;
     protected int pageNo;
     protected boolean supportPaging;
     protected static String URL_PREFIX = "http://www.moko.cc";
@@ -25,8 +26,9 @@ public abstract class MokoViewNode extends ViewNode {
     private static String loginKey;
     private static String LOGIN_KEY_COOKIE = "NEWMOKO_USER_LOGINKEY";
 
-    public MokoViewNode(String sourceUrl) {
-        super(sourceUrl);
+    public MokoViewNode(ViewNode parent, String sourceUrl) {
+        super(parent);
+        this.sourceUrl = sourceUrl;
     }
 
     @Override

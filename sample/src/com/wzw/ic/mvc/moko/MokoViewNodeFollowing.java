@@ -11,8 +11,8 @@ import java.util.List;
 
 public class MokoViewNodeFollowing extends MokoViewNode {
 
-	public MokoViewNodeFollowing() {
-		super(URL_PREFIX + "/subscribe/1c36d7bdb3374b2d8a6471d7200e5932/%d.html");
+	public MokoViewNodeFollowing(ViewNode parent) {
+		super(parent, URL_PREFIX + "/subscribe/1c36d7bdb3374b2d8a6471d7200e5932/%d.html");
         supportPaging = true;
 	}
 
@@ -30,12 +30,10 @@ public class MokoViewNodeFollowing extends MokoViewNode {
                 Element a = aElems.get(i);
                 String title = a.ownText();
                 String url = URL_PREFIX + a.attr("href");
-                ViewNode viewItem = new ViewNode(
-                        title,
-                        url,
-                        img.attr("src"),
-                        VIEW_TYPE_LIST_SIMPLE,
-                        new MokoViewNodeAuthor(url));
+                ViewNode viewItem = new MokoViewNodeAuthor(this, url);
+                viewItem.setTitle(title);
+                viewItem.setImageUrl(img.attr("src"));
+                viewItem.setViewType(VIEW_TYPE_LIST_SIMPLE);
                 viewItem.setInitialZoomLevel(1);
                 viewItems.add(viewItem);
             }

@@ -13,8 +13,8 @@ import java.util.List;
 
 public class MokoViewNodeRoot extends MokoViewNode {
 	
-	public MokoViewNodeRoot() {
-		super(URL_PREFIX);
+	public MokoViewNodeRoot(ViewNode parent) {
+		super(parent, URL_PREFIX);
 		supportPaging = false;
 	}
 
@@ -38,12 +38,9 @@ public class MokoViewNodeRoot extends MokoViewNode {
 						color = Color.parseColor("#" + colorString);
 					}
 				}
-                ViewNode viewItem = new ViewNode(
-						a.ownText(),
-						url,
-						null,
-						VIEW_TYPE_GRID,
-						new MokoViewNodeChannel(url));
+                ViewNode viewItem = new MokoViewNodeChannel(this, url);
+                viewItem.setTitle(a.ownText());
+                viewItem.setViewType(VIEW_TYPE_GRID);
 				viewItem.setViewItemColor(color);
 				viewItem.setViewItemType(VIEW_ITEM_TYPE_COLOR);
 				viewItem.setShowingLabelInGrid(true);

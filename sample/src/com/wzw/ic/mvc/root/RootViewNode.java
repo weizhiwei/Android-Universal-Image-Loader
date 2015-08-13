@@ -14,13 +14,29 @@ public class RootViewNode extends ViewNode {
 	
 	protected RootViewNode() {
 		
-		super("root", Arrays.asList(
-                new ViewItem("Channels", null, null, VIEW_TYPE_GRID, new MokoViewNodeRoot()),
-                new ViewItem("Bookmarks", null, null, VIEW_TYPE_LIST_TILES, new MokoViewNodeBookmarks()),
-                new ViewItem("Following", null, null, VIEW_TYPE_LIST_SIMPLE, new MokoViewNodeFollowing()),
-                new ViewItem("Update", null, null, VIEW_TYPE_LIST_TILES, new FeedsViewNode()),
-                new ViewItem("New", null, null, VIEW_TYPE_LIST_TILES, new MokoViewNodeStream())
-                ));
+		super(null);
+
+        ViewNode channels = new MokoViewNodeRoot(this);
+        channels.setTitle("Channels");
+        channels.setViewType(VIEW_TYPE_GRID);
+
+        ViewNode bookmarks = new MokoViewNodeBookmarks(this);
+        bookmarks.setTitle("Bookmarks");
+        bookmarks.setViewType(VIEW_TYPE_LIST_TILES);
+
+        ViewNode following = new MokoViewNodeFollowing(this);
+        following.setTitle("Following");
+        following.setViewType(VIEW_TYPE_LIST_SIMPLE);
+
+        ViewNode update = new FeedsViewNode(this);
+        update.setTitle("Update");
+        update.setViewType(VIEW_TYPE_LIST_TILES);
+
+        ViewNode new_ = new MokoViewNodeStream(this);
+        new_.setTitle("New");
+        new_.setViewType(VIEW_TYPE_LIST_TILES);
+
+        this.children.addAll(Arrays.asList(channels, bookmarks, following, update, new_));
 	}
 	
 	public static RootViewNode getInstance() {

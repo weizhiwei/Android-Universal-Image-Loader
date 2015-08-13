@@ -20,13 +20,13 @@ public class FeedsViewNode extends ViewNode {
 
 	protected int pageNo;
 	protected final ViewNode[] SUBFEEDS = new ViewNode[] {
-		new MokoViewNodeAuthor(String.format("http://www.moko.cc/post/%s/new/", "davei1314") + "%d.html"),
-		new MokoViewNodeAuthor(String.format("http://www.moko.cc/post/%s/new/", "zhangqunyun") + "%d.html"),
+		new MokoViewNodeAuthor(null, String.format("http://www.moko.cc/post/%s/new/", "davei1314") + "%d.html"),
+		new MokoViewNodeAuthor(null, String.format("http://www.moko.cc/post/%s/new/", "zhangqunyun") + "%d.html"),
 	};
     protected final Object[] subpages;
 
-	public FeedsViewNode() {
-		super("feeds");
+	public FeedsViewNode(ViewNode parent) {
+		super(parent);
         subpages = new Object[SUBFEEDS.length];
 	}
 
