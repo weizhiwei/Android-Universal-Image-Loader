@@ -15,19 +15,16 @@ import android.view.View;
 
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.moko.MokoViewNodeAuthor;
+import com.wzw.ic.mvc.moko.MokoViewNodeFollowing;
 
 public class FeedsViewNode extends ViewNode {
 
 	protected int pageNo;
-	protected final ViewNode[] SUBFEEDS = new ViewNode[] {
-		new MokoViewNodeAuthor(null, String.format("http://www.moko.cc/post/%s/new/", "davei1314") + "%d.html"),
-		new MokoViewNodeAuthor(null, String.format("http://www.moko.cc/post/%s/new/", "zhangqunyun") + "%d.html"),
-	};
-    protected final Object[] subpages;
+	protected List<ViewNode> subfeeds;
+    protected List<List<ViewNode>> subpages;
 
 	public FeedsViewNode(ViewNode parent) {
 		super(parent);
-        subpages = new Object[SUBFEEDS.length];
 	}
 
     @Override
@@ -42,11 +39,34 @@ public class FeedsViewNode extends ViewNode {
             protected Void doInBackground(Void... params) {
                 int newPageNo = reload ? 0 : pageNo + 1;
 
-                int needToDoLoadCount = SUBFEEDS.length;
+                if (reload || null == subfeeds || subfeeds.isEmpty()) {
+                    ViewNode following = new MokoViewNodeFollowing(FeedsViewNode.this);
+                    final CountDownLatch latch = new CountDownLatch(1);
+                    following.load(true, new LoadListener() { // TODO: load all not just one page
+                        @Override
+                        public void onLoadDone(ViewNode model) {
+                            subfeeds = model.getChildren();
+                            subpages = new ArrayList<List<ViewNode>>(subfeeds.size());
+                            for (int i = 0; i < subfeeds.size(); ++i) {
+                                subpages.add(new ArrayList<ViewNode>());
+                            }
+                            latch.countDown();
+                        }
+                    });
+
+                    try {
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+
+                int needToDoLoadCount = subfeeds.size();
                 if (!reload) {
                     needToDoLoadCount = 0;
-                    for (Object subpage : Arrays.asList(subpages)) {
-                        if (null == subpage || ((List<ViewNode>) subpage).isEmpty()) {
+                    for (List<ViewNode> subpage : subpages) {
+                        if (subpage.isEmpty()) {
                             ++needToDoLoadCount;
                         }
                     }
@@ -55,14 +75,14 @@ public class FeedsViewNode extends ViewNode {
                 if (needToDoLoadCount > 0) {
 
                     final CountDownLatch latch = new CountDownLatch(needToDoLoadCount);
-                    for (int i = 0; i < SUBFEEDS.length; ++i) {
-                        if (reload || null == subpages[i] || ((List<ViewNode>) subpages[i]).isEmpty()) {
-                            ViewNode node = SUBFEEDS[i];
+                    for (int i = 0; i < subfeeds.size(); ++i) {
+                        if (reload || subpages.get(i).isEmpty()) {
                             final int index = i;
-                            node.load(reload, new LoadListener() {
+                            subfeeds.get(i).load(reload, new LoadListener() {
                                 @Override
                                 public void onLoadDone(ViewNode model) {
-                                    subpages[index] = model.getChildren();
+                                    subpages.get(index).clear();
+                                    subpages.get(index).addAll(model.getChildren());
                                     latch.countDown();
                                 }
                             });
@@ -81,12 +101,12 @@ public class FeedsViewNode extends ViewNode {
                 while (true) {
                     int index = -1;
                     Date date = new Date(0);
-                    for (int i = 0; i < subpages.length; ++i) {
-                        List<ViewNode> subpageViewItems = (List<ViewNode>) subpages[i];
-                        if (null != subpageViewItems && !subpageViewItems.isEmpty()) {
-                            if (null != subpageViewItems.get(0).getPostedDate() &&
-                                    subpageViewItems.get(0).getPostedDate().after(date)) {
-                                date = subpageViewItems.get(0).getPostedDate();
+                    for (int i = 0; i < subpages.size(); ++i) {
+                        List<ViewNode> subpage = subpages.get(i);
+                        if (!subpage.isEmpty()) {
+                            if (null != subpage.get(0).getPostedDate() &&
+                                    subpage.get(0).getPostedDate().after(date)) {
+                                date = subpage.get(0).getPostedDate();
                                 index = i;
                             }
                         }
@@ -95,11 +115,11 @@ public class FeedsViewNode extends ViewNode {
                     if (index == -1) { // nothing to add
                         break;
                     } else {
-                        List<ViewNode> subpageViewItems = (List<ViewNode>) subpages[index];
-                        ViewNode viewItem = subpageViewItems.remove(0);
+                        List<ViewNode> subpage = subpages.get(index);
+                        ViewNode viewItem = subpage.remove(0);
                         viewItem.setViewType(VIEW_TYPE_LIST_TILES);
                         albumViewItems.add(viewItem);
-                        if (albumViewItems.size() > 5 || subpageViewItems.isEmpty()) {
+                        if (albumViewItems.size() > 5 || subpage.isEmpty()) {
                             // if we have exhausted any list, we need to stop to do a reload, in order to maintain the getPostedDate order
                             break;
                         }
@@ -136,8 +156,8 @@ public class FeedsViewNode extends ViewNode {
 		String caption = "";
 		String authorName = (viewItem.getAuthor() == null ? null : viewItem.getAuthor().getTitle());
 		if (!TextUtils.isEmpty(authorName)) {
-//			caption += String.format(
-//                    "<b>%s</b> posted %d picture%s", authorName, headers.get(position), headers.get(position) > 1 ? "s" : "");
+			caption += String.format(
+                    "<b>%s</b> posted %d picture%s", authorName, 10, 10 > 1 ? "s" : "");
 		}
 		if (null != viewItem.getPostedDate()) {
 			if (!TextUtils.isEmpty(caption)) {
@@ -155,17 +175,6 @@ public class FeedsViewNode extends ViewNode {
         if (null != viewItem.getAuthor()) {
         	if (!TextUtils.isEmpty(viewItem.getAuthor().getImageUrl())) {
         		holder.imageView.setVisibility(View.VISIBLE);
-//        		ImageLoader.getInstance().displayImage(viewItem.getAuthor().getImageUrl(),
-//        				((FeedsHeaderViewHolder)holder).imageView,
-//                                new DisplayImageOptions.Builder()
-//                                .showImageOnLoading(R.drawable.ic_stub)
-//                                .showImageForEmptyUri(R.drawable.ic_empty)
-//                                .showImageOnFail(R.drawable.ic_error)
-//                                .cacheInMemory(true)
-//                                .cacheOnDisk(true)
-//                                .considerExifParams(true)
-//                                .displayer(new RoundedBitmapDisplayer(((FeedsHeaderViewHolder)holder).imageView.getLayoutParams().width/2))
-//                                .build());
 			}
         }
 	}

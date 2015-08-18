@@ -14,36 +14,13 @@ import com.wzw.ic.mvc.ViewNode;
 
 public class MokoViewNodeAuthor extends MokoViewNode {
 	
-	private ViewNode authorViewNode;
-	
-	public MokoViewNodeAuthor(ViewNode parent, String sourceUrl) {
-		super(parent, sourceUrl);
+	public MokoViewNodeAuthor(ViewNode parent, String userId) {
+        super(parent, String.format(URL_PREFIX+"/post/%s/new/%%d.html", userId));
 		supportPaging = true;
 	}
 	
 	@Override
 	protected List<ViewNode> extractViewItemsFromPage(Document page) {
-		if (null == authorViewNode) {
-			Elements a = page.select("a#workNickName");
-			if (null != a && a.size() > 0) {
-				Element e = a.get(0);
-				String userId = e.attr("href").replace("/", "");
-				if (!TextUtils.isEmpty(userId)) {
-					Elements is = page.select("img#imgUserLogo");
-					Element i = null;
-					if (null != is && is.size() > 0) {
-						i = is.get(0);
-					}
-					String userUrl = String.format("http://www.moko.cc/post/%s/new/", userId) + "%d.html";
-					authorViewNode = new MokoViewNodeAuthor(null, userUrl);
-                    authorViewNode.setTitle(e.text());
-                    authorViewNode.setImageUrl(null == i ? "" : i.attr("src"));
-                    authorViewNode.setViewType(VIEW_TYPE_GRID);
-					authorViewNode.setInitialZoomLevel(2);
-				}
-			}
-		}
-		
 		List<ViewNode> viewItems = null;
 		Elements imgElems = page.select("div.coverbox img.cover");
 		Elements aElems = page.select("div.coverbox a.coverBg");
@@ -61,7 +38,7 @@ public class MokoViewNodeAuthor extends MokoViewNode {
                 viewNode.setImageUrl(img.attr("src2"));
                 viewNode.setViewType(VIEW_TYPE_GRID);
 				viewNode.setInitialZoomLevel(1);
-				viewNode.setAuthor(authorViewNode);
+				viewNode.setAuthor(this);
 				try {
 					String dateStr = dateElems.get(i).text().split(" ")[1];
 					String[] dateStrs = dateStr.split("-");

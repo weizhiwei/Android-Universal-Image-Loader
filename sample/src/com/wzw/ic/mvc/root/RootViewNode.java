@@ -28,15 +28,15 @@ public class RootViewNode extends ViewNode {
         following.setTitle("Following");
         following.setViewType(VIEW_TYPE_LIST_SIMPLE);
 
-        ViewNode update = new FeedsViewNode(this);
-        update.setTitle("Update");
-        update.setViewType(VIEW_TYPE_LIST_TILES);
+//        ViewNode update = new FeedsViewNode(this);
+//        update.setTitle("Update");
+//        update.setViewType(VIEW_TYPE_LIST_TILES);
 
         ViewNode new_ = new MokoViewNodeStream(this);
         new_.setTitle("New");
         new_.setViewType(VIEW_TYPE_LIST_TILES);
 
-        this.children.addAll(Arrays.asList(channels, bookmarks, following, update, new_));
+        this.children.addAll(Arrays.asList(channels, new_, bookmarks, following));
 	}
 	
 	public static RootViewNode getInstance() {

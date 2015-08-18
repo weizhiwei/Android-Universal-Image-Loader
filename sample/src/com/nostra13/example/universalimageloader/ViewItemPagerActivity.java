@@ -250,7 +250,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         // drill down
-                        startViewItemActivity(child);
+                        startViewItemActivity((ViewNode)itemAdapter.getItem(position));
                     }
                 });
 
@@ -415,15 +415,15 @@ public class ViewItemPagerActivity extends BaseActivity {
             this.layoutInflater = layoutInflater;
 		}
 
-        @Override
-        public int getViewTypeCount() {
-            return ViewNode.VIEW_TYPE_LIST_COUNT;
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            return ((ViewNode)getItem(position)).getViewType();
-        }
+//        @Override
+//        public int getViewTypeCount() {
+//            return ViewNode.VIEW_TYPE_LIST_COUNT;
+//        }
+//
+//        @Override
+//        public int getItemViewType(int position) {
+//            return ((ViewNode)getItem(position)).getViewType();
+//        }
 
 		@Override
 		public int getCount() {
@@ -442,12 +442,10 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		@Override
 		public View getView(final int position, View view, ViewGroup parent) {
-            final ViewNode child = (ViewNode)getItem(position);
-
-			final ListItemViewHolder holder;
+            final ListItemViewHolder holder;
             if (view == null) {
 
-				switch (getItemViewType(position)) {
+				switch (model.getViewType()) {
 
 				case ViewNode.VIEW_TYPE_LIST_SIMPLE:
 					view = layoutInflater.inflate(R.layout.item_list_image, parent, false);
@@ -465,9 +463,9 @@ public class ViewItemPagerActivity extends BaseActivity {
                             AbsListView.LayoutParams.MATCH_PARENT, listView.getWidth()
                     ));
 
-                    if (child.getWrapperViewResId() > 0) {
-                        holder.wrapperViewHolder = child.createWrapperView(
-                                layoutInflater.inflate(child.getWrapperViewResId(), parent, false)
+                    if (model.getWrapperViewResId() > 0) {
+                        holder.wrapperViewHolder = model.createWrapperView(
+                                layoutInflater.inflate(model.getWrapperViewResId(), parent, false)
                         );
 
                         if (null != view.getParent()) {
@@ -491,7 +489,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 
             // update part
             //
-            switch (getItemViewType(position)) {
+            final ViewNode child = (ViewNode)getItem(position);
+            switch (model.getViewType()) {
 
                 case ViewNode.VIEW_TYPE_LIST_SIMPLE:
 
@@ -519,8 +518,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 
                 case ViewNode.VIEW_TYPE_LIST_TILES:
 
-                    if (child.getWrapperViewResId() > 0) {
-                        child.updateWrapperView(view, holder.wrapperViewHolder, position);
+                    if (model.getWrapperViewResId() > 0) {
+                        model.updateWrapperView(view, holder.wrapperViewHolder, position);
                     }
 
                     view.setBackgroundColor(randomColorForHeader(Math.abs(child.hashCode())));

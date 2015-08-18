@@ -29,12 +29,12 @@ public class MokoViewNodeFollowing extends MokoViewNode {
                 Element img = imgElems.get(i);
                 Element a = aElems.get(i);
                 String title = a.ownText();
-                String url = URL_PREFIX + a.attr("href");
-                ViewNode viewItem = new MokoViewNodeAuthor(this, url);
+                String userId = a.attr("href").substring(1);
+                ViewNode viewItem = new MokoViewNodeAuthor(this, userId);
                 viewItem.setTitle(title);
                 viewItem.setImageUrl(img.attr("src"));
-                viewItem.setViewType(VIEW_TYPE_LIST_SIMPLE);
-                viewItem.setInitialZoomLevel(1);
+                viewItem.setViewType(VIEW_TYPE_GRID);
+                viewItem.setInitialZoomLevel(2);
                 viewItems.add(viewItem);
             }
         }
