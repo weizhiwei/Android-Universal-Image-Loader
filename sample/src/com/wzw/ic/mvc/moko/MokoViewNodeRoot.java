@@ -27,7 +27,7 @@ public class MokoViewNodeRoot extends MokoViewNode {
 			for (int i = 0; i < aElems.size(); ++i) {
 				Element a = aElems.get(i);
                 String url = null;
-                url = a.attr("href").replace("=1", "=%d");
+                url = a.attr("href").replace("curPage=1", "curPage=%d");
                 int color = 0;
 				for (String className: a.classNames()) {
 					if (className.matches("^c.+-bg$")) {

@@ -1,5 +1,6 @@
 package com.nostra13.example.universalimageloader;
 
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.OnNavigationListener;
 import android.os.Bundle;
@@ -23,27 +24,23 @@ public class EntryActivity extends ViewItemPagerActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 	}
-	
-	@Override
-	protected void setModelFromIntent() {
-		viewNode = RootViewNode.getInstance().getChildren().get(0);
-	}
-	
-	@Override
-	protected void initActionBar(final ActionBar actionBar) {
-	    // Specify that tabs should be displayed in the action bar.
-	    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
+	@Override
+	protected void initActionBar(final ViewPager pager) {
+        final ActionBar actionBar = getSupportActionBar();
+
+        // Specify that tabs should be displayed in the action bar.
+	    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 	    actionBar.setListNavigationCallbacks(new BaseAdapter () {
 
 			@Override
 			public int getCount() {
-				return null == viewNode.getParent()? 0 : viewNode.getParent().getChildren().size();
+				return pager.getAdapter().getCount();
 			}
 
 			@Override
 			public Object getItem(int position) {
-				return viewNode.getParent().getChildren().get(position);
+				return (ViewNode) ((ViewItemPagerAdapter)pager.getAdapter()).getItem(position);
 			}
 
 			@Override
@@ -91,10 +88,5 @@ public class EntryActivity extends ViewItemPagerActivity {
 //		actionBar.getTabAt(0).setIcon(R.drawable.ic_pictures);
 //		actionBar.getTabAt(1).setText(null);
 //		actionBar.getTabAt(1).setIcon(R.drawable.ic_user);
-	}
-	
-	@Override
-	protected void setActionBarSelection(ActionBar actionBar, int position) {
-		actionBar.setSelectedNavigationItem(position);
 	}
 }

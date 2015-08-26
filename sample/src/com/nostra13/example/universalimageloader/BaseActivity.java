@@ -47,7 +47,6 @@ import java.util.Arrays;
  */
 public abstract class BaseActivity extends ActionBarActivity {
 
-	protected ViewNode viewNode;
 	protected Menu menu;
 	private boolean wallpaperServiceEnabled = false;
 	
@@ -136,13 +135,6 @@ public abstract class BaseActivity extends ActionBarActivity {
 	
 	public void toggleFullscreen() {
 		setFullscreen(!isFullscreen());
-	}
-	
-	protected void setModelFromIntent() {
-		Bundle bundle = getIntent().getExtras();
-		if (null != bundle) {
-			viewNode = (ViewNode) bundle.getSerializable(Extra.VIEWNODE);
-		}
 	}
 	
 	protected void updateMenu(ViewNode model) {

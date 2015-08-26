@@ -30,6 +30,7 @@ import android.widget.TextView;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.wzw.ic.mvc.ViewNode;
+import com.wzw.ic.mvc.root.RootViewNode;
 
 import org.lucasr.twowayview.ItemClickSupport;
 import org.lucasr.twowayview.widget.SpannableGridLayoutManager;
@@ -40,48 +41,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ViewItemPagerActivity extends BaseActivity {
-	ViewPager pager;
 
-	@Override
+    @Override
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Bundle bundle = getIntent().getExtras();
+        ViewNode viewNode;
+        if (null != bundle) {
+            viewNode = (ViewNode) bundle.getSerializable(Constants.Extra.VIEWNODE);
+        } else {
+            viewNode = RootViewNode.getInstance().getChildren().get(0);
+        }
 
         setContentView(R.layout.ac_view_item_pager);
-		
-		setModelFromIntent();
-		
-		ActionBar actionBar = getSupportActionBar();
-		initActionBar(actionBar);
 
-        Bundle bundle = getIntent().getExtras();
-		assert bundle != null;
+        final ViewPager pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
+        final PagerAdapter pagerAdapter = new ViewItemPagerAdapter(viewNode.getParent(), getLayoutInflater(), pager);
+        pager.setAdapter(pagerAdapter);
 
-		pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
-//		pager.setOffscreenPageLimit(3);
-		final PagerAdapter pagerAdapter = new ViewItemPagerAdapter(viewNode.getParent(), getLayoutInflater());
-		pager.setAdapter(pagerAdapter);
-        pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener () {
-			@Override
-		    public void onPageSelected(int position) {
-                if (viewNode.getParent().supportPaging() && position >= pagerAdapter.getCount() - 5) {
-					new GetDataTask(viewNode.getParent(), pagerAdapter, new GetDataTask.GetDataTaskFinishedListener() {
-							@Override
-							public void onGetDataTaskFinished(ViewNode model) {
-								ActionBar actionBar = getSupportActionBar();
-								initActionBar(actionBar);
-							}
-						}, false);
-				}
-		    }
-		});
+        initActionBar(pager);
+
+        pager.setCurrentItem(viewNode.getParent().getChildren().indexOf(viewNode));
 	}
-		
-	protected void initActionBar(ActionBar actionBar) {
-		if (viewNode.getSiblingCount() <= 1) {
+
+	protected void initActionBar(final ViewPager pager) {
+		if (pager.getAdapter().getCount() <= 1) {
 			return;
 		}
-		
-		// Create a tab listener that is called when the user changes tabs.
+
+        // Create a tab listener that is called when the user changes tabs.
 	    ActionBar.TabListener tabListener = new ActionBar.TabListener() {
 
 			@Override
@@ -99,9 +87,10 @@ public class ViewItemPagerActivity extends BaseActivity {
 			public void onTabUnselected(Tab tab, FragmentTransaction ft) {
 			}
 	    };
-	    
-	    for (int i = actionBar.getTabCount(); i < viewNode.getSiblingCount(); ++i) {
-	    	ViewNode viewItem = viewNode.getSibling(i);
+
+        ActionBar actionBar = getSupportActionBar();
+        for (int i = actionBar.getTabCount(); i < pager.getAdapter().getCount(); ++i) {
+	    	ViewNode viewItem = (ViewNode) ((ViewItemPagerAdapter)pager.getAdapter()).getItem(i);
 	    	final Tab tab = actionBar.newTab();
             tab.setTabListener(tabListener);
             tab.setText(viewItem.getTitle());
@@ -114,22 +103,85 @@ public class ViewItemPagerActivity extends BaseActivity {
 	    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 	}
 	
-	protected void setActionBarSelection(ActionBar actionBar, int position) {
-		if (null == viewNode.getParent() || viewNode.getParent().getChildren().size() <= 1) {
-			return;
-		}
-		actionBar.setSelectedNavigationItem(position);
+	protected void setActionBarSelection(int position) {
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setSelectedNavigationItem(position);
 	}
 
-	private class ViewItemPagerAdapter extends PagerAdapter {
+	public class ViewItemPagerAdapter extends PagerAdapter {
 
         private ViewNode model;
         private LayoutInflater layoutInflater;
+        private ViewPager pager;
 
-		ViewItemPagerAdapter(ViewNode model, LayoutInflater layoutInflater) {
+        private int lastPosition = -1;
+
+		ViewItemPagerAdapter(ViewNode model, LayoutInflater layoutInflater, ViewPager pager) {
             this.model = model;
             this.layoutInflater = layoutInflater;
+            this.pager = pager;
 		}
+
+        @Override
+        public void setPrimaryItem(ViewGroup container, int position, Object object) {
+            super.setPrimaryItem(container, position, object);
+
+            // avoid being called many times
+            if (lastPosition == position) {
+                return;
+            }
+            lastPosition = position;
+
+
+            setActionBarSelection(position);
+
+            ViewNode viewItem = (ViewNode) getItem(position);
+            if (viewItem.getChildren().isEmpty()) {
+                AbsListView absListView = null;
+                final BaseAdapter itemAdapter;
+                final RecyclerView.Adapter recyclerViewAdapter;
+                final GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener;
+
+                View contentView = pager.findViewWithTag(pager.getCurrentItem());
+                switch (viewItem.getViewType()) {
+                    case ViewNode.VIEW_TYPE_LIST_SIMPLE:
+                    case ViewNode.VIEW_TYPE_LIST_TILES:
+                        absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
+                        itemAdapter = (BaseAdapter) absListView.getAdapter();
+                        recyclerViewAdapter = null;
+                        getDataTaskFinishedListener = null;
+                        break;
+                    case ViewNode.VIEW_TYPE_GRID:
+                        absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
+                        itemAdapter = (BaseAdapter) absListView.getAdapter();
+                        recyclerViewAdapter = null;
+                        getDataTaskFinishedListener = null;
+                        break;
+                    case ViewNode.VIEW_TYPE_WEBVIEW:
+                        // TODO
+                        itemAdapter = null;
+                        recyclerViewAdapter = null;
+                        getDataTaskFinishedListener = null;
+                        break;
+                    default:
+                        itemAdapter = null;
+                        recyclerViewAdapter = null;
+                        getDataTaskFinishedListener = null;
+                        break;
+                }
+                SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
+                new GetDataTask(viewItem, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
+            }
+
+            if (model.supportPaging() && position >= getCount() - 5) {
+                new GetDataTask(model, this, new GetDataTask.GetDataTaskFinishedListener() {
+                    @Override
+                    public void onGetDataTaskFinished(ViewNode model) {
+                        initActionBar(pager);
+                    }
+                }, false);
+            }
+        }
 
 		@Override
 		public void destroyItem(ViewGroup container, int position, Object object) {
@@ -213,16 +265,16 @@ public class ViewItemPagerActivity extends BaseActivity {
 			
 			contentView.setTag(position);
 
-			// Set a listener to be invoked when the list should be refreshed.
-			swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
-				    @Override
-		            public void onRefresh() {
-		                // Your code to refresh the list here.
-		                // Make sure you call swipeContainer.setRefreshing(false) when
-		                // once the network request has completed successfully.
-						new GetDataTask(child, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
-		            }
-			});
+            // Set a listener to be invoked when the list should be refreshed.
+            swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    // Your code to refresh the list here.
+                    // Make sure you call swipeContainer.setRefreshing(false) when
+                    // once the network request has completed successfully.
+                    new GetDataTask(child, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
+                }
+            });
 			swipeRefreshLayout.setEnabled(child.supportReloading());
 			// Configure the refreshing colors
 //			swipeRefreshLayout.setColorScheme(android.R.color.holo_blue_bright,
@@ -626,9 +678,9 @@ public class ViewItemPagerActivity extends BaseActivity {
 		super.updateMenu(model);
 		if (null != menu) {
 			MenuItem item = menu.findItem(R.id.item_zoom_in);
-			if (null != viewNode) {
-				item.setVisible(viewNode.getViewType() == ViewNode.VIEW_TYPE_GRID);
-			}
+//			if (null != viewNode) {
+//				item.setVisible(viewNode.getViewType() == ViewNode.VIEW_TYPE_GRID);
+//			}
 		}
 	}
 	
@@ -653,13 +705,13 @@ public class ViewItemPagerActivity extends BaseActivity {
 	}
 	
 	protected void zoomGridView(boolean in, boolean circular) {
-		if (viewNode.getViewType() == ViewNode.VIEW_TYPE_GRID) {
-			View contentView = pager.findViewWithTag(pager.getCurrentItem());
-			GridView gridView = (GridView) contentView.findViewById(R.id.ic_gridview);
-			setGridViewColumns(gridView, in ?
-					(getGridViewNumColumns(gridView) == 1 ? (circular ? 3 : 1) : getGridViewNumColumns(gridView) - 1) :
-					(getGridViewNumColumns(gridView) == 3 ? (circular ? 1 : 3) : getGridViewNumColumns(gridView) + 1));
-		}
+//		if (viewNode.getViewType() == ViewNode.VIEW_TYPE_GRID) {
+//			View contentView = pager.findViewWithTag(pager.getCurrentItem());
+//			GridView gridView = (GridView) contentView.findViewById(R.id.ic_gridview);
+//			setGridViewColumns(gridView, in ?
+//					(getGridViewNumColumns(gridView) == 1 ? (circular ? 3 : 1) : getGridViewNumColumns(gridView) - 1) :
+//					(getGridViewNumColumns(gridView) == 3 ? (circular ? 1 : 3) : getGridViewNumColumns(gridView) + 1));
+//		}
 	}
 
     private static final int[] generateColRowSpans(int itemCount, int hash) {

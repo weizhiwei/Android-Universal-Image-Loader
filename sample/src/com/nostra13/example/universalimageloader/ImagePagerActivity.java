@@ -41,31 +41,22 @@ import com.wzw.ic.mvc.ViewNode;
  */
 public class ImagePagerActivity extends BaseActivity {
 
-	ViewPager pager;
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.ac_image_pager);
-		
-		setModelFromIntent();
-		
-		Bundle bundle = getIntent().getExtras();
-		assert bundle != null;
 
-		pager = (ViewPager) findViewById(R.id.ic_pagerview);
-//		pager.setOffscreenPageLimit(3);
+        Bundle bundle = getIntent().getExtras();
+        ViewNode viewNode = null;
+        if (null != bundle) {
+            viewNode = (ViewNode) bundle.getSerializable(Constants.Extra.VIEWNODE);
+        }
+
+        setContentView(R.layout.ac_image_pager);
+
+        ViewPager pager = (ViewPager) findViewById(R.id.ic_pagerview);
 		final PagerAdapter pagerAdapter = new ImagePagerAdapter(viewNode.getParent(), getLayoutInflater());
 		pager.setAdapter(pagerAdapter);
-		pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener () {
-			@Override
-		    public void onPageSelected(int position) {
-				if (viewNode.getParent().supportPaging() && position >= pagerAdapter.getCount() - 5) {
-					new GetDataTask(viewNode.getParent(), pagerAdapter, null, false);
-				}
-			}
-		});
-		pager.setCurrentItem((null != viewNode.getParent()) ? viewNode.getParent().getChildren().indexOf(viewNode) : 0);
+        pager.setCurrentItem(viewNode.getParent().getChildren().indexOf(viewNode));
 		
 		setFullscreen(true);
 	}
@@ -106,36 +97,36 @@ public class ImagePagerActivity extends BaseActivity {
 		if (null == menu)
 			return;
 		
-		ViewNode viewItem = viewNode.getSibling(pager.getCurrentItem());
-		
-		MenuItem heartsItem = menu.findItem(R.id.item_hearts_toggle);
-		heartsItem.setVisible(true);
-		if (viewItem.isHeartsOn()) {
-    		heartsItem.setTitle(R.string.hearts_on);
-    		heartsItem.setIcon(R.drawable.ic_hearts_on);
-		} else {
-    		heartsItem.setTitle(R.string.hearts_off);
-    		heartsItem.setIcon(R.drawable.ic_hearts_off);
-		}
-		
-		MenuItem shareItem = menu.findItem(R.id.item_action_share);
-		shareItem.setVisible(true);
-		ShareActionProvider shareActionProvider = (ShareActionProvider)shareItem.getActionProvider();
-	    Intent intent = new Intent(Intent.ACTION_SEND);
-	    intent.setType("image/*");
-//	    intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imageLoader.getDiskCache().get(viewItem.getImageUrl()))); // TODO null check
-	    shareActionProvider.setShareIntent(intent);
-	    
-	    /*
-	     * ArrayList<Uri> imageUris = new ArrayList<Uri>();
-imageUris.add(imageUri1); // Add your image URIs here
-imageUris.add(imageUri2);
-
-Intent shareIntent = new Intent();
-shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
-shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, imageUris);
-shareIntent.setType("image/*");
-	     */
+//		ViewNode viewItem = viewNode.getSibling(pager.getCurrentItem());
+//
+//		MenuItem heartsItem = menu.findItem(R.id.item_hearts_toggle);
+//		heartsItem.setVisible(true);
+//		if (viewItem.isHeartsOn()) {
+//    		heartsItem.setTitle(R.string.hearts_on);
+//    		heartsItem.setIcon(R.drawable.ic_hearts_on);
+//		} else {
+//    		heartsItem.setTitle(R.string.hearts_off);
+//    		heartsItem.setIcon(R.drawable.ic_hearts_off);
+//		}
+//
+//		MenuItem shareItem = menu.findItem(R.id.item_action_share);
+//		shareItem.setVisible(true);
+//		ShareActionProvider shareActionProvider = (ShareActionProvider)shareItem.getActionProvider();
+//	    Intent intent = new Intent(Intent.ACTION_SEND);
+//	    intent.setType("image/*");
+////	    intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imageLoader.getDiskCache().get(viewItem.getImageUrl()))); // TODO null check
+//	    shareActionProvider.setShareIntent(intent);
+//
+//	    /*
+//	     * ArrayList<Uri> imageUris = new ArrayList<Uri>();
+//imageUris.add(imageUri1); // Add your image URIs here
+//imageUris.add(imageUri2);
+//
+//Intent shareIntent = new Intent();
+//shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+//shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, imageUris);
+//shareIntent.setType("image/*");
+//	     */
 	    
 	    MenuItem setWallpaperItem = menu.findItem(R.id.item_set_wallpaper);
 		setWallpaperItem.setVisible(true);
@@ -145,6 +136,8 @@ shareIntent.setType("image/*");
 
         private ViewNode model;
 		private LayoutInflater inflater;
+
+        private int lastPosition = -1;
 
 		ImagePagerAdapter(ViewNode model, LayoutInflater inflater) {
             this.model = model;
@@ -170,15 +163,19 @@ shareIntent.setType("image/*");
 	    public void setPrimaryItem(ViewGroup container, int position, Object object) {
 	        super.setPrimaryItem(container, position, object);
 
+            // avoid being called many times
+            if (lastPosition == position) {
+                return;
+            }
+            lastPosition = position;
+
+            if (model.supportPaging() && position >= getCount() - 5) {
+                new GetDataTask(model, this, null, false);
+            }
+
             final ViewNode child = (ViewNode)getItem(position);
 
-//            if (viewNode == child) {
-//	        	return;
-//	        }
-//
-//	        viewNode = child;
-
-	        View imageLayout = (View) object;
+            View imageLayout = (View) object;
 	        ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
 	        
 	        if (!isFullscreen()) {
