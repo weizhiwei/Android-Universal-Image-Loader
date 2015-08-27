@@ -40,8 +40,7 @@ public class MokoViewNodeRoot extends MokoViewNode {
 				}
                 ViewNode viewItem = new MokoViewNodeChannel(this, url);
                 viewItem.setTitle(a.ownText());
-                viewItem.setViewType(VIEW_TYPE_GRID);
-				viewItem.setViewItemColor(color);
+                viewItem.setViewItemColor(color);
 				viewItem.setViewItemType(VIEW_ITEM_TYPE_COLOR);
 				viewItem.setShowingLabelInGrid(true);
 				viewItem.setInitialZoomLevel(2);
@@ -50,4 +49,14 @@ public class MokoViewNodeRoot extends MokoViewNode {
 		}
 		return viewItems;
 	}
+
+    @Override
+    public int getViewType(int container) {
+        switch (container) {
+            case VIEW_TYPE_PAGER:
+                return VIEW_TYPE_GRID;
+        }
+        return super.getViewType(container);
+    }
+
 }

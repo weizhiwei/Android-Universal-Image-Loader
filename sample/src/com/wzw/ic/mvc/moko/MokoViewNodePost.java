@@ -13,18 +13,14 @@ import com.wzw.ic.mvc.ViewNode;
 
 public class MokoViewNodePost extends MokoViewNode {
 
-	private ViewNode authorViewNode;
-	private String pageTitle;
-	
-	public MokoViewNodePost(ViewNode parent, String sourceUrl, String pageTitle) {
+	public MokoViewNodePost(ViewNode parent, String sourceUrl) {
 		super(parent, sourceUrl);
 		supportPaging = false;
-		this.pageTitle = pageTitle;
 	}
 
 	@Override
 	protected List<ViewNode> extractViewItemsFromPage(Document page) {
-		if (null == authorViewNode) {
+		if (null == author) {
 			Elements a = page.select("a#workNickName");
 			if (null != a && a.size() > 0) {
 				Element e = a.get(0);
@@ -36,28 +32,49 @@ public class MokoViewNodePost extends MokoViewNode {
 						i = is.get(0);
 					}
 					String userUrl = String.format("http://www.moko.cc/post/%s/new/", userId) + "%d.html";
-                    authorViewNode = new MokoViewNodeAuthor(null, userUrl);
-                    authorViewNode.setTitle(e.text());
-                    authorViewNode.setImageUrl(null == i ? "" : i.attr("src"));
-                    authorViewNode.setViewType(VIEW_TYPE_GRID);
-                    authorViewNode.setInitialZoomLevel(2);
+                    author = new MokoViewNodeAuthor(null, userUrl);
+                    author.setTitle(e.text());
+                    author.setImageUrl(null == i ? "" : i.attr("src"));
+                    author.setInitialZoomLevel(2);
 				}
 			}
 		}
-		
+
+        if (TextUtils.isEmpty(title)) {
+            Elements a = page.select(".sTitle .video-link");
+            if (null != a && a.size() > 0) {
+                Element e = a.get(0);
+                String t = e.attr("title");
+                if (!TextUtils.isEmpty(t)) {
+                    title = t;
+                }
+            }
+        }
+
 		List<ViewNode> viewItems = null;
 		Elements imgElems = page.select("p.picbox img");
 		if (null != imgElems && imgElems.size() > 0) {
 			viewItems = new ArrayList<ViewNode>();
 			for (int i = 0; i < imgElems.size(); ++i) {
 				Element img = imgElems.get(i);
-				ViewNode viewNode = new MokoViewNodePost(this, sourceUrl, pageTitle);
+				ViewNode viewNode = new MokoViewNodePost(this, sourceUrl);
                 viewNode.setImageUrl(img.attr("src2"));
-                viewNode.setViewType(VIEW_TYPE_IMAGE_PAGER);
-                viewNode.setAuthor(authorViewNode);
+                viewNode.setAuthor(author);
 				viewItems.add(viewNode);
 			}
 		}
 		return viewItems;
 	}
+
+    @Override
+    public int getViewType(int container) {
+        switch (container) {
+            case VIEW_TYPE_PAGER:
+                return VIEW_TYPE_GRID;
+            case VIEW_TYPE_LIST:
+                return VIEW_TYPE_TILE;
+        }
+        return super.getViewType(container);
+    }
+
 }

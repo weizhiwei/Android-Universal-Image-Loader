@@ -117,7 +117,6 @@ public class FeedsViewNode extends ViewNode {
                     } else {
                         List<ViewNode> subpage = subpages.get(index);
                         ViewNode viewItem = subpage.remove(0);
-                        viewItem.setViewType(VIEW_TYPE_LIST_TILES);
                         albumViewItems.add(viewItem);
                         if (albumViewItems.size() > 5 || subpage.isEmpty()) {
                             // if we have exhausted any list, we need to stop to do a reload, in order to maintain the getPostedDate order
@@ -147,35 +146,5 @@ public class FeedsViewNode extends ViewNode {
 	@Override
 	public boolean supportPaging() {
 		return true;
-	}
-	
-	@Override
-	public void updateWrapperView(View headerView, final WrapperViewHolder holder, int position) {
-		ViewNode viewItem = children.get(position);
-		
-		String caption = "";
-		String authorName = (viewItem.getAuthor() == null ? null : viewItem.getAuthor().getTitle());
-		if (!TextUtils.isEmpty(authorName)) {
-			caption += String.format(
-                    "<b>%s</b> posted %d picture%s", authorName, 10, 10 > 1 ? "s" : "");
-		}
-		if (null != viewItem.getPostedDate()) {
-			if (!TextUtils.isEmpty(caption)) {
-				caption += "<br/>";
-			}
-			caption += DateUtils.getRelativeTimeSpanString(
-							viewItem.getPostedDate().getTime(), (new Date()).getTime(),
-							DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE);
-		}
-		if (!TextUtils.isEmpty(caption)) {
-			holder.textView.setText(new SpannableString(Html.fromHtml(caption)));
-		}
-		
-		holder.imageView.setVisibility(View.GONE);
-        if (null != viewItem.getAuthor()) {
-        	if (!TextUtils.isEmpty(viewItem.getAuthor().getImageUrl())) {
-        		holder.imageView.setVisibility(View.VISIBLE);
-			}
-        }
 	}
 }

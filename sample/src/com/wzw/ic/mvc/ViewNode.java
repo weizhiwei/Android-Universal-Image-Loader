@@ -4,21 +4,29 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import android.text.Html;
+import android.text.SpannableString;
+import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.volley.toolbox.ImageLoader;
+import com.nostra13.example.universalimageloader.MyVolley;
 import com.nostra13.example.universalimageloader.R;
 
 public class ViewNode extends IcObject {
 
-    public static final int VIEW_TYPE_LIST_SIMPLE = 0;
-    public static final int VIEW_TYPE_LIST_TILES = 1;
-    public static final int VIEW_TYPE_LIST_COUNT = 2;
-    public static final int VIEW_TYPE_GRID = 10;
-    public static final int VIEW_TYPE_IMAGE_PAGER = 20;
-    public static final int VIEW_TYPE_WEBVIEW = 30;
+    public static final int VIEW_TYPE_PAGER = 0;
+    public static final int VIEW_TYPE_LIST = 1;
+    public static final int VIEW_TYPE_GRID = 2;
+    public static final int VIEW_TYPE_IMAGE_PAGER = 3;
+    public static final int VIEW_TYPE_WEBVIEW = 4;
+    public static final int VIEW_TYPE_SIMPLE = 5;
+    public static final int VIEW_TYPE_TILE = 6;
+    public static final int VIEW_TYPE_COUNT = 7;
 
     public static final int VIEW_ITEM_TYPE_COLOR = 1;
     public static final int VIEW_ITEM_TYPE_IMAGE_RES = 2;
@@ -31,7 +39,7 @@ public class ViewNode extends IcObject {
     public static class WrapperViewHolder {
         public View wrapperView;
 
-        public FrameLayout placeholder;
+        public FrameLayout body;
 
         public TextView textView;
         public ImageView imageView;
@@ -39,7 +47,7 @@ public class ViewNode extends IcObject {
         public WrapperViewHolder(View wrapperView) {
             this.wrapperView = wrapperView;
 
-            placeholder = (FrameLayout)wrapperView.findViewById(R.id.placeholder);
+            body = (FrameLayout)wrapperView.findViewById(R.id.body);
 
             textView = (TextView)wrapperView.findViewById(R.id.text);
             imageView = (ImageView)wrapperView.findViewById(R.id.image);
@@ -112,24 +120,44 @@ public class ViewNode extends IcObject {
     public WrapperViewHolder createWrapperView(View headerView) {
         return new WrapperViewHolder(headerView);
     }
-	
-	public void updateWrapperView(View headerView, WrapperViewHolder holder, int position) {
-	}
 
-    private String title;
-    private String imageUrl;
-    private boolean showingLabelInGrid;
-    private int viewItemType = VIEW_ITEM_TYPE_IMAGE_URL;
-    private int viewItemColor;
-    private int viewItemImageResId;
-    private String story;
-    private boolean heartsOn;
-    private ViewNode author;
-    private String webPageUrl;
-    private int initialZoomLevel;
-    private Date postedDate;
+    public void updateWrapperView(WrapperViewHolder holder) {
+        holder.textView.setVisibility(View.INVISIBLE);
+        String authorName = (author == null ? null : author.getTitle());
+        if (!TextUtils.isEmpty(authorName)) {
+            String posted = TextUtils.isEmpty(title) ?
+                    String.format("%d %s", children.size(), children.size() > 1 ? "pictures" : "picture") :
+                    String.format("%s (%dP)", title, children.size());
+            String caption = String.format(
+                    "<b>%s</b> posted %s", authorName, posted);
+            holder.textView.setVisibility(View.VISIBLE);
+            holder.textView.setText(new SpannableString(Html.fromHtml(caption)));
+        }
 
-    private int viewType;
+        holder.imageView.setVisibility(View.INVISIBLE);
+        if (null != author) {
+            if (!TextUtils.isEmpty(author.getImageUrl())) {
+                holder.imageView.setVisibility(View.VISIBLE);
+                MyVolley.getImageLoader().get(author.getImageUrl(),
+                        ImageLoader.getImageListener(holder.imageView,
+                                R.drawable.ic_stub,
+                                R.drawable.ic_error));
+            }
+        }
+    }
+
+    protected String title;
+    protected String imageUrl;
+    protected boolean showingLabelInGrid;
+    protected int viewItemType = VIEW_ITEM_TYPE_IMAGE_URL;
+    protected int viewItemColor;
+    protected int viewItemImageResId;
+    protected String story;
+    protected boolean heartsOn;
+    protected ViewNode author;
+    protected String webPageUrl;
+    protected int initialZoomLevel;
+    protected Date postedDate;
 
     public String getTitle() {
         return title;
@@ -171,12 +199,14 @@ public class ViewNode extends IcObject {
         this.heartsOn = heartsOn;
     }
 
-    public int getViewType() {
-        return viewType;
-    }
-
-    public void setViewType(int viewType) {
-        this.viewType = viewType;
+    public int getViewType(int container) {
+        switch (container) {
+            case VIEW_TYPE_PAGER:
+                return VIEW_TYPE_LIST;
+            case VIEW_TYPE_LIST:
+                return VIEW_TYPE_SIMPLE;
+        }
+        return VIEW_TYPE_SIMPLE;
     }
 
     public ViewNode getAuthor() {

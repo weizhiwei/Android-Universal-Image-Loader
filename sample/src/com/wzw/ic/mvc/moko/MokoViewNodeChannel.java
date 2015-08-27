@@ -28,15 +28,22 @@ public class MokoViewNodeChannel extends MokoViewNode {
 			for (int i = 0; i < imgElems.size(); ++i) {
 				Element img = imgElems.get(i);
 				Element a = aElems.get(i);
-				String title = img.attr("alt");
-                ViewNode viewItem = new MokoViewNodePost(this, URL_PREFIX + a.attr("href"), title);
-                viewItem.setTitle(title);
+                ViewNode viewItem = new MokoViewNodePost(this, URL_PREFIX + a.attr("href"));
 				viewItem.setImageUrl(img.attr("src2"));
-				viewItem.setViewType(VIEW_TYPE_GRID);
 				viewItem.setInitialZoomLevel(1);
 				viewItems.add(viewItem);
 			}
 		}
 		return viewItems;
 	}
+
+    @Override
+    public int getViewType(int container) {
+        switch (container) {
+            case VIEW_TYPE_PAGER:
+                return VIEW_TYPE_GRID;
+        }
+        return super.getViewType(container);
+    }
+
 }

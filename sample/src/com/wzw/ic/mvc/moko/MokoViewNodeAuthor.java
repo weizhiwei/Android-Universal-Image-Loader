@@ -32,12 +32,9 @@ public class MokoViewNodeAuthor extends MokoViewNode {
 			for (int i = 0; i < imgElems.size(); ++i) {
 				Element img = imgElems.get(i);
 				Element a = aElems.get(i);
-				String title = img.attr("alt");
-                ViewNode viewNode = new MokoViewNodePost(this, URL_PREFIX + a.attr("href"), title);
-                viewNode.setTitle(title);
+                ViewNode viewNode = new MokoViewNodePost(this, URL_PREFIX + a.attr("href"));
                 viewNode.setImageUrl(img.attr("src2"));
-                viewNode.setViewType(VIEW_TYPE_GRID);
-				viewNode.setInitialZoomLevel(1);
+                viewNode.setInitialZoomLevel(1);
 				viewNode.setAuthor(this);
 				try {
 					String dateStr = dateElems.get(i).text().split(" ")[1];
@@ -53,4 +50,15 @@ public class MokoViewNodeAuthor extends MokoViewNode {
 		}
 		return viewItems;
 	}
+
+    @Override
+    public int getViewType(int container) {
+        switch (container) {
+            case VIEW_TYPE_PAGER:
+                return VIEW_TYPE_GRID;
+            case VIEW_TYPE_LIST:
+                return VIEW_TYPE_SIMPLE;
+        }
+        return super.getViewType(container);
+    }
 }

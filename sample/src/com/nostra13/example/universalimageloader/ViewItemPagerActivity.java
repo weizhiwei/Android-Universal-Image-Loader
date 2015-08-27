@@ -143,9 +143,8 @@ public class ViewItemPagerActivity extends BaseActivity {
                 final GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener;
 
                 View contentView = pager.findViewWithTag(pager.getCurrentItem());
-                switch (viewItem.getViewType()) {
-                    case ViewNode.VIEW_TYPE_LIST_SIMPLE:
-                    case ViewNode.VIEW_TYPE_LIST_TILES:
+                switch (viewItem.getViewType(ViewNode.VIEW_TYPE_PAGER)) {
+                    case ViewNode.VIEW_TYPE_LIST:
                         absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
                         itemAdapter = (BaseAdapter) absListView.getAdapter();
                         recyclerViewAdapter = null;
@@ -210,9 +209,8 @@ public class ViewItemPagerActivity extends BaseActivity {
             final RecyclerView.Adapter recyclerViewAdapter;
             final GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener;
 
-			switch (child.getViewType()) {
-			case ViewNode.VIEW_TYPE_LIST_SIMPLE:
-            case ViewNode.VIEW_TYPE_LIST_TILES:
+			switch (child.getViewType(ViewNode.VIEW_TYPE_PAGER)) {
+			case ViewNode.VIEW_TYPE_LIST:
 				contentView = layoutInflater.inflate(R.layout.ac_image_list, view, false);
 				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(child, (ListView) absListView, layoutInflater);
@@ -467,15 +465,15 @@ public class ViewItemPagerActivity extends BaseActivity {
             this.layoutInflater = layoutInflater;
 		}
 
-//        @Override
-//        public int getViewTypeCount() {
-//            return ViewNode.VIEW_TYPE_LIST_COUNT;
-//        }
-//
-//        @Override
-//        public int getItemViewType(int position) {
-//            return ((ViewNode)getItem(position)).getViewType();
-//        }
+        @Override
+        public int getViewTypeCount() {
+            return ViewNode.VIEW_TYPE_COUNT;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return ((ViewNode)getItem(position)).getViewType(ViewNode.VIEW_TYPE_LIST);
+        }
 
 		@Override
 		public int getCount() {
@@ -495,18 +493,21 @@ public class ViewItemPagerActivity extends BaseActivity {
 		@Override
 		public View getView(final int position, View view, ViewGroup parent) {
             final ListItemViewHolder holder;
+            final ViewNode child = (ViewNode)getItem(position);
+            final int viewType = getItemViewType(position);
+
             if (view == null) {
 
-				switch (model.getViewType()) {
+				switch (viewType) {
 
-				case ViewNode.VIEW_TYPE_LIST_SIMPLE:
+				case ViewNode.VIEW_TYPE_SIMPLE:
 					view = layoutInflater.inflate(R.layout.item_list_image, parent, false);
                     holder = new ListItemViewHolder(view);
                     holder.text = (TextView) view.findViewById(R.id.text);
 					holder.image = (ImageView) view.findViewById(R.id.image);
 					break;
 
-                case ViewNode.VIEW_TYPE_LIST_TILES:
+                case ViewNode.VIEW_TYPE_TILE:
                     view = layoutInflater.inflate(R.layout.item_spannable_grid, parent, false);
                     holder = new ListItemViewHolder(view);
                     holder.spannableGrid = (TwoWayView) view.findViewById(R.id.ic_spannable_grid);
@@ -515,15 +516,15 @@ public class ViewItemPagerActivity extends BaseActivity {
                             AbsListView.LayoutParams.MATCH_PARENT, listView.getWidth()
                     ));
 
-                    if (model.getWrapperViewResId() > 0) {
-                        holder.wrapperViewHolder = model.createWrapperView(
-                                layoutInflater.inflate(model.getWrapperViewResId(), parent, false)
+                    if (child.getWrapperViewResId() > 0) {
+                        holder.wrapperViewHolder = child.createWrapperView(
+                                layoutInflater.inflate(child.getWrapperViewResId(), parent, false)
                         );
 
                         if (null != view.getParent()) {
                             ((ViewGroup) view.getParent()).removeView(view);
                         }
-                        holder.wrapperViewHolder.placeholder.addView(view);
+                        holder.wrapperViewHolder.body.addView(view);
 
                         view = holder.wrapperViewHolder.wrapperView;
                     }
@@ -541,10 +542,9 @@ public class ViewItemPagerActivity extends BaseActivity {
 
             // update part
             //
-            final ViewNode child = (ViewNode)getItem(position);
-            switch (model.getViewType()) {
+            switch (viewType) {
 
-                case ViewNode.VIEW_TYPE_LIST_SIMPLE:
+                case ViewNode.VIEW_TYPE_SIMPLE:
 
                     holder.text.setText(child.getTitle());
 
@@ -568,21 +568,27 @@ public class ViewItemPagerActivity extends BaseActivity {
                     }
                     break;
 
-                case ViewNode.VIEW_TYPE_LIST_TILES:
-
-                    if (model.getWrapperViewResId() > 0) {
-                        model.updateWrapperView(view, holder.wrapperViewHolder, position);
-                    }
+                case ViewNode.VIEW_TYPE_TILE:
 
                     view.setBackgroundColor(randomColorForHeader(Math.abs(child.hashCode())));
 
                     RecyclerViewAdapter adapter = new RecyclerViewAdapter(child, layoutInflater);
                     holder.spannableGrid.setAdapter(adapter);
 
+                    GetDataTask.GetDataTaskFinishedListener updateWrapperView = new GetDataTask.GetDataTaskFinishedListener() {
+                        @Override
+                        public void onGetDataTaskFinished(ViewNode model) {
+                            if(model.getWrapperViewResId()>0) {
+                                model.updateWrapperView(holder.wrapperViewHolder);
+                            }
+                        }
+                    };
+
+                    updateWrapperView.onGetDataTaskFinished(child);
                     if (child.getChildren().size() > 0) {
                         adapter.notifyDataSetChanged();
                     } else {
-                        new GetDataTask(child, null, null, adapter, null, true);
+                        new GetDataTask(child, null, null, adapter, updateWrapperView, true);
                     }
 
                     ItemClickSupport.addTo(holder.spannableGrid).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
