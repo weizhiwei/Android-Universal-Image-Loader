@@ -136,14 +136,17 @@ public class ViewItemPagerActivity extends BaseActivity {
             setActionBarSelection(position);
 
             ViewNode viewItem = (ViewNode) getItem(position);
-            if (viewItem.getChildren().isEmpty()) {
+            int viewType = viewItem.getViewType(ViewNode.VIEW_TYPE_PAGER);
+
+            if ((viewType == ViewNode.VIEW_TYPE_LIST || viewType == ViewNode.VIEW_TYPE_GRID) &&
+                viewItem.getChildren().isEmpty()) {
                 AbsListView absListView = null;
                 final BaseAdapter itemAdapter;
                 final RecyclerView.Adapter recyclerViewAdapter;
                 final GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener;
 
                 View contentView = pager.findViewWithTag(pager.getCurrentItem());
-                switch (viewItem.getViewType(ViewNode.VIEW_TYPE_PAGER)) {
+                switch (viewType) {
                     case ViewNode.VIEW_TYPE_LIST:
                         absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
                         itemAdapter = (BaseAdapter) absListView.getAdapter();
@@ -156,12 +159,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                         recyclerViewAdapter = null;
                         getDataTaskFinishedListener = null;
                         break;
-                    case ViewNode.VIEW_TYPE_WEBVIEW:
-                        // TODO
-                        itemAdapter = null;
-                        recyclerViewAdapter = null;
-                        getDataTaskFinishedListener = null;
-                        break;
                     default:
                         itemAdapter = null;
                         recyclerViewAdapter = null;
@@ -170,6 +167,14 @@ public class ViewItemPagerActivity extends BaseActivity {
                 }
                 SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
                 new GetDataTask(viewItem, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
+
+            } else if (viewType == ViewNode.VIEW_TYPE_IMAGE) {
+                View contentView = pager.findViewWithTag(pager.getCurrentItem());
+                ImageView imageView = (ImageView) contentView.findViewById(R.id.image);
+                if (null == imageView.getDrawable()) {
+                    SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
+                    loadImage(viewItem, imageView, swipeRefreshLayout);
+                }
             }
 
             if (model.supportPaging() && position >= getCount() - 5) {
@@ -200,19 +205,29 @@ public class ViewItemPagerActivity extends BaseActivity {
 		@Override
 		public Object instantiateItem(ViewGroup view, final int position) {
 			final ViewNode child = (ViewNode)getItem(position);
+            final int viewType = child.getViewType(ViewNode.VIEW_TYPE_PAGER);
 			
 			View contentView = null;
             final SwipeRefreshLayout swipeRefreshLayout;
+            final ImageView imageView;
 			AbsListView absListView = null;
             final List<EndlessScrollListener> onScrollListeners = new ArrayList<>();
 			final BaseAdapter itemAdapter;
             final RecyclerView.Adapter recyclerViewAdapter;
             final GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener;
 
-			switch (child.getViewType(ViewNode.VIEW_TYPE_PAGER)) {
+			switch (viewType) {
+            case ViewNode.VIEW_TYPE_IMAGE:
+                contentView = layoutInflater.inflate(R.layout.item_pager_image, view, false);
+                imageView = (ImageView) contentView.findViewById(R.id.image);
+                itemAdapter = null;
+                recyclerViewAdapter = null;
+                getDataTaskFinishedListener = null;
+                break;
 			case ViewNode.VIEW_TYPE_LIST:
 				contentView = layoutInflater.inflate(R.layout.ac_image_list, view, false);
-				absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
+                imageView = null;
+                absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(child, (ListView) absListView, layoutInflater);
                 ((ListView) absListView).setAdapter(itemAdapter);
                 recyclerViewAdapter = null;
@@ -221,7 +236,8 @@ public class ViewItemPagerActivity extends BaseActivity {
                 break;
 			case ViewNode.VIEW_TYPE_GRID:
 				contentView = layoutInflater.inflate(R.layout.ac_image_grid, view, false);
-				absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
+                imageView = null;
+                absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
 				itemAdapter = new GridItemAdapter(child, (GridView) absListView, layoutInflater);
                 ((GridView) absListView).setAdapter(itemAdapter);
                 recyclerViewAdapter = null;
@@ -232,6 +248,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				break;
             case ViewNode.VIEW_TYPE_WEBVIEW:
                 contentView = layoutInflater.inflate(R.layout.ac_web_view, view, false);
+                imageView = null;
                 itemAdapter = null;
                 recyclerViewAdapter = null;
                 final WebView webView = (WebView) contentView.findViewById(R.id.ic_webview);
@@ -248,7 +265,8 @@ public class ViewItemPagerActivity extends BaseActivity {
                 };
                 break;
 			default:
-				itemAdapter = null;
+                imageView = null;
+                itemAdapter = null;
                 recyclerViewAdapter = null;
                 getDataTaskFinishedListener = null;
 				break;
@@ -263,17 +281,26 @@ public class ViewItemPagerActivity extends BaseActivity {
 			
 			contentView.setTag(position);
 
-            // Set a listener to be invoked when the list should be refreshed.
-            swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    // Your code to refresh the list here.
-                    // Make sure you call swipeContainer.setRefreshing(false) when
-                    // once the network request has completed successfully.
-                    new GetDataTask(child, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
+			swipeRefreshLayout.setEnabled(false);
+            if (child.supportReloading()){
+                if (null != imageView) {
+                    swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+                        @Override
+                        public void onRefresh() {
+                            loadImage(child, imageView, swipeRefreshLayout);
+                        }
+                    });
+                    swipeRefreshLayout.setEnabled(true);
+                } else if(null != itemAdapter) {
+                    swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+                        @Override
+                        public void onRefresh() {
+                            new GetDataTask(child, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
+                        }
+                    });
+                    swipeRefreshLayout.setEnabled(true);
                 }
-            });
-			swipeRefreshLayout.setEnabled(child.supportReloading());
+            }
 			// Configure the refreshing colors
 //			swipeRefreshLayout.setColorScheme(android.R.color.holo_blue_bright,
 //	                android.R.color.holo_green_light,
@@ -281,18 +308,20 @@ public class ViewItemPagerActivity extends BaseActivity {
 //	                android.R.color.holo_red_light);
 
 			if (child.supportPaging()) {
-				onScrollListeners.add(new EndlessScrollListener() {
-                    @Override
-                    public void onLoadMore(int page, int totalItemsCount) {
-                        new GetDataTask(child, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, new GetDataTask.GetDataTaskFinishedListener() {
+                if (null != itemAdapter) {
+                    onScrollListeners.add(new EndlessScrollListener() {
+                        @Override
+                        public void onLoadMore(int page, int totalItemsCount) {
+                            new GetDataTask(child, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, new GetDataTask.GetDataTaskFinishedListener() {
 
-                            @Override
-                            public void onGetDataTaskFinished(ViewNode model) {
-                                setLoading(false);
-                            }
-                        }, false);
-                    }
-                });
+                                @Override
+                                public void onGetDataTaskFinished(ViewNode model) {
+                                    setLoading(false);
+                                }
+                            }, false);
+                        }
+                    });
+                }
 			}
 
             if (null != absListView) {
@@ -303,23 +332,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                         startViewItemActivity((ViewNode)itemAdapter.getItem(position));
                     }
                 });
-
-//			final ScaleGestureDetector scaleDetector = new ScaleGestureDetector(ViewItemPagerActivity.this,
-//					new ScaleGestureDetector.SimpleOnScaleGestureListener () {
-//			    @Override
-//			    public void onScaleEnd(ScaleGestureDetector detector) {
-//			    	zoomGridView(detector.getScaleFactor() > 1.0, false);
-//			    }
-//			});
-//
-//			absListView.setOnTouchListener(new OnTouchListener() {
-//
-//				@Override
-//				public boolean onTouch(View v, MotionEvent event) {
-//					scaleDetector.onTouchEvent(event);
-//					return false;
-//				}
-//			});
 
                 absListView.setOnScrollListener(
                         new AbsListView.OnScrollListener() {
@@ -343,6 +355,24 @@ public class ViewItemPagerActivity extends BaseActivity {
                             }
                         }
                 );
+
+//			final ScaleGestureDetector scaleDetector = new ScaleGestureDetector(ViewItemPagerActivity.this,
+//					new ScaleGestureDetector.SimpleOnScaleGestureListener () {
+//			    @Override
+//			    public void onScaleEnd(ScaleGestureDetector detector) {
+//			    	zoomGridView(detector.getScaleFactor() > 1.0, false);
+//			    }
+//			});
+//
+//			absListView.setOnTouchListener(new OnTouchListener() {
+//
+//				@Override
+//				public boolean onTouch(View v, MotionEvent event) {
+//					scaleDetector.onTouchEvent(event);
+//					return false;
+//				}
+//			});
+
             }
 
             view.addView(contentView, 0);
@@ -688,6 +718,37 @@ public class ViewItemPagerActivity extends BaseActivity {
 //				item.setVisible(viewNode.getViewType() == ViewNode.VIEW_TYPE_GRID);
 //			}
 		}
+
+//		ViewNode viewItem = viewNode.getSibling(pager.getCurrentItem());
+//
+//		MenuItem heartsItem = menu.findItem(R.id.item_hearts_toggle);
+//		heartsItem.setVisible(true);
+//		if (viewItem.isHeartsOn()) {
+//    		heartsItem.setTitle(R.string.hearts_on);
+//    		heartsItem.setIcon(R.drawable.ic_hearts_on);
+//		} else {
+//    		heartsItem.setTitle(R.string.hearts_off);
+//    		heartsItem.setIcon(R.drawable.ic_hearts_off);
+//		}
+//
+//		MenuItem shareItem = menu.findItem(R.id.item_action_share);
+//		shareItem.setVisible(true);
+//		ShareActionProvider shareActionProvider = (ShareActionProvider)shareItem.getActionProvider();
+//	    Intent intent = new Intent(Intent.ACTION_SEND);
+//	    intent.setType("image/*");
+////	    intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imageLoader.getDiskCache().get(viewItem.getImageUrl()))); // TODO null check
+//	    shareActionProvider.setShareIntent(intent);
+//
+//	    /*
+//	     * ArrayList<Uri> imageUris = new ArrayList<Uri>();
+//imageUris.add(imageUri1); // Add your image URIs here
+//imageUris.add(imageUri2);
+//
+//Intent shareIntent = new Intent();
+//shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+//shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, imageUris);
+//shareIntent.setType("image/*");
+//	     */
 	}
 	
 	@Override
@@ -796,6 +857,17 @@ public class ViewItemPagerActivity extends BaseActivity {
             if (width > 0) columns = gv.getWidth() / width;
         }
         return columns;
+    }
+
+    private static void loadImage(ViewNode viewNode, ImageView imageView, SwipeRefreshLayout swipeRefreshLayout) {
+        if (null != swipeRefreshLayout) {
+            swipeRefreshLayout.setRefreshing(true);
+        }
+        MyVolley.getImageLoader().get(viewNode.getImageUrl(),
+                ImageLoader.getImageListener(imageView,
+                        R.drawable.ic_stub,
+                        R.drawable.ic_error));
+        swipeRefreshLayout.setRefreshing(false);
     }
 
     private static void updateGridItemView(ViewNode viewItem, GridItemViewHolder holder) {

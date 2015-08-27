@@ -170,19 +170,9 @@ public abstract class BaseActivity extends ActionBarActivity {
 	}
 	
 	public void startViewItemActivity(ViewNode node) {
-		Intent intent;
-		switch (node.getViewType(ViewNode.VIEW_TYPE_PAGER)) {
-		case ViewNode.VIEW_TYPE_IMAGE_PAGER:
-			intent = new Intent(this, ImagePagerActivity.class);
-			break;
-		default:
-            intent = new Intent(this, ViewItemPagerActivity.class);
-			break;
-		}
-		if (null != intent) {
-			intent.putExtra(Extra.VIEWNODE, node);
-			startActivity(intent);
-		}
+		Intent intent = new Intent(this, ViewItemPagerActivity.class);
+		intent.putExtra(Extra.VIEWNODE, node);
+		startActivity(intent);
 	}
 	
 	private void enableWallpaperService(boolean enabled) {

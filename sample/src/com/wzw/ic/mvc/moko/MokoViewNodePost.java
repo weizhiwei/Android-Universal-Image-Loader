@@ -10,6 +10,7 @@ import org.jsoup.select.Elements;
 import android.text.TextUtils;
 
 import com.wzw.ic.mvc.ViewNode;
+import com.wzw.ic.mvc.root.PictureViewNode;
 
 public class MokoViewNodePost extends MokoViewNode {
 
@@ -57,8 +58,7 @@ public class MokoViewNodePost extends MokoViewNode {
 			viewItems = new ArrayList<ViewNode>();
 			for (int i = 0; i < imgElems.size(); ++i) {
 				Element img = imgElems.get(i);
-				ViewNode viewNode = new MokoViewNodePost(this, sourceUrl);
-                viewNode.setImageUrl(img.attr("src2"));
+				ViewNode viewNode = new PictureViewNode(this, img.attr("src2"));
                 viewNode.setAuthor(author);
 				viewItems.add(viewNode);
 			}

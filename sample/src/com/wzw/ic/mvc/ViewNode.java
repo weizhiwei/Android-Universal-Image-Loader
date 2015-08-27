@@ -22,7 +22,7 @@ public class ViewNode extends IcObject {
     public static final int VIEW_TYPE_PAGER = 0;
     public static final int VIEW_TYPE_LIST = 1;
     public static final int VIEW_TYPE_GRID = 2;
-    public static final int VIEW_TYPE_IMAGE_PAGER = 3;
+    public static final int VIEW_TYPE_IMAGE = 3;
     public static final int VIEW_TYPE_WEBVIEW = 4;
     public static final int VIEW_TYPE_SIMPLE = 5;
     public static final int VIEW_TYPE_TILE = 6;

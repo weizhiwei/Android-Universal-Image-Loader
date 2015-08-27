@@ -39,11 +39,6 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".ImagePagerActivity"
-            android:theme="@style/OverlayActionBarTheme"
-            android:screenOrientation="fullSensor" />
-
         <receiver android:name=".BootReceiver"
         	android:enabled="false">
     		<intent-filter>
