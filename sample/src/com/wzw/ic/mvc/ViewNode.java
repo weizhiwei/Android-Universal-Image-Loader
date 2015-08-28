@@ -127,7 +127,7 @@ public class ViewNode extends IcObject {
         if (!TextUtils.isEmpty(authorName)) {
             String posted = TextUtils.isEmpty(title) ?
                     String.format("%d %s", children.size(), children.size() > 1 ? "pictures" : "picture") :
-                    String.format("%s (%dP)", title, children.size());
+                    String.format("<u>%s</u> (%dP)", title, children.size());
             String caption = String.format(
                     "<b>%s</b> posted %s", authorName, posted);
             holder.textView.setVisibility(View.VISIBLE);

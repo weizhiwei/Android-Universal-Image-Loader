@@ -1,5 +1,7 @@
 package com.nostra13.example.universalimageloader;
 
+import android.content.Intent;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
@@ -28,6 +30,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.android.volley.error.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.root.RootViewNode;
@@ -90,10 +93,11 @@ public class ViewItemPagerActivity extends BaseActivity {
 
         ActionBar actionBar = getSupportActionBar();
         for (int i = actionBar.getTabCount(); i < pager.getAdapter().getCount(); ++i) {
-	    	ViewNode viewItem = (ViewNode) ((ViewItemPagerAdapter)pager.getAdapter()).getItem(i);
+	    	final ViewNode viewItem = (ViewNode) ((ViewItemPagerAdapter)pager.getAdapter()).getItem(i);
 	    	final Tab tab = actionBar.newTab();
             tab.setTabListener(tabListener);
-            tab.setText(viewItem.getTitle());
+            tab.setText(""+actionBar.getTabCount()+i);
+            tab.setTag(viewItem.getImageUrl());
             actionBar.addTab(tab);
 		}
 	    
@@ -106,6 +110,25 @@ public class ViewItemPagerActivity extends BaseActivity {
 	protected void setActionBarSelection(int position) {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setSelectedNavigationItem(position);
+
+        int range = 3;
+        for (int i = Math.max(0, position-range); i < Math.min(actionBar.getTabCount(), position+range); ++i) {
+            final Tab tab = actionBar.getTabAt(i);
+
+            if (!TextUtils.isEmpty((String) tab.getTag())) {
+                MyVolley.getImageLoader().get((String) tab.getTag(), new ImageLoader.ImageListener() {
+                    @Override
+                    public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+                        tab.setIcon(new BitmapDrawable(getResources(), imageContainer.getBitmap()));
+                    }
+
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+
+                    }
+                });
+            }
+        }
 	}
 
 	public class ViewItemPagerAdapter extends PagerAdapter {
@@ -140,33 +163,11 @@ public class ViewItemPagerActivity extends BaseActivity {
 
             if ((viewType == ViewNode.VIEW_TYPE_LIST || viewType == ViewNode.VIEW_TYPE_GRID) &&
                 viewItem.getChildren().isEmpty()) {
-                AbsListView absListView = null;
-                final BaseAdapter itemAdapter;
-                final RecyclerView.Adapter recyclerViewAdapter;
-                final GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener;
-
                 View contentView = pager.findViewWithTag(pager.getCurrentItem());
-                switch (viewType) {
-                    case ViewNode.VIEW_TYPE_LIST:
-                        absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
-                        itemAdapter = (BaseAdapter) absListView.getAdapter();
-                        recyclerViewAdapter = null;
-                        getDataTaskFinishedListener = null;
-                        break;
-                    case ViewNode.VIEW_TYPE_GRID:
-                        absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
-                        itemAdapter = (BaseAdapter) absListView.getAdapter();
-                        recyclerViewAdapter = null;
-                        getDataTaskFinishedListener = null;
-                        break;
-                    default:
-                        itemAdapter = null;
-                        recyclerViewAdapter = null;
-                        getDataTaskFinishedListener = null;
-                        break;
-                }
+                AbsListView absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
+                BaseAdapter itemAdapter = (BaseAdapter) absListView.getAdapter();
                 SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
-                new GetDataTask(viewItem, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
+                new GetDataTask(viewItem, swipeRefreshLayout, itemAdapter, null, null, true);
 
             } else if (viewType == ViewNode.VIEW_TYPE_IMAGE) {
                 View contentView = pager.findViewWithTag(pager.getCurrentItem());
@@ -237,7 +238,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 			case ViewNode.VIEW_TYPE_GRID:
 				contentView = layoutInflater.inflate(R.layout.ac_image_grid, view, false);
                 imageView = null;
-                absListView = (AbsListView) contentView.findViewById(R.id.ic_gridview);
+                absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new GridItemAdapter(child, (GridView) absListView, layoutInflater);
                 ((GridView) absListView).setAdapter(itemAdapter);
                 recyclerViewAdapter = null;
@@ -932,5 +933,38 @@ public class ViewItemPagerActivity extends BaseActivity {
 //        } else {
 //            holder.text.setVisibility(View.GONE);
 //        }
+    }
+
+    public void startViewItemActivity(ViewNode node) {
+        Intent intent = new Intent(this, ViewItemPagerActivity.class);
+        intent.putExtra(Constants.Extra.VIEWNODE, node);
+        startActivityForResult(intent, 1);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (1 == requestCode) {
+            if (RESULT_OK == resultCode) {
+                int position = data.getIntExtra("pager_current_item", -1);
+                if (-1 != position) {
+                    final ViewPager pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
+                    View contentView = pager.findViewWithTag(pager.getCurrentItem());
+                    AbsListView absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
+                    if (null != absListView) {
+                        absListView.setSelection(position);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        final ViewPager pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
+        Intent intent = new Intent();
+        intent.putExtra("pager_current_item", pager.getCurrentItem());
+        setResult(RESULT_OK, intent);
+
+        super.onBackPressed();
     }
 }

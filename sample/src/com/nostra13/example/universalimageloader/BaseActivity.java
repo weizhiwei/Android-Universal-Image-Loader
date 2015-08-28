@@ -169,12 +169,6 @@ public abstract class BaseActivity extends ActionBarActivity {
 		}
 	}
 	
-	public void startViewItemActivity(ViewNode node) {
-		Intent intent = new Intent(this, ViewItemPagerActivity.class);
-		intent.putExtra(Extra.VIEWNODE, node);
-		startActivity(intent);
-	}
-	
 	private void enableWallpaperService(boolean enabled) {
 		WallpaperAlarmReceiver.enableWallpaperAlarms(this, enabled);
 		

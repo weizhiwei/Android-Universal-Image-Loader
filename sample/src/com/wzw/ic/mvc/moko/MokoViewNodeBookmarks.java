@@ -29,7 +29,7 @@ public class MokoViewNodeBookmarks extends MokoViewNode {
                 Element img = imgElems.get(i);
                 Element a = aElems.get(i);
                 ViewNode viewNode = new MokoViewNodePost(this, URL_PREFIX + a.attr("href"));
-                viewNode.setImageUrl(img.attr("src2"));
+                viewNode.setImageUrl(img.attr("src"));
                 viewNode.setInitialZoomLevel(1);
                 viewItems.add(viewNode);
             }
