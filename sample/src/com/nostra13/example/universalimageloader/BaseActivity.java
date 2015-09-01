@@ -53,11 +53,6 @@ public abstract class BaseActivity extends ActionBarActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		ActionBar actionBar = getSupportActionBar();
-
-//		actionBar.setDisplayHomeAsUpEnabled(true);
-		actionBar.setDisplayShowTitleEnabled(false);
 	}
 		
 	protected static void setHasEmbeddedTabs(Object inActionBar, final boolean inHasEmbeddedTabs)

@@ -43,13 +43,16 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import at.technikum.mti.fancycoverflow.FancyCoverFlow;
+import at.technikum.mti.fancycoverflow.FancyCoverFlowAdapter;
+
 public class ViewItemPagerActivity extends BaseActivity {
 
     @Override
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Bundle bundle = getIntent().getExtras();
-        ViewNode viewNode;
+        final ViewNode viewNode;
         if (null != bundle) {
             viewNode = (ViewNode) bundle.getSerializable(Constants.Extra.VIEWNODE);
         } else {
@@ -58,78 +61,83 @@ public class ViewItemPagerActivity extends BaseActivity {
 
         setContentView(R.layout.ac_view_item_pager);
 
-        final ViewPager pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
-        final PagerAdapter pagerAdapter = new ViewItemPagerAdapter(viewNode.getParent(), getLayoutInflater(), pager);
-        pager.setAdapter(pagerAdapter);
+        ViewPager pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
+        pager.setAdapter(new ViewItemPagerAdapter(viewNode.getParent(), getLayoutInflater(), pager));
 
-        initActionBar(pager);
+        final FancyCoverFlow coverFlow = (FancyCoverFlow) findViewById(R.id.coverflow);
+        coverFlow.setReflectionEnabled(true);
+        coverFlow.setReflectionRatio(0.3f);
+        coverFlow.setReflectionGap(0);
+        coverFlow.setAdapter(new CoverFlowAdapter(viewNode.getParent(), getLayoutInflater()));
+        coverFlow.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (viewNode.getParent().supportPaging() && position >= viewNode.getParent().getChildren().size() - 5) {
+                    new GetDataTask(viewNode.getParent(), null, (BaseAdapter)coverFlow.getAdapter(), null, null, false);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
 
         pager.setCurrentItem(viewNode.getParent().getChildren().indexOf(viewNode));
 	}
 
-	protected void initActionBar(final ViewPager pager) {
-		if (pager.getAdapter().getCount() <= 1) {
-			return;
-		}
+    private static class CoverFlowAdapter extends FancyCoverFlowAdapter {
 
-        // Create a tab listener that is called when the user changes tabs.
-	    ActionBar.TabListener tabListener = new ActionBar.TabListener() {
+        private ViewNode model;
+        private LayoutInflater layoutInflater;
 
-			@Override
-			public void onTabReselected(Tab tab, FragmentTransaction ft) {
-			}
-
-			@Override
-			public void onTabSelected(Tab tab, FragmentTransaction ft) {
-				if (null != pager) {
-					pager.setCurrentItem(tab.getPosition());
-				}
-			}
-
-			@Override
-			public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-			}
-	    };
-
-        ActionBar actionBar = getSupportActionBar();
-        for (int i = actionBar.getTabCount(); i < pager.getAdapter().getCount(); ++i) {
-	    	final ViewNode viewItem = (ViewNode) ((ViewItemPagerAdapter)pager.getAdapter()).getItem(i);
-	    	final Tab tab = actionBar.newTab();
-            tab.setTabListener(tabListener);
-            tab.setText(""+actionBar.getTabCount()+i);
-            tab.setTag(viewItem.getImageUrl());
-            actionBar.addTab(tab);
-		}
-	    
-//		setHasEmbeddedTabs(actionBar, true);
-	    
-	    // Specify that tabs should be displayed in the action bar.
-	    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-	}
-	
-	protected void setActionBarSelection(int position) {
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setSelectedNavigationItem(position);
-
-        int range = 3;
-        for (int i = Math.max(0, position-range); i < Math.min(actionBar.getTabCount(), position+range); ++i) {
-            final Tab tab = actionBar.getTabAt(i);
-
-            if (!TextUtils.isEmpty((String) tab.getTag())) {
-                MyVolley.getImageLoader().get((String) tab.getTag(), new ImageLoader.ImageListener() {
-                    @Override
-                    public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
-                        tab.setIcon(new BitmapDrawable(getResources(), imageContainer.getBitmap()));
-                    }
-
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
-
-                    }
-                });
-            }
+        CoverFlowAdapter(ViewNode model, LayoutInflater layoutInflater) {
+            this.model = model;
+            this.layoutInflater = layoutInflater;
         }
-	}
+
+        @Override
+        public int getCount() {
+            return model.getChildren().size();
+        }
+
+        @Override
+        public Object getItem(int i) {
+            return model.getChildren().get(i);
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return i;
+        }
+
+        @Override
+        public View getCoverFlowItem(int i, View reuseableView, ViewGroup viewGroup) {
+            ImageView imageView = null;
+
+            if (reuseableView != null) {
+                imageView = (ImageView) reuseableView;
+            } else {
+                imageView = new ImageView(viewGroup.getContext());
+                imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                imageView.setLayoutParams(new FancyCoverFlow.LayoutParams(160, 160));
+            }
+
+            ViewNode viewItem = (ViewNode) getItem(i);
+
+            imageView.setVisibility(View.INVISIBLE);
+            if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
+                imageView.setVisibility(View.VISIBLE);
+                MyVolley.getImageLoader().get(viewItem.getImageUrl(),
+                        ImageLoader.getImageListener(imageView,
+                                R.drawable.ic_stub,
+                                R.drawable.ic_error));
+            }
+
+            return imageView;
+        }
+
+
+    }
 
 	public class ViewItemPagerAdapter extends PagerAdapter {
 
@@ -155,9 +163,6 @@ public class ViewItemPagerActivity extends BaseActivity {
             }
             lastPosition = position;
 
-
-            setActionBarSelection(position);
-
             ViewNode viewItem = (ViewNode) getItem(position);
             int viewType = viewItem.getViewType(ViewNode.VIEW_TYPE_PAGER);
 
@@ -182,7 +187,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                 new GetDataTask(model, this, new GetDataTask.GetDataTaskFinishedListener() {
                     @Override
                     public void onGetDataTaskFinished(ViewNode model) {
-                        initActionBar(pager);
+                        // sync coverflow
                     }
                 }, false);
             }

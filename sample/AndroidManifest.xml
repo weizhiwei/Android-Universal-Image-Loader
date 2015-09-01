@@ -24,16 +24,11 @@
         <!-- android:uiOptions="splitActionBarWhenNarrow" -->
         <activity
             android:name=".ViewItemPagerActivity"
-            android:theme="@style/Theme.AppCompat.Light">
+            android:theme="@style/OverlayActionBarTheme">
             <!-- 
             <meta-data android:name="android.support.UI_OPTIONS"
                 android:value="splitActionBarWhenNarrow" /> -->
-		</activity>
-            
-        <activity
-            android:name=".EntryActivity"
-            android:theme="@style/AppTheme">
-        	<intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
