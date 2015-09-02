@@ -58,23 +58,47 @@ public class ViewItemPagerActivity extends BaseActivity {
         } else {
             viewNode = RootViewNode.getInstance().getChildren().get(0);
         }
+        final ViewNode parentNode = viewNode.getParent();
 
         setContentView(R.layout.ac_view_item_pager);
 
-        ViewPager pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
-        pager.setAdapter(new ViewItemPagerAdapter(viewNode.getParent(), getLayoutInflater(), pager));
-
+        final ViewPager pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
         final FancyCoverFlow coverFlow = (FancyCoverFlow) findViewById(R.id.coverflow);
+
+        pager.setAdapter(new ViewItemPagerAdapter(parentNode, getLayoutInflater(), pager));
+        pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (position < coverFlow.getAdapter().getCount()) {
+                    coverFlow.setSelection(position);
+                }
+
+                endlessScrollForPager(parentNode, position, pager.getAdapter(), (BaseAdapter) coverFlow.getAdapter());
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
         coverFlow.setReflectionEnabled(true);
         coverFlow.setReflectionRatio(0.3f);
         coverFlow.setReflectionGap(0);
-        coverFlow.setAdapter(new CoverFlowAdapter(viewNode.getParent(), getLayoutInflater()));
+        coverFlow.setAdapter(new CoverFlowAdapter(parentNode, getLayoutInflater()));
         coverFlow.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (viewNode.getParent().supportPaging() && position >= viewNode.getParent().getChildren().size() - 5) {
-                    new GetDataTask(viewNode.getParent(), null, (BaseAdapter)coverFlow.getAdapter(), null, null, false);
+                if (position < pager.getAdapter().getCount()) {
+                    pager.setCurrentItem(position);
                 }
+
+                endlessScrollForPager(parentNode, position, pager.getAdapter(), (BaseAdapter) coverFlow.getAdapter());
             }
 
             @Override
@@ -83,7 +107,34 @@ public class ViewItemPagerActivity extends BaseActivity {
         });
 
         pager.setCurrentItem(viewNode.getParent().getChildren().indexOf(viewNode));
-	}
+
+        if (ViewNode.VIEW_TYPE_IMAGE == viewNode.getViewType(ViewNode.VIEW_TYPE_PAGER)) {
+            setFullscreen(true);
+            //
+
+        }
+    }
+
+    @Override
+    public void setFullscreen(boolean fullscreen) {
+        super.setFullscreen(fullscreen);
+
+        // show/hide the coverflow
+        final FancyCoverFlow coverFlow = (FancyCoverFlow) findViewById(R.id.coverflow);
+        coverFlow.setVisibility(fullscreen ? View.GONE : View.VISIBLE);
+    }
+
+    private static void endlessScrollForPager(ViewNode viewNode, int position, final PagerAdapter pagerAdapter,
+                                              final BaseAdapter coverFlowAdapter) {
+        if (viewNode.supportPaging() && position >= viewNode.getChildren().size() - 5) {
+            new GetDataTask(viewNode, pagerAdapter, new GetDataTask.GetDataTaskFinishedListener () {
+                @Override
+                public void onGetDataTaskFinished(ViewNode model) {
+                    coverFlowAdapter.notifyDataSetChanged();
+                }
+            }, false);
+        }
+    }
 
     private static class CoverFlowAdapter extends FancyCoverFlowAdapter {
 
@@ -118,7 +169,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                 imageView = (ImageView) reuseableView;
             } else {
                 imageView = new ImageView(viewGroup.getContext());
-                imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 imageView.setLayoutParams(new FancyCoverFlow.LayoutParams(160, 160));
             }
 
@@ -135,8 +186,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 
             return imageView;
         }
-
-
     }
 
 	public class ViewItemPagerAdapter extends PagerAdapter {
@@ -182,15 +231,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                     loadImage(viewItem, imageView, swipeRefreshLayout);
                 }
             }
-
-            if (model.supportPaging() && position >= getCount() - 5) {
-                new GetDataTask(model, this, new GetDataTask.GetDataTaskFinishedListener() {
-                    @Override
-                    public void onGetDataTaskFinished(ViewNode model) {
-                        // sync coverflow
-                    }
-                }, false);
-            }
         }
 
 		@Override
@@ -226,6 +266,12 @@ public class ViewItemPagerActivity extends BaseActivity {
             case ViewNode.VIEW_TYPE_IMAGE:
                 contentView = layoutInflater.inflate(R.layout.item_pager_image, view, false);
                 imageView = (ImageView) contentView.findViewById(R.id.image);
+                imageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        toggleFullscreen();
+                    }
+                });
                 itemAdapter = null;
                 recyclerViewAdapter = null;
                 getDataTaskFinishedListener = null;
