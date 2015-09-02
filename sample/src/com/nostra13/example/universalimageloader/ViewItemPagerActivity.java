@@ -109,9 +109,8 @@ public class ViewItemPagerActivity extends BaseActivity {
         pager.setCurrentItem(viewNode.getParent().getChildren().indexOf(viewNode));
 
         if (ViewNode.VIEW_TYPE_IMAGE == viewNode.getViewType(ViewNode.VIEW_TYPE_PAGER)) {
-            setFullscreen(true);
-            //
 
+            setFullscreen(true);
         }
     }
 
