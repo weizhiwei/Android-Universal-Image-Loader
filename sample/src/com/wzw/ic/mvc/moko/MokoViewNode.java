@@ -19,7 +19,7 @@ import java.util.Map;
 public abstract class MokoViewNode extends ViewNode {
 
     protected String sourceUrl;
-    protected int pageNo;
+    protected int pageNo, newPageNo;
     protected boolean supportPaging;
     protected static String URL_PREFIX = "http://www.moko.cc";
 
@@ -38,7 +38,7 @@ public abstract class MokoViewNode extends ViewNode {
 
     @Override
     public void load(final boolean reload, final LoadListener loadListener) {
-        final int newPageNo = reload ? 1 : pageNo + 1;
+        newPageNo = reload ? 1 : pageNo + 1;
 
         final StringRequest myReq = new StringRequest(Request.Method.GET,
                 String.format(sourceUrl, newPageNo).replace("|", "%7C"),

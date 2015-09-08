@@ -8,8 +8,15 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import android.text.Html;
+import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
+import android.view.View;
 
+import com.android.volley.toolbox.ImageLoader;
+import com.nostra13.example.universalimageloader.MyVolley;
+import com.nostra13.example.universalimageloader.R;
 import com.wzw.ic.mvc.ViewNode;
 
 public class MokoViewNodeAuthor extends MokoViewNode {
@@ -17,6 +24,7 @@ public class MokoViewNodeAuthor extends MokoViewNode {
 	public MokoViewNodeAuthor(ViewNode parent, String userId) {
         super(parent, String.format(URL_PREFIX+"/post/%s/new/%%d.html", userId));
 		supportPaging = true;
+        author = this;
 	}
 	
 	@Override
@@ -39,10 +47,16 @@ public class MokoViewNodeAuthor extends MokoViewNode {
 				try {
 					String dateStr = dateElems.get(i).text().split(" ")[1];
 					String[] dateStrs = dateStr.split("-");
-					viewNode.setPostedDate(new Date(
+                    Date date = new Date(
                             Integer.parseInt(dateStrs[0]) - 1900,
                             Integer.parseInt(dateStrs[1]) - 1,
-                            Integer.parseInt(dateStrs[2])));
+                            Integer.parseInt(dateStrs[2]));
+					viewNode.setPostedDate(date);
+
+                    if (null == postedDate && 0 == i && 1 == newPageNo) {
+                        postedDate = date;
+                    }
+
 				} catch (Exception e) {
 				}
 				viewItems.add(viewNode);
@@ -57,8 +71,27 @@ public class MokoViewNodeAuthor extends MokoViewNode {
             case VIEW_TYPE_PAGER:
                 return VIEW_TYPE_GRID;
             case VIEW_TYPE_LIST:
-                return VIEW_TYPE_SIMPLE;
+                return VIEW_TYPE_TILE;
         }
         return super.getViewType(container);
+    }
+
+    @Override
+    public void updateWrapperView(WrapperViewHolder holder) {
+        super.updateWrapperView(holder);
+
+        holder.textView.setVisibility(View.INVISIBLE);
+        String authorName = (author == null ? null : author.getTitle());
+        if (!TextUtils.isEmpty(authorName)) {
+
+            String caption = "<b>" + authorName + "</b>";
+            if (null != postedDate) {
+                caption += ("<br/>last post on " + DateUtils.getRelativeTimeSpanString(
+                        postedDate.getTime(), (new Date()).getTime(),
+                        DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE));
+            }
+            holder.textView.setVisibility(View.VISIBLE);
+            holder.textView.setText(new SpannableString(Html.fromHtml(caption)));
+        }
     }
 }
