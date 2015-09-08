@@ -50,7 +50,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 
     @Override
 	public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         Bundle bundle = getIntent().getExtras();
         final ViewNode viewNode;
         if (null != bundle) {
@@ -58,6 +57,13 @@ public class ViewItemPagerActivity extends BaseActivity {
         } else {
             viewNode = RootViewNode.getInstance().getChildren().get(0);
         }
+
+        if (ViewNode.VIEW_TYPE_IMAGE == viewNode.getViewType(ViewNode.VIEW_TYPE_PAGER)) {
+            setTheme(R.style.OverlayActionBarTheme);
+        }
+
+        super.onCreate(savedInstanceState);
+        
         final ViewNode parentNode = viewNode.getParent();
 
         setContentView(R.layout.ac_view_item_pager);

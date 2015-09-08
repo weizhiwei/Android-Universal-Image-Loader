@@ -24,7 +24,7 @@
         <!-- android:uiOptions="splitActionBarWhenNarrow" -->
         <activity
             android:name=".ViewItemPagerActivity"
-            android:theme="@style/OverlayActionBarTheme">
+            android:theme="@style/Theme.AppCompat">
             <!-- 
             <meta-data android:name="android.support.UI_OPTIONS"
                 android:value="splitActionBarWhenNarrow" /> -->
