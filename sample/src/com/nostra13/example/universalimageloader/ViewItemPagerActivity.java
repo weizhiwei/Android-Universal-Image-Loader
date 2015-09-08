@@ -109,7 +109,6 @@ public class ViewItemPagerActivity extends BaseActivity {
         pager.setCurrentItem(viewNode.getParent().getChildren().indexOf(viewNode));
 
         if (ViewNode.VIEW_TYPE_IMAGE == viewNode.getViewType(ViewNode.VIEW_TYPE_PAGER)) {
-
             setFullscreen(true);
         }
     }
@@ -225,9 +224,12 @@ public class ViewItemPagerActivity extends BaseActivity {
             } else if (viewType == ViewNode.VIEW_TYPE_IMAGE) {
                 View contentView = pager.findViewWithTag(pager.getCurrentItem());
                 ImageView imageView = (ImageView) contentView.findViewById(R.id.image);
+                SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
                 if (null == imageView.getDrawable()) {
-                    SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
                     loadImage(viewItem, imageView, swipeRefreshLayout);
+                } else {
+                    // to avoid interfere with image zoom
+                    swipeRefreshLayout.setEnabled(false);
                 }
             }
         }
@@ -910,15 +912,34 @@ public class ViewItemPagerActivity extends BaseActivity {
         return columns;
     }
 
-    private static void loadImage(ViewNode viewNode, ImageView imageView, SwipeRefreshLayout swipeRefreshLayout) {
-        if (null != swipeRefreshLayout) {
-            swipeRefreshLayout.setRefreshing(true);
-        }
-        MyVolley.getImageLoader().get(viewNode.getImageUrl(),
-                ImageLoader.getImageListener(imageView,
-                        R.drawable.ic_stub,
-                        R.drawable.ic_error));
-        swipeRefreshLayout.setRefreshing(false);
+    private static void loadImage(ViewNode viewNode, ImageView imageView, final SwipeRefreshLayout swipeRefreshLayout) {
+        swipeRefreshLayout.setRefreshing(true);
+        final ImageLoader.ImageListener mixin = ImageLoader.getImageListener(imageView,
+                R.drawable.ic_stub,
+                R.drawable.ic_error);
+
+        ImageLoader.ImageListener imageListener = new ImageLoader.ImageListener () {
+
+            @Override
+            public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+                mixin.onResponse(imageContainer, b);
+
+                if (null != imageContainer.getBitmap()) {
+                    swipeRefreshLayout.setRefreshing(false);
+                    // load successful, disable swipe
+                    swipeRefreshLayout.setEnabled(false);
+                }
+            }
+
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+                mixin.onErrorResponse(volleyError);
+
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        };
+
+        MyVolley.getImageLoader().get(viewNode.getImageUrl(), imageListener);
     }
 
     private static void updateGridItemView(ViewNode viewItem, GridItemViewHolder holder) {
