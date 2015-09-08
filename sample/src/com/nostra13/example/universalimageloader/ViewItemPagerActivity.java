@@ -186,6 +186,10 @@ public class ViewItemPagerActivity extends BaseActivity {
                         ImageLoader.getImageListener(imageView,
                                 R.drawable.ic_stub,
                                 R.drawable.ic_error));
+            } else if (viewItem.getViewItemType() == ViewNode.VIEW_ITEM_TYPE_IMAGE_RES &&
+                    viewItem.getViewItemImageResId() > 0) {
+                imageView.setVisibility(View.VISIBLE);
+                imageView.setImageResource(viewItem.getViewItemImageResId());
             }
 
             return imageView;
@@ -967,35 +971,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                             ImageLoader.getImageListener(holder.imageView,
                                     R.drawable.ic_stub,
                                     R.drawable.ic_error));
-//                    Ion.with(holder.imageView)
-//                            .placeholder(R.drawable.ic_launcher)
-//                            .error(R.drawable.ic_error)
-//                            .load(viewItem.getImageUrl());
-//					imageLoader.displayImage(viewItem.getImageUrl(), holder.imageView, displayImageOptions, new SimpleImageLoadingListener() {
-//											 @Override
-//											 public void onLoadingStarted(String imageUri, View view) {
-//												 holder.progressBar.setProgress(0);
-//												 holder.progressBar.setVisibility(View.VISIBLE);
-//											 }
-//
-//											 @Override
-//											 public void onLoadingFailed(String imageUri, View view,
-//													 FailReason failReason) {
-//												 holder.progressBar.setVisibility(View.GONE);
-//											 }
-//
-//											 @Override
-//											 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//												 holder.progressBar.setVisibility(View.GONE);
-//											 }
-//										 }, new ImageLoadingProgressListener() {
-//											 @Override
-//											 public void onProgressUpdate(String imageUri, View view, int current,
-//													 int total) {
-//												 holder.progressBar.setProgress(Math.round(100.0f * current / total));
-//											 }
-//										 }
-//					);
                 }
                 break;
             default:
