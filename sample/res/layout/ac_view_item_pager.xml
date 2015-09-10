@@ -12,8 +12,9 @@
     <at.technikum.mti.fancycoverflow.FancyCoverFlow
         android:id="@+id/coverflow"
         android:layout_width="match_parent"
-        android:layout_height="160dp"
-        android:layout_gravity="bottom"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:background="#000000"
         fcf:maxRotation="45"
         fcf:unselectedAlpha="0.3"
         fcf:unselectedSaturation="0.0"
