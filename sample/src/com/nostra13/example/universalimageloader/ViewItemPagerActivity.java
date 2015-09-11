@@ -96,7 +96,7 @@ public class ViewItemPagerActivity extends BaseActivity {
         coverFlow.setReflectionEnabled(true);
         coverFlow.setReflectionRatio(0.3f);
         coverFlow.setReflectionGap(0);
-        coverFlow.setAdapter(new CoverFlowAdapter(parentNode, getLayoutInflater()));
+        coverFlow.setAdapter(new CoverFlowAdapter(parentNode, coverFlow, getLayoutInflater()));
         coverFlow.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -144,9 +144,11 @@ public class ViewItemPagerActivity extends BaseActivity {
 
         private ViewNode model;
         private LayoutInflater layoutInflater;
+        private FancyCoverFlow coverFlow;
 
-        CoverFlowAdapter(ViewNode model, LayoutInflater layoutInflater) {
+        CoverFlowAdapter(ViewNode model, FancyCoverFlow coverFlow, LayoutInflater layoutInflater) {
             this.model = model;
+            this.coverFlow = coverFlow;
             this.layoutInflater = layoutInflater;
         }
 
@@ -166,33 +168,25 @@ public class ViewItemPagerActivity extends BaseActivity {
         }
 
         @Override
-        public View getCoverFlowItem(int i, View reuseableView, ViewGroup viewGroup) {
-            ImageView imageView = null;
-
-            if (reuseableView != null) {
-                imageView = (ImageView) reuseableView;
+        public View getCoverFlowItem(int position, View reuseableView, ViewGroup viewGroup) {
+            final GridItemViewHolder holder;
+            View view = reuseableView;
+            if (view == null) {
+                view = layoutInflater.inflate(R.layout.item_grid_image, viewGroup, false);
+                int side = coverFlow.getLayoutParams().height;
+                view.setLayoutParams(new FancyCoverFlow.LayoutParams(side, side));
+                view.setMinimumWidth(side);
+                view.setMinimumHeight(side);
+                holder = new GridItemViewHolder(view);
+                view.setTag(holder);
             } else {
-                imageView = new ImageView(viewGroup.getContext());
-                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                imageView.setLayoutParams(new FancyCoverFlow.LayoutParams(160, 160));
+                holder = (GridItemViewHolder) view.getTag();
             }
 
-            ViewNode viewItem = (ViewNode) getItem(i);
+            final ViewNode child = (ViewNode)getItem(position);
+            updateGridItemView(child, holder);
 
-            imageView.setVisibility(View.INVISIBLE);
-            if (!TextUtils.isEmpty(viewItem.getImageUrl())) {
-                imageView.setVisibility(View.VISIBLE);
-                MyVolley.getImageLoader().get(viewItem.getImageUrl(),
-                        ImageLoader.getImageListener(imageView,
-                                R.drawable.ic_stub,
-                                R.drawable.ic_error));
-            } else if (viewItem.getViewItemType() == ViewNode.VIEW_ITEM_TYPE_IMAGE_RES &&
-                    viewItem.getViewItemImageResId() > 0) {
-                imageView.setVisibility(View.VISIBLE);
-                imageView.setImageResource(viewItem.getViewItemImageResId());
-            }
-
-            return imageView;
+            return view;
         }
     }
 
@@ -978,13 +972,13 @@ public class ViewItemPagerActivity extends BaseActivity {
         }
 
         SpannableString text = buildPictureText(viewItem, true, true, false, false, false, false);
-//        if (null != text && getGridViewNumColumns(gridView) < 3) {
-//            holder.text.setVisibility(View.VISIBLE);
-//            holder.text.setText(text);
-////				holder.text.setMovementMethod(LinkMovementMethod.getInstance());
-//        } else {
-//            holder.text.setVisibility(View.GONE);
-//        }
+        if (null != text) {
+            holder.text.setVisibility(View.VISIBLE);
+            holder.text.setText(text);
+//				holder.text.setMovementMethod(LinkMovementMethod.getInstance());
+        } else {
+            holder.text.setVisibility(View.GONE);
+        }
     }
 
     public void startViewItemActivity(ViewNode node) {
