@@ -19,7 +19,7 @@ public class RootViewNode extends ViewNode {
 
         ViewNode channels = new MokoViewNodeRoot(this);
         channels.setTitle("Channels");
-        channels.setViewItemImageResId(R.drawable.tiles_on);
+        channels.setViewItemImageResId(R.drawable.channels_on);
         channels.setViewItemType(ViewNode.VIEW_ITEM_TYPE_IMAGE_RES);
 
         ViewNode bookmarks = new MokoViewNodeBookmarks(this);
@@ -38,7 +38,7 @@ public class RootViewNode extends ViewNode {
 
         ViewNode new_ = new MokoViewNodeStream(this);
         new_.setTitle("New");
-        new_.setViewItemImageResId(R.drawable.crescent_on);
+        new_.setViewItemImageResId(R.drawable.pictures_on);
         new_.setViewItemType(ViewNode.VIEW_ITEM_TYPE_IMAGE_RES);
 
         this.children.addAll(Arrays.asList(channels, new_, bookmarks, following));
