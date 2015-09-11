@@ -814,6 +814,9 @@ public class ViewItemPagerActivity extends BaseActivity {
 			case R.id.item_zoom_in:
 				zoomGridView(true, true);
 				return true;
+            case R.id.menu_toggle_coverflow:
+                toggleView(findViewById(R.id.coverflow));
+                return true;
 			default:
 				return super.onOptionsItemSelected(item);
 		}

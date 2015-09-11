@@ -213,4 +213,10 @@ public abstract class BaseActivity extends ActionBarActivity {
 		
 		return ss;
 	}
+
+    public static void toggleView(View view) {
+        if (null != view) {
+            view.setVisibility(View.VISIBLE == view.getVisibility() ? View.GONE : View.VISIBLE);
+        }
+    }
 }
