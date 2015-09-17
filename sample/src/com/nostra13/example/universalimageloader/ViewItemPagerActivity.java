@@ -48,6 +48,9 @@ import at.technikum.mti.fancycoverflow.FancyCoverFlowAdapter;
 
 public class ViewItemPagerActivity extends BaseActivity {
 
+    private int oldPagerCurrentItem = -1;
+    private int newPagerCurrentItem;
+
     @Override
 	public void onCreate(Bundle savedInstanceState) {
         Bundle bundle = getIntent().getExtras();
@@ -63,15 +66,12 @@ public class ViewItemPagerActivity extends BaseActivity {
         }
 
         super.onCreate(savedInstanceState);
-        
-        final ViewNode parentNode = viewNode.getParent();
 
         setContentView(R.layout.ac_view_item_pager);
 
         final ViewPager pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
         final FancyCoverFlow coverFlow = (FancyCoverFlow) findViewById(R.id.coverflow);
 
-        pager.setAdapter(new ViewItemPagerAdapter(parentNode, getLayoutInflater(), pager));
         pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -84,7 +84,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     coverFlow.setSelection(position);
                 }
 
-                endlessScrollForPager(parentNode, position, pager.getAdapter(), (BaseAdapter) coverFlow.getAdapter());
+                endlessScrollForPager(position, pager.getAdapter(), (BaseAdapter) coverFlow.getAdapter());
             }
 
             @Override
@@ -96,7 +96,6 @@ public class ViewItemPagerActivity extends BaseActivity {
         coverFlow.setReflectionEnabled(true);
         coverFlow.setReflectionRatio(0.3f);
         coverFlow.setReflectionGap(0);
-        coverFlow.setAdapter(new CoverFlowAdapter(parentNode, coverFlow, getLayoutInflater()));
         coverFlow.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -104,7 +103,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     pager.setCurrentItem(position);
                 }
 
-                endlessScrollForPager(parentNode, position, pager.getAdapter(), (BaseAdapter) coverFlow.getAdapter());
+                endlessScrollForPager(position, pager.getAdapter(), (BaseAdapter) coverFlow.getAdapter());
             }
 
             @Override
@@ -112,11 +111,23 @@ public class ViewItemPagerActivity extends BaseActivity {
             }
         });
 
+        setViewNode(viewNode);
+    }
+
+    private void setViewNode(ViewNode viewNode) {
+        final ViewNode parentNode = viewNode.getParent();
+
+        final ViewPager pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
+        final FancyCoverFlow coverFlow = (FancyCoverFlow) findViewById(R.id.coverflow);
+
+        pager.setAdapter(new ViewItemPagerAdapter(parentNode, getLayoutInflater(), pager));
+        coverFlow.setAdapter(new CoverFlowAdapter(parentNode, coverFlow, getLayoutInflater()));
+
         pager.setCurrentItem(viewNode.getParent().getChildren().indexOf(viewNode));
 
-        if (ViewNode.VIEW_TYPE_IMAGE == viewNode.getViewType(ViewNode.VIEW_TYPE_PAGER)) {
-            setFullscreen(true);
-        }
+//        if (ViewNode.VIEW_TYPE_IMAGE == viewNode.getViewType(ViewNode.VIEW_TYPE_PAGER)) {
+//            setFullscreen(true);
+//        }
     }
 
     @Override
@@ -128,8 +139,11 @@ public class ViewItemPagerActivity extends BaseActivity {
         coverFlow.setVisibility(fullscreen ? View.GONE : View.VISIBLE);
     }
 
-    private static void endlessScrollForPager(ViewNode viewNode, int position, final PagerAdapter pagerAdapter,
+    private static void endlessScrollForPager(int position, final PagerAdapter pagerAdapter,
                                               final BaseAdapter coverFlowAdapter) {
+
+        ViewNode viewNode = ((ViewNode) ((ViewItemPagerAdapter) pagerAdapter).getItem(0)).getParent();
+
         if (viewNode.supportPaging() && position >= viewNode.getChildren().size() - 5) {
             new GetDataTask(viewNode, pagerAdapter, new GetDataTask.GetDataTaskFinishedListener () {
                 @Override
@@ -217,16 +231,21 @@ public class ViewItemPagerActivity extends BaseActivity {
             ViewNode viewItem = (ViewNode) getItem(position);
             int viewType = viewItem.getViewType(ViewNode.VIEW_TYPE_PAGER);
 
-            if ((viewType == ViewNode.VIEW_TYPE_LIST || viewType == ViewNode.VIEW_TYPE_GRID) &&
-                viewItem.getChildren().isEmpty()) {
-                View contentView = pager.findViewWithTag(pager.getCurrentItem());
-                AbsListView absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
-                BaseAdapter itemAdapter = (BaseAdapter) absListView.getAdapter();
-                SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
-                new GetDataTask(viewItem, swipeRefreshLayout, itemAdapter, null, null, true);
-
+            if ((viewType == ViewNode.VIEW_TYPE_LIST || viewType == ViewNode.VIEW_TYPE_GRID)) {
+                if (viewItem.getChildren().isEmpty()) {
+                    View contentView = pager.findViewWithTag(position);
+                    AbsListView absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
+                    BaseAdapter itemAdapter = (BaseAdapter) absListView.getAdapter();
+                    SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
+                    new GetDataTask(viewItem, swipeRefreshLayout, itemAdapter, null, null, true);
+                } else if (oldPagerCurrentItem >= 0 && newPagerCurrentItem == position) {
+                    View contentView = pager.findViewWithTag(position);
+                    AbsListView absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
+                    absListView.setSelection(oldPagerCurrentItem);
+                    oldPagerCurrentItem = -1;
+                }
             } else if (viewType == ViewNode.VIEW_TYPE_IMAGE) {
-                View contentView = pager.findViewWithTag(pager.getCurrentItem());
+                View contentView = pager.findViewWithTag(position);
                 ImageView imageView = (ImageView) contentView.findViewById(R.id.image);
                 SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
                 if (null == imageView.getDrawable()) {
@@ -985,35 +1004,22 @@ public class ViewItemPagerActivity extends BaseActivity {
     }
 
     public void startViewItemActivity(ViewNode node) {
-        Intent intent = new Intent(this, ViewItemPagerActivity.class);
-        intent.putExtra(Constants.Extra.VIEWNODE, node);
-        startActivityForResult(intent, 1);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (1 == requestCode) {
-            if (RESULT_OK == resultCode) {
-                int position = data.getIntExtra("pager_current_item", -1);
-                if (-1 != position) {
-                    final ViewPager pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
-                    View contentView = pager.findViewWithTag(pager.getCurrentItem());
-                    AbsListView absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
-                    if (null != absListView) {
-                        absListView.setSelection(position);
-                    }
-                }
-            }
-        }
+        setViewNode(node);
     }
 
     @Override
     public void onBackPressed() {
         final ViewPager pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
-        Intent intent = new Intent();
-        intent.putExtra("pager_current_item", pager.getCurrentItem());
-        setResult(RESULT_OK, intent);
 
-        super.onBackPressed();
+        oldPagerCurrentItem = pager.getCurrentItem();
+
+        ViewNode viewNode = ((ViewNode) ((ViewItemPagerAdapter) pager.getAdapter()).getItem(0)).getParent();
+        if (viewNode == RootViewNode.getInstance()) {
+            super.onBackPressed();
+        } else {
+            newPagerCurrentItem = viewNode.getParent().getChildren().indexOf(viewNode);
+            setViewNode(viewNode);
+            // absListView.setSelection(oldPagerCurrentItem) not working here, do it in setPrimaryItem()
+        }
     }
 }
