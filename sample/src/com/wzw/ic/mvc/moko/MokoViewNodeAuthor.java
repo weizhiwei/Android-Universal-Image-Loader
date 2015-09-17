@@ -71,7 +71,7 @@ public class MokoViewNodeAuthor extends MokoViewNode {
             case VIEW_TYPE_PAGER:
                 return VIEW_TYPE_GRID;
             case VIEW_TYPE_LIST:
-                return VIEW_TYPE_TILE;
+                return VIEW_TYPE_SIMPLE;
         }
         return super.getViewType(container);
     }
