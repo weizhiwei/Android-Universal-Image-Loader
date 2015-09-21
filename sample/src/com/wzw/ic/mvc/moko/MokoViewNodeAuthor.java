@@ -42,7 +42,6 @@ public class MokoViewNodeAuthor extends MokoViewNode {
 				Element a = aElems.get(i);
                 ViewNode viewNode = new MokoViewNodePost(this, URL_PREFIX + a.attr("href"));
                 viewNode.setImageUrl(img.attr("src2"));
-                viewNode.setInitialZoomLevel(1);
 				viewNode.setAuthor(this);
 				try {
 					String dateStr = dateElems.get(i).text().split(" ")[1];

@@ -81,6 +81,11 @@ public class ViewItemPagerActivity extends BaseActivity {
 
             @Override
             public void onPageSelected(int position) {
+                if (RootViewNode.getInstance() == parentNode) {
+                    ActionBar actionBar = getSupportActionBar();
+                    actionBar.setSelectedNavigationItem(position);
+                }
+
                 if (position < coverFlow.getAdapter().getCount()) {
                     coverFlow.setSelection(position);
                 }
@@ -118,6 +123,44 @@ public class ViewItemPagerActivity extends BaseActivity {
         if (ViewNode.VIEW_TYPE_IMAGE == viewNode.getViewType(ViewNode.VIEW_TYPE_PAGER)) {
             setFullscreen(true);
         }
+
+        if (RootViewNode.getInstance() == parentNode) {
+            coverFlow.setVisibility(View.GONE);
+
+            ActionBar actionBar = getSupportActionBar();
+            ActionBar.TabListener tabListener = new ActionBar.TabListener() {
+
+                @Override
+                public void onTabReselected(Tab tab, FragmentTransaction ft) {
+                }
+
+                @Override
+                public void onTabSelected(Tab tab, FragmentTransaction ft) {
+                    if (null != pager) {
+                        pager.setCurrentItem(tab.getPosition());
+                    }
+                }
+
+                @Override
+                public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+                }
+            };
+
+            for (int i = 0; i < parentNode.getChildren().size(); ++i) {
+                ViewNode viewItem = parentNode.getChildren().get(i);
+                final Tab tab = actionBar.newTab();
+                tab.setTabListener(tabListener);
+//                tab.setText(viewItem.getTitle());
+                tab.setIcon(viewItem.getViewItemImageResId());
+                actionBar.addTab(tab);
+            }
+
+            setHasEmbeddedTabs(actionBar, true);
+
+            // Specify that tabs should be displayed in the action bar.
+            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        }
+
     }
 
     @Override
@@ -313,9 +356,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                 absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new GridItemAdapter(child, (GridView) absListView, layoutInflater);
                 recyclerViewAdapter = null;
-                if (child.getInitialZoomLevel() > 0 && child.getInitialZoomLevel() <= 3) {
-					((GridView) absListView).setNumColumns(child.getInitialZoomLevel());
-				}
                 if (child.getWrapperViewResId() > 0) {
                     final ViewNode.WrapperViewHolder wrapperViewHolder = child.createWrapperView(
                             layoutInflater.inflate(child.getWrapperViewResId(), view, false)
@@ -342,7 +382,9 @@ public class ViewItemPagerActivity extends BaseActivity {
                 } else {
                     getDataTaskFinishedListener = null;
                 }
+
                 ((GridView) absListView).setAdapter(itemAdapter);
+                setGridViewColumns((GridView) absListView, 3);
 				break;
             case ViewNode.VIEW_TYPE_WEBVIEW:
                 contentView = layoutInflater.inflate(R.layout.ac_web_view, view, false);
@@ -549,16 +591,11 @@ public class ViewItemPagerActivity extends BaseActivity {
 			}
 			
 			int rowHeight;
-			switch (getGridViewNumColumns(gridView)) {
-			case 1:
-				rowHeight = GridView.LayoutParams.WRAP_CONTENT;
-				break;
-			case 2:
-			case 3:
-			default:
-				rowHeight = gridView.getWidth()/getGridViewNumColumns(gridView);
-				break;
-			}
+			if (1 == getGridViewNumColumns(gridView)) {
+                rowHeight = GridView.LayoutParams.WRAP_CONTENT;
+            } else {
+                rowHeight = gridView.getWidth() / getGridViewNumColumns(gridView);
+            }
 			view.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.FILL_PARENT, rowHeight));
 			
 			final ViewNode child = (ViewNode)getItem(position);
@@ -853,9 +890,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 			case R.id.item_zoom_in:
 				zoomGridView(true, true);
 				return true;
-            case R.id.menu_toggle_coverflow:
-                toggleView(findViewById(R.id.coverflow));
-                return true;
 			default:
 				return super.onOptionsItemSelected(item);
 		}

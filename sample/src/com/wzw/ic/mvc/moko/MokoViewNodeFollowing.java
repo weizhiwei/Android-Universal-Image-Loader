@@ -33,7 +33,6 @@ public class MokoViewNodeFollowing extends MokoViewNode {
                 ViewNode viewItem = new MokoViewNodeAuthor(this, userId);
                 viewItem.setTitle(title);
                 viewItem.setImageUrl(img.attr("src"));
-                viewItem.setInitialZoomLevel(2);
                 viewItems.add(viewItem);
             }
         }

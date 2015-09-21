@@ -3,4 +3,5 @@
     <!--Theme Common-->
     <color name="actionbar_dark_grey">#303030</color>
     <color name="actionbar_selected">#262626</color>
+    <color name="holo_blue">#FF33E5B5</color>
 </resources>

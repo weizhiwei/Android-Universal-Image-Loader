@@ -30,7 +30,6 @@ public class MokoViewNodeChannel extends MokoViewNode {
 				Element a = aElems.get(i);
                 ViewNode viewItem = new MokoViewNodePost(this, URL_PREFIX + a.attr("href"));
 				viewItem.setImageUrl(img.attr("src2"));
-				viewItem.setInitialZoomLevel(1);
 				viewItems.add(viewItem);
 			}
 		}

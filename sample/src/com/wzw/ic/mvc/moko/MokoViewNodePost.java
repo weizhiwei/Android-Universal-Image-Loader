@@ -9,6 +9,7 @@ import org.jsoup.select.Elements;
 
 import android.text.TextUtils;
 
+import com.nostra13.example.universalimageloader.R;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.root.PictureViewNode;
 
@@ -36,7 +37,6 @@ public class MokoViewNodePost extends MokoViewNode {
                     author = new MokoViewNodeAuthor(null, userUrl);
                     author.setTitle(e.text());
                     author.setImageUrl(null == i ? "" : i.attr("src"));
-                    author.setInitialZoomLevel(2);
 				}
 			}
 		}
@@ -77,4 +77,8 @@ public class MokoViewNodePost extends MokoViewNode {
         return super.getViewType(container);
     }
 
+    @Override
+    public int getWrapperViewResId() {
+        return R.layout.wrapper;
+    }
 }

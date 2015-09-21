@@ -114,7 +114,7 @@ public class ViewNode extends IcObject {
 	}
 
     public int getWrapperViewResId() {
-        return R.layout.wrapper;
+        return 0;
     }
 
     public WrapperViewHolder createWrapperView(View headerView) {
@@ -156,7 +156,6 @@ public class ViewNode extends IcObject {
     protected boolean heartsOn;
     protected ViewNode author;
     protected String webPageUrl;
-    protected int initialZoomLevel;
     protected Date postedDate;
 
     public String getTitle() {
@@ -247,14 +246,6 @@ public class ViewNode extends IcObject {
 
     public void setViewItemImageResId(int viewItemImageResId) {
         this.viewItemImageResId = viewItemImageResId;
-    }
-
-    public int getInitialZoomLevel() {
-        return initialZoomLevel;
-    }
-
-    public void setInitialZoomLevel(int initialZoomLevel) {
-        this.initialZoomLevel = initialZoomLevel;
     }
 
     public Date getPostedDate() {
