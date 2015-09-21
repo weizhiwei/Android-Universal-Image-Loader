@@ -45,6 +45,7 @@ import java.util.List;
 
 import at.technikum.mti.fancycoverflow.FancyCoverFlow;
 import at.technikum.mti.fancycoverflow.FancyCoverFlowAdapter;
+import in.srain.cube.views.GridViewWithHeaderAndFooter;
 
 public class ViewItemPagerActivity extends BaseActivity {
 
@@ -220,10 +221,25 @@ public class ViewItemPagerActivity extends BaseActivity {
             if ((viewType == ViewNode.VIEW_TYPE_LIST || viewType == ViewNode.VIEW_TYPE_GRID) &&
                 viewItem.getChildren().isEmpty()) {
                 View contentView = pager.findViewWithTag(pager.getCurrentItem());
-                AbsListView absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
-                BaseAdapter itemAdapter = (BaseAdapter) absListView.getAdapter();
+                final AbsListView absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
+                BaseAdapter itemAdapter = (BaseAdapter) (viewType == ViewNode.VIEW_TYPE_GRID ? ((GridViewWithHeaderAndFooter) absListView).getOriginalAdapter() : absListView.getAdapter());
                 SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
-                new GetDataTask(viewItem, swipeRefreshLayout, itemAdapter, null, null, true);
+
+                final GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener;
+                if (viewItem.getWrapperViewResId() > 0) {
+                    getDataTaskFinishedListener = new GetDataTask.GetDataTaskFinishedListener() {
+                        @Override
+                        public void onGetDataTaskFinished(ViewNode model) {
+                            if(model.getWrapperViewResId()>0) {
+                                model.updateWrapperView((ViewNode.WrapperViewHolder) absListView.getTag());
+                            }
+                        }
+                    };
+                } else {
+                    getDataTaskFinishedListener = null;
+                }
+
+                new GetDataTask(viewItem, swipeRefreshLayout, itemAdapter, null, getDataTaskFinishedListener, true);
 
             } else if (viewType == ViewNode.VIEW_TYPE_IMAGE) {
                 View contentView = pager.findViewWithTag(pager.getCurrentItem());
@@ -296,12 +312,37 @@ public class ViewItemPagerActivity extends BaseActivity {
                 imageView = null;
                 absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new GridItemAdapter(child, (GridView) absListView, layoutInflater);
-                ((GridView) absListView).setAdapter(itemAdapter);
                 recyclerViewAdapter = null;
-                getDataTaskFinishedListener = null;
-				if (child.getInitialZoomLevel() > 0 && child.getInitialZoomLevel() <= 3) {
+                if (child.getInitialZoomLevel() > 0 && child.getInitialZoomLevel() <= 3) {
 					((GridView) absListView).setNumColumns(child.getInitialZoomLevel());
 				}
+                if (child.getWrapperViewResId() > 0) {
+                    final ViewNode.WrapperViewHolder wrapperViewHolder = child.createWrapperView(
+                            layoutInflater.inflate(child.getWrapperViewResId(), view, false)
+                    );
+
+                    absListView.setTag(wrapperViewHolder);
+
+                    View header = wrapperViewHolder.wrapperView.findViewById(R.id.header);
+                    removeViewFromParent(header);
+                    ((GridViewWithHeaderAndFooter) absListView).addHeaderView(header);
+
+                    View footer = wrapperViewHolder.wrapperView.findViewById(R.id.footer);
+                    removeViewFromParent(footer);
+                    ((GridViewWithHeaderAndFooter) absListView).addFooterView(footer);
+
+                    getDataTaskFinishedListener = new GetDataTask.GetDataTaskFinishedListener() {
+                        @Override
+                        public void onGetDataTaskFinished(ViewNode model) {
+                            if(model.getWrapperViewResId()>0) {
+                                model.updateWrapperView(wrapperViewHolder);
+                            }
+                        }
+                    };
+                } else {
+                    getDataTaskFinishedListener = null;
+                }
+                ((GridView) absListView).setAdapter(itemAdapter);
 				break;
             case ViewNode.VIEW_TYPE_WEBVIEW:
                 contentView = layoutInflater.inflate(R.layout.ac_web_view, view, false);
@@ -608,9 +649,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                                 layoutInflater.inflate(child.getWrapperViewResId(), parent, false)
                         );
 
-                        if (null != view.getParent()) {
-                            ((ViewGroup) view.getParent()).removeView(view);
-                        }
+                        removeViewFromParent(view);
                         holder.wrapperViewHolder.body.addView(view);
 
                         view = holder.wrapperViewHolder.wrapperView;

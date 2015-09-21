@@ -26,6 +26,7 @@ dependencies {
     compile 'org.lucasr.twowayview:layouts:1.0.0-SNAPSHOT@aar'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'dev.dworks.libs:volleyplus:+'
+    compile 'in.srain.cube:grid-view-with-header-footer:1.0.12'
 }
 
 android {

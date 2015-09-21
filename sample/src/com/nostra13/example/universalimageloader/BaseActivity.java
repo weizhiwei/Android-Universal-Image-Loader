@@ -31,6 +31,7 @@ import android.text.style.ClickableSpan;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 
 import com.nostra13.example.universalimageloader.Constants.Extra;
@@ -217,6 +218,12 @@ public abstract class BaseActivity extends ActionBarActivity {
     public static void toggleView(View view) {
         if (null != view) {
             view.setVisibility(View.VISIBLE == view.getVisibility() ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    public static void removeViewFromParent(View view) {
+        if (null != view.getParent()) {
+            ((ViewGroup) view.getParent()).removeView(view);
         }
     }
 }
