@@ -29,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.WrapperListAdapter;
 
 import com.android.volley.error.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
@@ -265,7 +266,16 @@ public class ViewItemPagerActivity extends BaseActivity {
                 viewItem.getChildren().isEmpty()) {
                 View contentView = pager.findViewWithTag(pager.getCurrentItem());
                 final AbsListView absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
-                BaseAdapter itemAdapter = (BaseAdapter) (viewType == ViewNode.VIEW_TYPE_GRID ? ((GridViewWithHeaderAndFooter) absListView).getOriginalAdapter() : absListView.getAdapter());
+                BaseAdapter itemAdapter = null;
+                if (viewType == ViewNode.VIEW_TYPE_LIST) {
+                    if (viewItem.getWrapperViewResId() > 0) {
+                        itemAdapter = (BaseAdapter) ((WrapperListAdapter) absListView.getAdapter()).getWrappedAdapter();
+                    } else {
+                        itemAdapter = (BaseAdapter) absListView.getAdapter();
+                    }
+                } else if (viewType == ViewNode.VIEW_TYPE_GRID) {
+                    itemAdapter = (BaseAdapter) ((GridViewWithHeaderAndFooter) absListView).getOriginalAdapter();
+                }
                 SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
 
                 final GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener;
@@ -345,9 +355,36 @@ public class ViewItemPagerActivity extends BaseActivity {
                 imageView = null;
                 absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
 				itemAdapter = new ListItemAdapter(child, (ListView) absListView, layoutInflater);
-                ((ListView) absListView).setAdapter(itemAdapter);
                 recyclerViewAdapter = null;
-                getDataTaskFinishedListener = null;
+                if (child.getWrapperViewResId() > 0) {
+                    final ViewNode.WrapperViewHolder wrapperViewHolder = child.createWrapperView(
+                            layoutInflater.inflate(child.getWrapperViewResId(), view, false)
+                    );
+
+                    absListView.setTag(wrapperViewHolder);
+
+                    View header = wrapperViewHolder.wrapperView.findViewById(R.id.header);
+                    removeViewFromParent(header);
+                    header.setLayoutParams(new ListView.LayoutParams(ListView.LayoutParams.MATCH_PARENT, ListView.LayoutParams.WRAP_CONTENT));
+                    ((ListView) absListView).addHeaderView(header);
+
+                    View footer = wrapperViewHolder.wrapperView.findViewById(R.id.footer);
+                    removeViewFromParent(footer);
+                    footer.setLayoutParams(new ListView.LayoutParams(ListView.LayoutParams.MATCH_PARENT, 50));
+                    ((ListView) absListView).addFooterView(footer);
+
+                    getDataTaskFinishedListener = new GetDataTask.GetDataTaskFinishedListener() {
+                        @Override
+                        public void onGetDataTaskFinished(ViewNode model) {
+                            if(model.getWrapperViewResId()>0) {
+                                model.updateWrapperView(wrapperViewHolder);
+                            }
+                        }
+                    };
+                } else {
+                    getDataTaskFinishedListener = null;
+                }
+                ((ListView) absListView).setAdapter(itemAdapter);
                 ((ListView) absListView).setDividerHeight(0);
                 break;
 			case ViewNode.VIEW_TYPE_GRID:
@@ -384,7 +421,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                 }
 
                 ((GridView) absListView).setAdapter(itemAdapter);
-                ((GridView) absListView).setNumColumns(3);
+                ((GridView) absListView).setNumColumns(pager.getWidth()/200);
 				break;
             case ViewNode.VIEW_TYPE_WEBVIEW:
                 contentView = layoutInflater.inflate(R.layout.ac_web_view, view, false);
@@ -495,24 +532,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                             }
                         }
                 );
-
-//			final ScaleGestureDetector scaleDetector = new ScaleGestureDetector(ViewItemPagerActivity.this,
-//					new ScaleGestureDetector.SimpleOnScaleGestureListener () {
-//			    @Override
-//			    public void onScaleEnd(ScaleGestureDetector detector) {
-//			    	zoomGridView(detector.getScaleFactor() > 1.0, false);
-//			    }
-//			});
-//
-//			absListView.setOnTouchListener(new OnTouchListener() {
-//
-//				@Override
-//				public boolean onTouch(View v, MotionEvent event) {
-//					scaleDetector.onTouchEvent(event);
-//					return false;
-//				}
-//			});
-
             }
 
             view.addView(contentView, 0);
@@ -589,12 +608,13 @@ public class ViewItemPagerActivity extends BaseActivity {
 			} else {
 				holder = (GridItemViewHolder) view.getTag();
 			}
-			
+
 			int rowHeight;
-			if (1 == getGridViewNumColumns(gridView)) {
+			int numCols = getGridViewNumColumns(gridView);
+            if (1 == numCols) {
                 rowHeight = GridView.LayoutParams.WRAP_CONTENT;
             } else {
-                rowHeight = gridView.getWidth() / getGridViewNumColumns(gridView);
+                rowHeight = gridView.getWidth() / numCols;
             }
 			view.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.FILL_PARENT, rowHeight));
 			
@@ -672,6 +692,16 @@ public class ViewItemPagerActivity extends BaseActivity {
 					holder.image = (ImageView) view.findViewById(R.id.image);
 					break;
 
+                case ViewNode.VIEW_TYPE_IMAGE:
+                    view = layoutInflater.inflate(R.layout.item_grid_image, parent, false);
+                    holder = new ListItemViewHolder(view);
+                    holder.text = (TextView) view.findViewById(R.id.text);
+                    holder.image = (ImageView) view.findViewById(R.id.image);
+                    view.setLayoutParams(new AbsListView.LayoutParams(
+                            AbsListView.LayoutParams.MATCH_PARENT, AbsListView.LayoutParams.WRAP_CONTENT
+                    ));
+                    break;
+
                 case ViewNode.VIEW_TYPE_TILE:
                     view = layoutInflater.inflate(R.layout.item_spannable_grid, parent, false);
                     holder = new ListItemViewHolder(view);
@@ -708,6 +738,7 @@ public class ViewItemPagerActivity extends BaseActivity {
             switch (viewType) {
 
                 case ViewNode.VIEW_TYPE_SIMPLE:
+                case ViewNode.VIEW_TYPE_IMAGE:
 
                     holder.text.setText(child.getTitle());
 
@@ -943,25 +974,6 @@ public class ViewItemPagerActivity extends BaseActivity {
             default:
                 return ITEM_COUNT_FOR_LARGE_ALBUMS[hash%ITEM_COUNT_FOR_LARGE_ALBUMS.length];
         }
-    }
-
-    private static int getGridViewNumColumns(GridView gv) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-            return gv.getNumColumns();
-
-        try {
-            Field numColumns = gv.getClass().getSuperclass().getDeclaredField("mNumColumns");
-            numColumns.setAccessible(true);
-            return numColumns.getInt(gv);
-        }
-        catch (Exception e) {}
-
-        int columns = gv.AUTO_FIT;
-        if (gv.getChildCount() > 0) {
-            int width = gv.getChildAt(0).getMeasuredWidth();
-            if (width > 0) columns = gv.getWidth() / width;
-        }
-        return columns;
     }
 
     private static void loadImage(ViewNode viewNode, ImageView imageView, final SwipeRefreshLayout swipeRefreshLayout) {

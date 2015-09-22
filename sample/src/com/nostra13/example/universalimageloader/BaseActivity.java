@@ -33,6 +33,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.GridView;
 
 import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.wzw.ic.mvc.ViewNode;
@@ -225,5 +226,24 @@ public abstract class BaseActivity extends ActionBarActivity {
         if (null != view.getParent()) {
             ((ViewGroup) view.getParent()).removeView(view);
         }
+    }
+
+    public static int getGridViewNumColumns(GridView gv) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+            return gv.getNumColumns();
+
+        try {
+            Field numColumns = gv.getClass().getSuperclass().getDeclaredField("mNumColumns");
+            numColumns.setAccessible(true);
+            return numColumns.getInt(gv);
+        }
+        catch (Exception e) {}
+
+        int columns = gv.AUTO_FIT;
+        if (gv.getChildCount() > 0) {
+            int width = gv.getChildAt(0).getMeasuredWidth();
+            if (width > 0) columns = gv.getWidth() / width;
+        }
+        return columns;
     }
 }

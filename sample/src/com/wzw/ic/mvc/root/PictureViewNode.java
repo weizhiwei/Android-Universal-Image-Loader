@@ -17,13 +17,7 @@ public class PictureViewNode extends ViewNode {
 
     @Override
     public int getViewType(int container) {
-        switch (container) {
-            case VIEW_TYPE_PAGER:
-                return VIEW_TYPE_IMAGE;
-//            case VIEW_TYPE_LIST:
-//                return VIEW_TYPE_TILE;
-        }
-        return super.getViewType(container);
+        return VIEW_TYPE_IMAGE;
     }
 
     @Override

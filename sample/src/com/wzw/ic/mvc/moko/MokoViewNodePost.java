@@ -70,9 +70,7 @@ public class MokoViewNodePost extends MokoViewNode {
     public int getViewType(int container) {
         switch (container) {
             case VIEW_TYPE_PAGER:
-                return VIEW_TYPE_GRID;
-            case VIEW_TYPE_LIST:
-                return VIEW_TYPE_TILE;
+                return VIEW_TYPE_LIST;
         }
         return super.getViewType(container);
     }
