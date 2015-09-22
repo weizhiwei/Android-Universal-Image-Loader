@@ -384,7 +384,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                 }
 
                 ((GridView) absListView).setAdapter(itemAdapter);
-                setGridViewColumns((GridView) absListView, 3);
+                ((GridView) absListView).setNumColumns(3);
 				break;
             case ViewNode.VIEW_TYPE_WEBVIEW:
                 contentView = layoutInflater.inflate(R.layout.ac_web_view, view, false);
@@ -845,12 +845,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 	@Override
 	protected void updateMenu(ViewNode model) {
 		super.updateMenu(model);
-		if (null != menu) {
-			MenuItem item = menu.findItem(R.id.item_zoom_in);
-//			if (null != viewNode) {
-//				item.setVisible(viewNode.getViewType() == ViewNode.VIEW_TYPE_GRID);
-//			}
-		}
 
 //		ViewNode viewItem = viewNode.getSibling(pager.getCurrentItem());
 //
@@ -887,31 +881,9 @@ public class ViewItemPagerActivity extends BaseActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case R.id.item_zoom_in:
-				zoomGridView(true, true);
-				return true;
 			default:
 				return super.onOptionsItemSelected(item);
 		}
-	}
-	
-	protected void setGridViewColumns(GridView gridView, int numColumns) {
-		if (numColumns <= 0) {
-			numColumns = getGridViewNumColumns(gridView) == 1 ? 3 : getGridViewNumColumns(gridView) - 1;
-		} else if (numColumns > 3) {
-			numColumns = getGridViewNumColumns(gridView) == 3 ? 1 : getGridViewNumColumns(gridView) - 1;
-		}
-		gridView.setNumColumns(numColumns);
-	}
-	
-	protected void zoomGridView(boolean in, boolean circular) {
-//		if (viewNode.getViewType() == ViewNode.VIEW_TYPE_GRID) {
-//			View contentView = pager.findViewWithTag(pager.getCurrentItem());
-//			GridView gridView = (GridView) contentView.findViewById(R.id.ic_gridview);
-//			setGridViewColumns(gridView, in ?
-//					(getGridViewNumColumns(gridView) == 1 ? (circular ? 3 : 1) : getGridViewNumColumns(gridView) - 1) :
-//					(getGridViewNumColumns(gridView) == 3 ? (circular ? 1 : 3) : getGridViewNumColumns(gridView) + 1));
-//		}
 	}
 
     private static final int[] generateColRowSpans(int itemCount, int hash) {
