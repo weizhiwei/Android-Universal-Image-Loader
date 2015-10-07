@@ -15,6 +15,7 @@ import android.support.v7.app.ActionBar.Tab;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -506,7 +507,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         // drill down
-                        startViewItemActivity((ViewNode)itemAdapter.getItem(position));
+                        startViewItemActivity((ViewNode) parent.getItemAtPosition(position));
                     }
                 });
 
@@ -868,14 +869,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 //		}
 //	}
 	
-//	@Override
-//	public boolean onPrepareOptionsMenu(Menu menu) {
-//		return super.onPrepareOptionsMenu(menu);
-//	}
-	
-	@Override
 	protected void updateMenu(ViewNode model) {
-		super.updateMenu(model);
 
 //		ViewNode viewItem = viewNode.getSibling(pager.getCurrentItem());
 //
@@ -907,14 +901,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 //shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, imageUris);
 //shareIntent.setType("image/*");
 //	     */
-	}
-	
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			default:
-				return super.onOptionsItemSelected(item);
-		}
 	}
 
     private static final int[] generateColRowSpans(int itemCount, int hash) {
@@ -1057,7 +1043,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     View contentView = pager.findViewWithTag(pager.getCurrentItem());
                     AbsListView absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
                     if (null != absListView) {
-                        absListView.setSelection(position);
+                        absListView.setSelection(position); // TODO fix for header list view here
                     }
                 }
             }
@@ -1072,5 +1058,23 @@ public class ViewItemPagerActivity extends BaseActivity {
         setResult(RESULT_OK, intent);
 
         super.onBackPressed();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.item_play_slides:
+                return true;
+            case R.id.item_settings:
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

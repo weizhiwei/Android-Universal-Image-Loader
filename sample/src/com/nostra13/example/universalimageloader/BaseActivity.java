@@ -28,28 +28,22 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ClickableSpan;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.GridView;
 
-import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.wzw.ic.mvc.ViewNode;
-import com.wzw.ic.mvc.ViewNodeAction;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
 public abstract class BaseActivity extends ActionBarActivity {
 
-	protected Menu menu;
 	private boolean wallpaperServiceEnabled = false;
 	
 	@Override
@@ -132,38 +126,6 @@ public abstract class BaseActivity extends ActionBarActivity {
 	
 	public void toggleFullscreen() {
 		setFullscreen(!isFullscreen());
-	}
-	
-	protected void updateMenu(ViewNode model) {
-		if (null != menu && null != model && null != model.getActions()) {
-			for (ViewNodeAction action: model.getActions()) {
-				MenuItem item = menu.findItem(action.getId());
-				item.setTitle(action.getTitle());
-				item.setVisible(action.isVisible());
-			}
-		}
-	}
-	
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.main_menu, menu);
-		this.menu = menu;
-		return super.onCreateOptionsMenu(menu);
-	}
-	
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.item_wallpaper_toggle:
-				wallpaperServiceEnabled = !wallpaperServiceEnabled;
-				item.setChecked(wallpaperServiceEnabled);
-				enableWallpaperService(wallpaperServiceEnabled);
-				return true;
-            case R.id.item_settings:
-                return true;
-			default:
-				return false;
-		}
 	}
 	
 	private void enableWallpaperService(boolean enabled) {

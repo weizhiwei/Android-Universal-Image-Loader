@@ -56,28 +56,23 @@ public class ViewNode extends IcObject {
 
     protected ViewNode parent;
 	protected List<ViewNode> children, viewItemsCopy;
-	protected List<ViewNodeAction> actions, actionsCopy;
 
     protected boolean isDetached = false;
 	
 	public ViewNode(ViewNode parent) {
         this.parent = parent;
 		this.children = new ArrayList<ViewNode>();
-		this.actions = new ArrayList<ViewNodeAction>();
 	}
 	
 	public void detach() {
 		viewItemsCopy = new ArrayList<ViewNode>(children.size());
 		viewItemsCopy.addAll(children);
-		actionsCopy = new ArrayList<ViewNodeAction>(actions.size());
-		actionsCopy.addAll(actions);
         isDetached = true;
 	}
 
 	public void attach() {
 		isDetached = false;
 		viewItemsCopy = null;
-		actionsCopy = null;
 	}
 
     public ViewNode getParent() { return parent; }
@@ -94,10 +89,6 @@ public class ViewNode extends IcObject {
 		return isDetached ? viewItemsCopy : children;
 	}
 
-	public List<ViewNodeAction> getActions() {
-		return isDetached ? actionsCopy : actions;
-	}
-
     public boolean supportReloading() {
 		return false;
 	}
@@ -107,10 +98,6 @@ public class ViewNode extends IcObject {
 	
 	public boolean supportPaging() {
 		return false;
-	}
-
-	public Object onAction(ViewNodeAction action) {
-		return null;
 	}
 
     public int getWrapperViewResId() {

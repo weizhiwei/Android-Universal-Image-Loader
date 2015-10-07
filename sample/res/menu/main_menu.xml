@@ -1,34 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    
-    <item android:id="@+id/item_hearts_toggle"
-          android:icon="@drawable/ic_hearts_off"
-          android:title="@string/hearts_off"
-          app:showAsAction="ifRoom"
-          android:visible="false"/>
-    
-    <item android:id="@+id/item_action_share"
-          android:title="@string/share"
-          app:showAsAction="ifRoom"
-          android:actionProviderClass="android.widget.ShareActionProvider"
-          android:visible="false"/>
 
-    <item
-        android:id="@+id/item_set_wallpaper"
-        android:title="@string/wallpaper"
-        app:showAsAction="ifRoom"
-        android:visible="false"/>
-    
     <item android:id="@+id/item_play_slides"
           android:title="@string/play_slides"
           android:icon="@android:drawable/ic_media_play"
           app:showAsAction="ifRoom"/>
-    
-    <item
-        android:id="@+id/item_wallpaper_toggle"
-        android:checkable="true"
-        android:title="@string/wallpaper"/>
     
     <item android:id="@+id/item_settings"
           android:title="@string/settings"/>
