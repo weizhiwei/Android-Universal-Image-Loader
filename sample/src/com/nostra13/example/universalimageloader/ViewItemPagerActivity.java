@@ -1,6 +1,9 @@
 package com.nostra13.example.universalimageloader;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,8 +17,11 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.Tab;
 import android.text.SpannableString;
 import android.text.TextUtils;
+import android.view.ContextMenu;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +35,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.WrapperListAdapter;
 
@@ -41,7 +48,6 @@ import org.lucasr.twowayview.ItemClickSupport;
 import org.lucasr.twowayview.widget.SpannableGridLayoutManager;
 import org.lucasr.twowayview.widget.TwoWayView;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -129,38 +135,58 @@ public class ViewItemPagerActivity extends BaseActivity {
         if (RootViewNode.getInstance() == parentNode) {
             coverFlow.setVisibility(View.GONE);
 
-            ActionBar actionBar = getSupportActionBar();
-            ActionBar.TabListener tabListener = new ActionBar.TabListener() {
+            final ActionBar actionBar = getSupportActionBar();
+
+            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+            actionBar.setListNavigationCallbacks(new BaseAdapter () {
 
                 @Override
-                public void onTabReselected(Tab tab, FragmentTransaction ft) {
+                public int getCount() {
+                    return parentNode.getChildren().size();
                 }
 
                 @Override
-                public void onTabSelected(Tab tab, FragmentTransaction ft) {
-                    if (null != pager) {
-                        pager.setCurrentItem(tab.getPosition());
+                public Object getItem(int position) {
+                    return parentNode.getChildren().get(position);
+                }
+
+                @Override
+                public long getItemId(int position) {
+                    return position;
+                }
+
+                @Override
+                public View getView(int position, View convertView, ViewGroup parent) {
+                    ViewNode viewItem = (ViewNode)getItem(position);
+                    TextView textView = new TextView(ViewItemPagerActivity.this);
+                    textView.setText(viewItem.getTitle());
+                    textView.setTextSize(16);
+                    textView.setCompoundDrawablesWithIntrinsicBounds(viewItem.getViewItemImageResId(), 0, 0, 0);
+                    textView.setCompoundDrawablePadding(20);
+                    textView.setTextColor(Color.WHITE);
+                    textView.setGravity(Gravity.CENTER_VERTICAL);
+                    textView.setHeight(120);
+                    textView.setPadding(30, 0, 10, 0);
+                    if (actionBar.getSelectedNavigationIndex() == position &&
+                        !(parent.getClass().getSimpleName().startsWith("Spinner"))) {
+                        textView.setBackgroundColor(0xFFAAAAFF);
                     }
+                    return textView;
                 }
+
+            }, new ActionBar.OnNavigationListener() {
 
                 @Override
-                public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+                public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+
+                    if (null != pager) {
+                        pager.setCurrentItem(itemPosition);
+                        return true;
+                    }
+                    return false;
                 }
-            };
 
-            for (int i = 0; i < parentNode.getChildren().size(); ++i) {
-                ViewNode viewItem = parentNode.getChildren().get(i);
-                final Tab tab = actionBar.newTab();
-                tab.setTabListener(tabListener);
-//                tab.setText(viewItem.getTitle());
-                tab.setIcon(viewItem.getViewItemImageResId());
-                actionBar.addTab(tab);
-            }
-
-            setHasEmbeddedTabs(actionBar, true);
-
-            // Specify that tabs should be displayed in the action bar.
-            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+            });
         }
 
     }
@@ -347,6 +373,15 @@ public class ViewItemPagerActivity extends BaseActivity {
                         toggleFullscreen();
                     }
                 });
+                imageView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        Bundle bundle = new Bundle();
+                        bundle.putString("image_url", child.getImageUrl());
+                        showDialog(0, bundle);
+                        return true;
+                    }
+                });
                 itemAdapter = null;
                 recyclerViewAdapter = null;
                 getDataTaskFinishedListener = null;
@@ -508,6 +543,16 @@ public class ViewItemPagerActivity extends BaseActivity {
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         // drill down
                         startViewItemActivity((ViewNode) parent.getItemAtPosition(position));
+                    }
+                });
+
+                absListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                    @Override
+                    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                        Bundle bundle = new Bundle();
+                        bundle.putString("image_url", ((ViewNode) parent.getItemAtPosition(position)).getImageUrl());
+                        showDialog(0, bundle);
+                        return true;
                     }
                 });
 
@@ -1076,5 +1121,21 @@ public class ViewItemPagerActivity extends BaseActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    protected Dialog onCreateDialog(int id, Bundle savedInstanceState) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(getLayoutInflater().inflate(R.layout.pic_actions, null));
+        return builder.create();
+    }
+
+    @Override
+    protected void onPrepareDialog (int id, Dialog dialog, Bundle args) {
+        String imageUrl = args.getString("image_url");
+        MyVolley.getImageLoader().get(imageUrl,
+                ImageLoader.getImageListener((ImageView) dialog.findViewById(R.id.image),
+                        R.drawable.ic_stub,
+                        R.drawable.ic_error));
     }
 }

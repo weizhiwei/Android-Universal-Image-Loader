@@ -64,7 +64,7 @@ public abstract class BaseActivity extends ActionBarActivity {
 
 	    try
 	    {
-	            // try to get the mActionBar field, because the current ActionBar is probably just a wrapper Class
+	            // try to get the mActionBar field, because the current ActionBar is probably just a post_wrapper Class
 	            // if this fails, no worries, this will be an instance of the native ActionBar class or from the ActionBarImplBase class
 	            final Field actionBarField = actionBarClass.getDeclaredField("mActionBar");
 	            actionBarField.setAccessible(true);

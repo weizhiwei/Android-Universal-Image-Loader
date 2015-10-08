@@ -44,6 +44,8 @@ public class ViewNode extends IcObject {
         public TextView textView;
         public ImageView imageView;
 
+        public ImageView button1, button2, button3;
+
         public WrapperViewHolder(View wrapperView) {
             this.wrapperView = wrapperView;
 
@@ -51,6 +53,10 @@ public class ViewNode extends IcObject {
 
             textView = (TextView)wrapperView.findViewById(R.id.text);
             imageView = (ImageView)wrapperView.findViewById(R.id.image);
+
+            button1 = (ImageView)wrapperView.findViewById(R.id.button1);
+            button2 = (ImageView)wrapperView.findViewById(R.id.button2);
+            button3 = (ImageView)wrapperView.findViewById(R.id.button3);
         }
     }
 
@@ -131,6 +137,16 @@ public class ViewNode extends IcObject {
                                 R.drawable.ic_error));
             }
         }
+
+        holder.button1.setImageResource(android.R.drawable.btn_star);
+        holder.button2.setImageResource(android.R.drawable.ic_menu_share);
+        holder.button2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+        holder.button3.setVisibility(View.GONE);
     }
 
     protected String title;

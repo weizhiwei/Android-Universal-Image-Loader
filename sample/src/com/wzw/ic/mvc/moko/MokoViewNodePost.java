@@ -77,6 +77,6 @@ public class MokoViewNodePost extends MokoViewNode {
 
     @Override
     public int getWrapperViewResId() {
-        return R.layout.wrapper;
+        return R.layout.post_wrapper;
     }
 }

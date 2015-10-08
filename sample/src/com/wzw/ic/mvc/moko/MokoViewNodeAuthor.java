@@ -14,8 +14,6 @@ import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.View;
 
-import com.android.volley.toolbox.ImageLoader;
-import com.nostra13.example.universalimageloader.MyVolley;
 import com.nostra13.example.universalimageloader.R;
 import com.wzw.ic.mvc.ViewNode;
 
@@ -92,5 +90,10 @@ public class MokoViewNodeAuthor extends MokoViewNode {
             holder.textView.setVisibility(View.VISIBLE);
             holder.textView.setText(new SpannableString(Html.fromHtml(caption)));
         }
+    }
+
+    @Override
+    public int getWrapperViewResId() {
+        return R.layout.author_wrapper;
     }
 }
