@@ -242,6 +242,16 @@ public class ViewItemPagerActivity extends BaseActivity {
     }
 
     @Override
+    public boolean isFullscreen() {
+        if (PLAYER_MODE) {
+            final View controls = findViewById(R.id.controls);
+            return controls.getVisibility() != View.VISIBLE;
+        } else {
+            return super.isFullscreen();
+        }
+    }
+
+    @Override
     public void setFullscreen(boolean fullscreen) {
         if (PLAYER_MODE) {
             super.setFullscreen(true);
