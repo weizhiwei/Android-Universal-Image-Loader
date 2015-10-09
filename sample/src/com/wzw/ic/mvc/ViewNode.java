@@ -60,8 +60,10 @@ public class ViewNode extends IcObject {
         }
     }
 
+    // graph
     protected ViewNode parent;
 	protected List<ViewNode> children, viewItemsCopy;
+    protected ViewNode author;
 
     protected boolean isDetached = false;
 	
@@ -157,7 +159,6 @@ public class ViewNode extends IcObject {
     protected int viewItemImageResId;
     protected String story;
     protected boolean heartsOn;
-    protected ViewNode author;
     protected String webPageUrl;
     protected Date postedDate;
 

@@ -4,19 +4,60 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.v4.view.ViewPager
+    <com.jfeinstein.jazzyviewpager.JazzyViewPager
         android:id="@+id/ic_viewitem_pagerview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <at.technikum.mti.fancycoverflow.FancyCoverFlow
-        android:id="@+id/coverflow"
+    <LinearLayout
+        android:id="@+id/controls"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:layout_gravity="bottom|center_horizontal"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:background="#000000"
-        fcf:maxRotation="45"
-        fcf:unselectedAlpha="0.3"
-        fcf:unselectedSaturation="0.0"
-        fcf:unselectedScale="0.4" />
+        android:layout_gravity="bottom|center_horizontal">
+
+        <LinearLayout
+            android:id="@+id/play_controls"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/btn_shuffle"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:src="@android:drawable/ic_delete"/>
+
+            <ImageView
+                android:id="@+id/btn_play"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"/>
+
+            <ImageView
+                android:id="@+id/btn_adjust_speed"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:src="@android:drawable/ic_menu_share"/>
+            <ImageView
+                android:id="@+id/btn_jump_to_post"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:src="@android:drawable/ic_menu_share"/>
+        </LinearLayout>
+
+        <at.technikum.mti.fancycoverflow.FancyCoverFlow
+            android:id="@+id/coverflow"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            fcf:maxRotation="45"
+            fcf:unselectedAlpha="0.3"
+            fcf:unselectedSaturation="0.0"
+            fcf:unselectedScale="0.4" />
+    </LinearLayout>
 </FrameLayout>

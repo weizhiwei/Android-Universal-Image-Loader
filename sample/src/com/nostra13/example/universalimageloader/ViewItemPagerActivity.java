@@ -41,6 +41,7 @@ import android.widget.WrapperListAdapter;
 
 import com.android.volley.error.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
+import com.jfeinstein.jazzyviewpager.JazzyViewPager;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.root.RootViewNode;
 
@@ -57,13 +58,17 @@ import in.srain.cube.views.GridViewWithHeaderAndFooter;
 
 public class ViewItemPagerActivity extends BaseActivity {
 
+    private boolean PLAYER_MODE = false;
+
     @Override
 	public void onCreate(Bundle savedInstanceState) {
         Bundle bundle = getIntent().getExtras();
-        final ViewNode viewNode;
+        ViewNode viewNode = null;
         if (null != bundle) {
-            viewNode = (ViewNode) bundle.getSerializable(Constants.Extra.VIEWNODE);
-        } else {
+            viewNode = RootViewNode.getInstance().getRegisteredViewNode(bundle.getString(Constants.Extra.VIEWNODE));
+            PLAYER_MODE = bundle.getBoolean("player_mode");
+        }
+        if (null == viewNode) {
             viewNode = RootViewNode.getInstance().getChildren().get(0);
         }
 
@@ -106,6 +111,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
             }
         });
+        ((JazzyViewPager) pager).setTransitionEffect(JazzyViewPager.TransitionEffect.Tablet);
 
         coverFlow.setReflectionEnabled(true);
         coverFlow.setReflectionRatio(0.3f);
@@ -127,6 +133,51 @@ public class ViewItemPagerActivity extends BaseActivity {
         });
 
         pager.setCurrentItem(viewNode.getParent().getChildren().indexOf(viewNode));
+
+        if (PLAYER_MODE) {
+            setFullscreen(true);
+
+            final View playControls = findViewById(R.id.play_controls);
+            playControls.setVisibility(View.VISIBLE);
+
+            final ImageView playBtn = (ImageView) playControls.findViewById(R.id.btn_play);
+            final Runnable nextSlide = new Runnable() {
+                @Override
+                public void run() {
+                    pager.setCurrentItem(pager.getCurrentItem()+1);
+                    pager.postDelayed(this, 3000);
+                }
+            };
+            final Runnable play = new Runnable() {
+                @Override
+                public void run() {
+                    playBtn.setTag(true);
+                    playBtn.setImageResource(android.R.drawable.ic_media_pause);
+                    pager.postDelayed(nextSlide, 3000);
+                }
+            };
+            final Runnable pause = new Runnable() {
+                @Override
+                public void run() {
+                    playBtn.setTag(false);
+                    playBtn.setImageResource(android.R.drawable.ic_media_play);
+                    pager.removeCallbacks(nextSlide);
+                }
+            };
+            playBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    boolean playing = (Boolean) playBtn.getTag();
+                    if (playing) {
+                        pause.run();
+                    } else {
+                        play.run();
+                    }
+                }
+            });
+
+            play.run();
+        }
 
         if (ViewNode.VIEW_TYPE_IMAGE == viewNode.getViewType(ViewNode.VIEW_TYPE_PAGER)) {
             setFullscreen(true);
@@ -188,16 +239,19 @@ public class ViewItemPagerActivity extends BaseActivity {
 
             });
         }
-
     }
 
     @Override
     public void setFullscreen(boolean fullscreen) {
-        super.setFullscreen(fullscreen);
+        if (PLAYER_MODE) {
+            super.setFullscreen(true);
+        } else {
+            super.setFullscreen(fullscreen);
+        }
 
-        // show/hide the coverflow
-        final FancyCoverFlow coverFlow = (FancyCoverFlow) findViewById(R.id.coverflow);
-        coverFlow.setVisibility(fullscreen ? View.GONE : View.VISIBLE);
+        // show/hide the controls
+        final View controls = findViewById(R.id.controls);
+        controls.setVisibility(fullscreen ? View.GONE : View.VISIBLE);
     }
 
     private static void endlessScrollForPager(ViewNode viewNode, int position, final PagerAdapter pagerAdapter,
@@ -580,9 +634,11 @@ public class ViewItemPagerActivity extends BaseActivity {
                 );
             }
 
-            view.addView(contentView, 0);
-			
-			return contentView;
+            view.addView(contentView);
+
+            ((JazzyViewPager) pager).setObjectForPosition(contentView, position);
+
+            return contentView;
 		}
 
 		@Override
@@ -1072,10 +1128,15 @@ public class ViewItemPagerActivity extends BaseActivity {
         }
     }
 
-    public void startViewItemActivity(ViewNode node) {
+    public void startViewItemActivity(ViewNode node, boolean playerMode, int requestCode) {
         Intent intent = new Intent(this, ViewItemPagerActivity.class);
-        intent.putExtra(Constants.Extra.VIEWNODE, node);
-        startActivityForResult(intent, 1);
+        intent.putExtra(Constants.Extra.VIEWNODE, RootViewNode.getInstance().registerViewNode(node));
+        intent.putExtra("player_mode", playerMode);
+        startActivityForResult(intent, requestCode);
+    }
+
+    public void startViewItemActivity(ViewNode node) {
+        startViewItemActivity(node, false, 1);
     }
 
     @Override
@@ -1115,6 +1176,7 @@ public class ViewItemPagerActivity extends BaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.item_play_slides:
+                startViewItemActivity(RootViewNode.getInstance().getChildren().get(2).getChildren().get(0).getChildren().get(0), true, 0);
                 return true;
             case R.id.item_settings:
                 return true;

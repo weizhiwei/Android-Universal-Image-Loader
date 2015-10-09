@@ -1,6 +1,7 @@
 package com.wzw.ic.mvc.root;
 
 import java.util.Arrays;
+import java.util.WeakHashMap;
 
 import com.nostra13.example.universalimageloader.R;
 import com.wzw.ic.mvc.ViewNode;
@@ -12,10 +13,14 @@ import com.wzw.ic.mvc.moko.MokoViewNodeStream;
 public class RootViewNode extends ViewNode {
 
 	private static RootViewNode theRootNode = new RootViewNode();
-	
-	protected RootViewNode() {
+
+    private final WeakHashMap<String, ViewNode> viewNodeRegistry;
+
+	private RootViewNode() {
 		
 		super(null);
+
+        viewNodeRegistry = new WeakHashMap<>();
 
         ViewNode channels = new MokoViewNodeRoot(this);
         channels.setTitle("Channels");
@@ -47,4 +52,14 @@ public class RootViewNode extends ViewNode {
 	public static RootViewNode getInstance() {
 		return theRootNode;
 	}
+
+    public String registerViewNode(ViewNode viewNode) {
+        String key = String.valueOf(System.currentTimeMillis());
+        viewNodeRegistry.put(key, viewNode);
+        return key;
+    }
+
+    public ViewNode getRegisteredViewNode(String key) {
+        return viewNodeRegistry.get(key);
+    }
 }
