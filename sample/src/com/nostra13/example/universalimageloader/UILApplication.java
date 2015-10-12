@@ -21,12 +21,18 @@ import android.content.Context;
 import android.os.Build;
 import android.os.StrictMode;
 import com.nostra13.example.universalimageloader.Constants.Config;
+import com.wzw.ic.mvc.ViewNode;
+
+import java.util.WeakHashMap;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
 public class UILApplication extends Application {
-	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
+
+    private WeakHashMap<String, ViewNode> viewNodeRegistry;
+
+    @TargetApi(Build.VERSION_CODES.GINGERBREAD)
 	@SuppressWarnings("unused")
 	@Override
 	public void onCreate() {
@@ -40,5 +46,17 @@ public class UILApplication extends Application {
 		IcDatabase.getInstance().open(getApplicationContext());
 
         MyVolley.init(getApplicationContext());
-	}
+
+        viewNodeRegistry = new WeakHashMap<>();
+    }
+
+    public String registerViewNode(ViewNode viewNode) {
+        String key = String.valueOf(System.currentTimeMillis());
+        viewNodeRegistry.put(key, viewNode);
+        return key;
+    }
+
+    public ViewNode getRegisteredViewNode(String key) {
+        return viewNodeRegistry.get(key);
+    }
 }

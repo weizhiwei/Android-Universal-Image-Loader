@@ -14,13 +14,9 @@ public class RootViewNode extends ViewNode {
 
 	private static RootViewNode theRootNode = new RootViewNode();
 
-    private final WeakHashMap<String, ViewNode> viewNodeRegistry;
-
-	private RootViewNode() {
+    private RootViewNode() {
 		
 		super(null);
-
-        viewNodeRegistry = new WeakHashMap<>();
 
         ViewNode channels = new MokoViewNodeRoot(this);
         channels.setTitle("Channels");
@@ -37,29 +33,18 @@ public class RootViewNode extends ViewNode {
         following.setViewItemImageResId(android.R.drawable.ic_menu_crop);
         following.setViewItemType(ViewNode.VIEW_ITEM_TYPE_IMAGE_RES);
 
-//        ViewNode update = new FeedsViewNode(this);
-//        update.setTitle("Update");
-//        update.setViewType(VIEW_TYPE_LIST_TILES);
+        ViewNode update = new FeedsViewNode(this);
+        update.setTitle("Update");
 
         ViewNode new_ = new MokoViewNodeStream(this);
         new_.setTitle("New");
         new_.setViewItemImageResId(android.R.drawable.ic_menu_gallery);
         new_.setViewItemType(ViewNode.VIEW_ITEM_TYPE_IMAGE_RES);
 
-        this.children.addAll(Arrays.asList(channels, new_, bookmarks, following));
+        this.children.addAll(Arrays.asList(channels, new_, bookmarks, following, update));
 	}
 	
 	public static RootViewNode getInstance() {
 		return theRootNode;
 	}
-
-    public String registerViewNode(ViewNode viewNode) {
-        String key = String.valueOf(System.currentTimeMillis());
-        viewNodeRegistry.put(key, viewNode);
-        return key;
-    }
-
-    public ViewNode getRegisteredViewNode(String key) {
-        return viewNodeRegistry.get(key);
-    }
 }

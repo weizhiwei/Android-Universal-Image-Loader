@@ -67,7 +67,7 @@ public class ViewItemPagerActivity extends BaseActivity {
         ViewNode viewNode = null;
         boolean playerMode = false;
         if (null != bundle) {
-            viewNode = RootViewNode.getInstance().getRegisteredViewNode(bundle.getString(Constants.Extra.VIEWNODE));
+            viewNode = ((UILApplication) getApplication()).getRegisteredViewNode(bundle.getString(Constants.Extra.VIEWNODE));
             playerMode = bundle.getBoolean("player_mode");
         }
         if (null == viewNode) {
@@ -1102,7 +1102,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 
     public void startViewItemActivity(ViewNode node, boolean playerMode, int requestCode) {
         Intent intent = new Intent(this, ViewItemPagerActivity.class);
-        intent.putExtra(Constants.Extra.VIEWNODE, RootViewNode.getInstance().registerViewNode(node));
+        intent.putExtra(Constants.Extra.VIEWNODE, ((UILApplication) getApplication()).registerViewNode(node));
         intent.putExtra("player_mode", playerMode);
         startActivityForResult(intent, requestCode);
     }
