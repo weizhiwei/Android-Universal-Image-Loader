@@ -31,6 +31,8 @@ import java.util.WeakHashMap;
 public class UILApplication extends Application {
 
     private WeakHashMap<String, ViewNode> viewNodeRegistry;
+    private String loginKey;
+    private String LOGIN_KEY_COOKIE = "NEWMOKO_USER_LOGINKEY";
 
     @TargetApi(Build.VERSION_CODES.GINGERBREAD)
 	@SuppressWarnings("unused")

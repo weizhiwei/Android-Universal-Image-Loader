@@ -21,17 +21,18 @@
         android:label="@string/app_name"
         android:allowBackup="true">
 
-        <!-- android:uiOptions="splitActionBarWhenNarrow" -->
         <activity
             android:name=".ViewItemPagerActivity"
             android:theme="@style/Theme.AppCompat">
-            <!-- 
-            <meta-data android:name="android.support.UI_OPTIONS"
-                android:value="splitActionBarWhenNarrow" /> -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".SettingsActivity"
+            android:theme="@style/Theme.AppCompat">
         </activity>
 
         <receiver android:name=".BootReceiver"

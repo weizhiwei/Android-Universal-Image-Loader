@@ -8,5 +8,6 @@
           app:showAsAction="ifRoom"/>
     
     <item android:id="@+id/item_settings"
-          android:title="@string/settings"/>
+          android:title="@string/settings"
+          android:icon="@android:drawable/ic_menu_preferences"/>
 </menu>

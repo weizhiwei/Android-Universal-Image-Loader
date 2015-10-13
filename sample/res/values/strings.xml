@@ -9,12 +9,48 @@
     <string name="hearts_on">like</string>
     <string name="hearts_off">don\'t like</string>
     <string name="search">search</string>
-    <string name="play_slides">play slides</string>
+    <string name="play_slides">Play Slides</string>
     <string name="toggle_coverflow">toggle coverflow</string>
     <string name="zoom_in">zoom in</string>
     <string name="share">share</string>
     <string name="wallpaper">wallpaper</string>
     <string name="settings">settings</string>
+    <string name="username">Mobile Number/Email</string>
+    <string name="password">Password</string>
+    <string name="sign_in">Sign in</string>
+    <string name="cancel">Cancel</string>
+    <string name="sign_up"><a href='http://www.moko.cc/register/first.html'>Sign up</a></string>
+    <string name="forgot_password"><a href='http://www.moko.cc/getpassword.html'>Forgot Password?</a></string>
+    <string name="moko_account">MOKO! Account</string>
+    <string name="ui_settings">UI Settings</string>
+    <string name="wallpaper_on">Changes the wallpaper</string>
+    <string name="coverflow_on">Show Coverflow</string>
+    <string name="shuffle_on">Shuffle</string>
+    <string name="play_slides_speed">Play slides speed</string>
+    <string name="wallpaper_frequency">Wallpaper frequency</string>
+    <string name="wallpaper_source">Wallpaper source</string>
+
+    <string-array name="play_slides_speed_options">
+        <item>Slow</item>
+        <item>Normal</item>
+        <item>Fast</item>
+    </string-array>
+
+    <string-array name="wallpaper_frequency_options">
+        <item>1 Minute</item>
+        <item>5 Minutes</item>
+        <item>10 Minutes</item>
+        <item>Half an hour</item>
+        <item>Hourly</item>
+        <item>6 Hours</item>
+        <item>Daily</item>
+        <item>Weekly</item>
+    </string-array>
+
+    <string-array name="wallpaper_source_options">
+        <item>New</item>
+        <item>Favourites</item>
+    </string-array>
 
     <string-array name="jazzy_effects">
         <item>Standard</item>

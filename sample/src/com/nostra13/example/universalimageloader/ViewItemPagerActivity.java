@@ -2,6 +2,7 @@ package com.nostra13.example.universalimageloader;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -17,6 +18,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.Tab;
 import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
 import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -577,7 +579,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                         Bundle bundle = new Bundle();
                         bundle.putString("image_url", ((ViewNode) parent.getItemAtPosition(position)).getImageUrl());
-                        showDialog(0, bundle);
+                        showDialog(R.id.ic_dialog_login, bundle);
                         return true;
                     }
                 });
@@ -1158,6 +1160,8 @@ public class ViewItemPagerActivity extends BaseActivity {
                 }
                 return true;
             case R.id.item_settings:
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -1167,16 +1171,49 @@ public class ViewItemPagerActivity extends BaseActivity {
     @Override
     protected Dialog onCreateDialog(int id, Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setView(getLayoutInflater().inflate(R.layout.pic_actions, null));
+        switch (id) {
+            case R.id.ic_dialog_pic_actions:
+                builder.setView(getLayoutInflater().inflate(R.layout.pic_actions, null));
+                break;
+            case R.id.ic_dialog_login:
+                final View view = getLayoutInflater().inflate(R.layout.login, null);
+                final TextView signUpLink = (TextView) view.findViewById(R.id.sign_up);
+                signUpLink.setMovementMethod(LinkMovementMethod.getInstance());
+                final TextView forgotPasswordLink = (TextView) view.findViewById(R.id.forgot_password);
+                forgotPasswordLink.setMovementMethod(LinkMovementMethod.getInstance());
+                builder.setView(view)
+                .setPositiveButton(R.string.sign_in, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        // sign in the user ...
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+                break;
+            default:
+                break;
+        }
         return builder.create();
     }
 
     @Override
     protected void onPrepareDialog (int id, Dialog dialog, Bundle args) {
-        String imageUrl = args.getString("image_url");
-        MyVolley.getImageLoader().get(imageUrl,
-                ImageLoader.getImageListener((ImageView) dialog.findViewById(R.id.image),
-                        R.drawable.ic_stub,
-                        R.drawable.ic_error));
+        switch (id) {
+            case R.id.ic_dialog_pic_actions:
+                String imageUrl = args.getString("image_url");
+                MyVolley.getImageLoader().get(imageUrl,
+                        ImageLoader.getImageListener((ImageView) dialog.findViewById(R.id.image),
+                                R.drawable.ic_stub,
+                                R.drawable.ic_error));
+                break;
+            case R.id.ic_dialog_login:
+                break;
+            default:
+                break;
+        }
     }
 }

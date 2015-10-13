@@ -3,4 +3,7 @@
     <!-- ic -->
 	<item name="twowayview_item_click_support" type="id"/>
     <item name="twowayview_item_selection_support" type="id"/>
+
+    <item name="ic_dialog_pic_actions" type="id"/>
+    <item name="ic_dialog_login" type="id"/>
 </resources>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/moko_account"
+        android:key="pref_key_account_settings">
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/play_slides"
+        android:key="pref_key_play_settings">
+        <ListPreference
+            android:key="pref_key_play_slides_speed"
+            android:title="@string/play_slides_speed"
+            android:dialogTitle="@string/play_slides_speed"
+            android:entries="@array/play_slides_speed_options"
+            android:entryValues="@array/play_slides_speed_options" />
+        <CheckBoxPreference
+            android:key="pref_key_shuffle_on"
+            android:summary="@string/shuffle_on"
+            android:title="@string/shuffle_on"
+            android:defaultValue="true"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/wallpaper"
+        android:key="pref_key_wallpaper_settings">
+        <CheckBoxPreference
+            android:key="pref_key_wallpaper_on"
+            android:summary="@string/wallpaper_on"
+            android:title="@string/wallpaper_on"
+            android:defaultValue="false"/>
+        <ListPreference
+            android:dependency="pref_key_wallpaper_on"
+            android:key="pref_key_wallpaper_source"
+            android:title="@string/wallpaper_source"
+            android:dialogTitle="@string/wallpaper_source"
+            android:entries="@array/wallpaper_source_options"
+            android:entryValues="@array/wallpaper_source_options" />
+        <ListPreference
+            android:dependency="pref_key_wallpaper_on"
+            android:key="pref_key_wallpaper_frequency"
+            android:title="@string/wallpaper_frequency"
+            android:dialogTitle="@string/wallpaper_frequency"
+            android:entries="@array/wallpaper_frequency_options"
+            android:entryValues="@array/wallpaper_frequency_options" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/ui_settings"
+        android:key="pref_key_ui_settings">
+        <CheckBoxPreference
+            android:key="pref_key_coverflow_on"
+            android:summary="@string/coverflow_on"
+            android:title="@string/coverflow_on"
+            android:defaultValue="true"/>
+    </PreferenceCategory>
+</PreferenceScreen>
+
