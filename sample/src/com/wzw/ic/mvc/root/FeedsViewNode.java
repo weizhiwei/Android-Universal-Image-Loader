@@ -40,7 +40,7 @@ public class FeedsViewNode extends ViewNode {
                 int newPageNo = reload ? 0 : pageNo + 1;
 
                 if (reload || null == subfeeds || subfeeds.isEmpty()) {
-                    ViewNode following = new MokoViewNodeFollowing(FeedsViewNode.this);
+                    ViewNode following = new MokoViewNodeFollowing(null);
                     final CountDownLatch latch = new CountDownLatch(1);
                     following.load(true, new LoadListener() { // TODO: load all not just one page
                         @Override
@@ -117,6 +117,9 @@ public class FeedsViewNode extends ViewNode {
                     } else {
                         List<ViewNode> subpage = subpages.get(index);
                         ViewNode viewItem = subpage.remove(0);
+                        viewItem.setTitle(DateUtils.getRelativeTimeSpanString(
+                                viewItem.getPostedDate().getTime(), (new Date()).getTime(),
+                                DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE).toString());
                         albumViewItems.add(viewItem);
                         if (albumViewItems.size() > 5 || subpage.isEmpty()) {
                             // if we have exhausted any list, we need to stop to do a reload, in order to maintain the getPostedDate order

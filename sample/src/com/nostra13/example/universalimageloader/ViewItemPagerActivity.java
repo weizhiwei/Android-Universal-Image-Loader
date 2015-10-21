@@ -1181,7 +1181,9 @@ public class ViewItemPagerActivity extends BaseActivity {
                 signUpLink.setMovementMethod(LinkMovementMethod.getInstance());
                 final TextView forgotPasswordLink = (TextView) view.findViewById(R.id.forgot_password);
                 forgotPasswordLink.setMovementMethod(LinkMovementMethod.getInstance());
-                builder.setView(view)
+                builder
+                .setTitle(R.string.sign_in_to_moko)
+                .setView(view)
                 .setPositiveButton(R.string.sign_in, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {

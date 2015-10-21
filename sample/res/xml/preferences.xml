@@ -3,6 +3,7 @@
     <PreferenceCategory
         android:title="@string/moko_account"
         android:key="pref_key_account_settings">
+        <com.nostra13.example.universalimageloader.AccountSetting />
     </PreferenceCategory>
     <PreferenceCategory
         android:title="@string/play_slides"
