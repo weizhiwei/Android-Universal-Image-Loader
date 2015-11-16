@@ -35,6 +35,7 @@
     <string name="click_to_sign_in">Click here to sign in</string>
     <string name="click_to_sign_out">Click here to sign out</string>
     <string name="current_user">Current user: </string>
+    <string name="moko_cookie_key">NEWMOKO_USER_LOGINKEY</string>
 
     <string-array name="play_slides_speed_options">
         <item>Slow</item>

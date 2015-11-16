@@ -1177,10 +1177,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                 break;
             case R.id.ic_dialog_login:
                 final View view = getLayoutInflater().inflate(R.layout.login, null);
-                final TextView signUpLink = (TextView) view.findViewById(R.id.sign_up);
-                signUpLink.setMovementMethod(LinkMovementMethod.getInstance());
-                final TextView forgotPasswordLink = (TextView) view.findViewById(R.id.forgot_password);
-                forgotPasswordLink.setMovementMethod(LinkMovementMethod.getInstance());
+                AccountManager.decorateLoginDialog(view);
                 builder
                 .setTitle(R.string.sign_in_to_moko)
                 .setView(view)
@@ -1188,6 +1185,7 @@ public class ViewItemPagerActivity extends BaseActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         // sign in the user ...
+
                     }
                 })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {

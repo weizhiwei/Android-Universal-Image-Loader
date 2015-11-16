@@ -18,11 +18,18 @@ package com.nostra13.example.universalimageloader;
 import android.annotation.TargetApi;
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.StrictMode;
+import android.preference.PreferenceManager;
+import android.text.TextUtils;
+
 import com.nostra13.example.universalimageloader.Constants.Config;
 import com.wzw.ic.mvc.ViewNode;
 
+import org.apache.http.cookie.Cookie;
+
+import java.util.Date;
 import java.util.WeakHashMap;
 
 /**
@@ -31,7 +38,6 @@ import java.util.WeakHashMap;
 public class UILApplication extends Application {
 
     private WeakHashMap<String, ViewNode> viewNodeRegistry;
-    private String loginKey;
     private String LOGIN_KEY_COOKIE = "NEWMOKO_USER_LOGINKEY";
 
     @TargetApi(Build.VERSION_CODES.GINGERBREAD)
@@ -48,6 +54,8 @@ public class UILApplication extends Application {
 		IcDatabase.getInstance().open(getApplicationContext());
 
         MyVolley.init(getApplicationContext());
+
+        AccountManager.checkSession(getApplicationContext());
 
         viewNodeRegistry = new WeakHashMap<>();
     }

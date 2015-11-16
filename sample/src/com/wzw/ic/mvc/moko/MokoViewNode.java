@@ -23,9 +23,6 @@ public abstract class MokoViewNode extends ViewNode {
     protected boolean supportPaging;
     protected static String URL_PREFIX = "http://www.moko.cc";
 
-    private static String loginKey;
-    private static String LOGIN_KEY_COOKIE = "NEWMOKO_USER_LOGINKEY";
-
     public MokoViewNode(ViewNode parent, String sourceUrl) {
         super(parent);
         this.sourceUrl = sourceUrl;
@@ -67,42 +64,7 @@ public abstract class MokoViewNode extends ViewNode {
                     }
                 });
 
-        if (TextUtils.isEmpty(loginKey)) {
-            MyVolley.getRequestQueue().add(new StringRequest(Request.Method.POST,
-                    String.format("http://www.moko.cc/jsps/common/login.action"),
-                    new com.android.volley.Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String result) {
-                            for (Cookie cookie : MyVolley.getHttpClient().getCookieStore().getCookies()) {
-                                if (LOGIN_KEY_COOKIE.equals(cookie.getName())) {
-                                    loginKey = cookie.getValue();
-                                    MyVolley.getRequestQueue().add(myReq);
-                                }
-                            }
-                            if (TextUtils.isEmpty(loginKey)) {
-                                loadListener.onLoadDone(MokoViewNode.this);
-                            }
-                        }
-                    },
-                    new com.android.volley.Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            // login error
-                            loadListener.onLoadDone(MokoViewNode.this);
-                        }
-                    }) {
-
-                @Override
-                protected Map<String, String> getParams() throws com.android.volley.error.AuthFailureError {
-                    Map<String, String> params = new HashMap<String, String>();
-                    params.put("usermingzi", "weizhiwei@gmail.com");
-                    params.put("userkey", "85148415");
-                    return params;
-                }
-            });
-        } else {
             MyVolley.getRequestQueue().add(myReq);
-        }
     }
 
     @Override
