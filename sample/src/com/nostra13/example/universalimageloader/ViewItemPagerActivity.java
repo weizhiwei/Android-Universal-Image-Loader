@@ -5,30 +5,21 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBar.Tab;
+import android.support.v7.widget.RecyclerView;
 import android.text.SpannableString;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
-import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -37,7 +28,6 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.WrapperListAdapter;
 
@@ -46,10 +36,6 @@ import com.android.volley.toolbox.ImageLoader;
 import com.jfeinstein.jazzyviewpager.JazzyViewPager;
 import com.wzw.ic.mvc.ViewNode;
 import com.wzw.ic.mvc.root.RootViewNode;
-
-import org.lucasr.twowayview.ItemClickSupport;
-import org.lucasr.twowayview.widget.SpannableGridLayoutManager;
-import org.lucasr.twowayview.widget.TwoWayView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +48,12 @@ public class ViewItemPagerActivity extends BaseActivity {
 
     private boolean PLAYER_MODE;
     private Runnable play;
+
+    private static interface MyAdapter {
+        public void addViewNodes(List<ViewNode> nodes);
+        public void clear();
+        public int getNextPage();
+    }
 
     @Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -92,7 +84,7 @@ public class ViewItemPagerActivity extends BaseActivity {
         final ViewPager pager = (ViewPager) findViewById(R.id.ic_viewitem_pagerview);
         final FancyCoverFlow coverFlow = (FancyCoverFlow) findViewById(R.id.coverflow);
 
-        pager.setAdapter(new ViewItemPagerAdapter(parentNode, getLayoutInflater(), pager));
+        pager.setAdapter(new ViewItemPagerAdapter(getLayoutInflater(), pager));
         pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -110,8 +102,8 @@ public class ViewItemPagerActivity extends BaseActivity {
                     coverFlow.setSelection(position);
                 }
 
-                endlessScrollForPager(parentNode, position, pager.getAdapter(), (BaseAdapter) coverFlow.getAdapter());
-            }
+                endlessScrollForPager(parentNode, position,
+                        (ViewItemPagerAdapter) pager.getAdapter(), (CoverFlowAdapter) coverFlow.getAdapter());            }
 
             @Override
             public void onPageScrollStateChanged(int state) {
@@ -123,7 +115,7 @@ public class ViewItemPagerActivity extends BaseActivity {
         coverFlow.setReflectionEnabled(true);
         coverFlow.setReflectionRatio(0.3f);
         coverFlow.setReflectionGap(0);
-        coverFlow.setAdapter(new CoverFlowAdapter(parentNode, coverFlow, getLayoutInflater()));
+        coverFlow.setAdapter(new CoverFlowAdapter(coverFlow, getLayoutInflater()));
         coverFlow.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -131,7 +123,8 @@ public class ViewItemPagerActivity extends BaseActivity {
                     pager.setCurrentItem(position);
                 }
 
-                endlessScrollForPager(parentNode, position, pager.getAdapter(), (BaseAdapter) coverFlow.getAdapter());
+                endlessScrollForPager(parentNode, position,
+                        (ViewItemPagerAdapter) pager.getAdapter(), (CoverFlowAdapter) coverFlow.getAdapter());
             }
 
             @Override
@@ -225,19 +218,28 @@ public class ViewItemPagerActivity extends BaseActivity {
         coverflow.setVisibility(fullscreen ? View.GONE : View.VISIBLE);
     }
 
-    private static void endlessScrollForPager(ViewNode viewNode, int position, final PagerAdapter pagerAdapter,
-                                              final BaseAdapter coverFlowAdapter) {
-        if (viewNode.supportPaging() && position >= viewNode.getChildren().size() - 5) {
-            new GetDataTask(viewNode, pagerAdapter, new GetDataTask.GetDataTaskFinishedListener () {
+    private static void endlessScrollForPager(ViewNode viewNode, int position, final ViewItemPagerAdapter pagerAdapter,
+                                              final CoverFlowAdapter coverFlowAdapter) {
+        if (viewNode.supportPaging() && position >= pagerAdapter.getCount() - 5) {
+            viewNode.load(pagerAdapter.getNextPage(), new ViewNode.Callback<List<ViewNode>>() {
                 @Override
-                public void onGetDataTaskFinished(ViewNode model) {
+                public void onSuccess(List<ViewNode> result) {
+                    pagerAdapter.addViewNodes(result);
+                    pagerAdapter.notifyDataSetChanged();
+
+                    coverFlowAdapter.addViewNodes(result);
                     coverFlowAdapter.notifyDataSetChanged();
                 }
-            }, false);
+
+                @Override
+                public void onFailure(int errCode, String errMsg) {
+
+                }
+            });
         }
     }
 
-    private static class CoverFlowAdapter extends FancyCoverFlowAdapter {
+    private static class CoverFlowAdapter extends FancyCoverFlowAdapter implements MyAdapter {
 
         private final LayoutInflater layoutInflater;
         private final FancyCoverFlow coverFlow;
@@ -306,7 +308,7 @@ public class ViewItemPagerActivity extends BaseActivity {
         }
     }
 
-	public static class ViewItemPagerAdapter extends PagerAdapter {
+	public class ViewItemPagerAdapter extends PagerAdapter implements MyAdapter {
 
         private final LayoutInflater layoutInflater;
         private final ViewPager pager;
@@ -316,10 +318,28 @@ public class ViewItemPagerActivity extends BaseActivity {
         private int lastPosition = -1;
 
 		ViewItemPagerAdapter(LayoutInflater layoutInflater, ViewPager pager) {
-            this.nodes = new ArrayList<>();
             this.layoutInflater = layoutInflater;
             this.pager = pager;
-		}
+            this.nodes = new ArrayList<>();
+            this.nextPage = 1;
+        }
+
+        public void addViewNodes(List<ViewNode> nodes) {
+            if (nodes.isEmpty()) {
+                return;
+            }
+            this.nodes.addAll(nodes);
+            ++nextPage;
+        }
+
+        public void clear() {
+            nodes.clear();
+            nextPage = 1;
+        }
+
+        public int getNextPage() {
+            return nextPage;
+        }
 
         @Override
         public void setPrimaryItem(ViewGroup container, int position, Object object) {
@@ -335,7 +355,7 @@ public class ViewItemPagerActivity extends BaseActivity {
             int viewType = viewItem.getViewType(ViewNode.VIEW_TYPE_PAGER);
 
             if ((viewType == ViewNode.VIEW_TYPE_LIST || viewType == ViewNode.VIEW_TYPE_GRID) &&
-                nodes.isEmpty()) {
+                0 == getCount()) {
                 View contentView = pager.findViewWithTag(pager.getCurrentItem());
                 final AbsListView absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
                 BaseAdapter itemAdapter = null;
@@ -348,30 +368,29 @@ public class ViewItemPagerActivity extends BaseActivity {
                 } else if (viewType == ViewNode.VIEW_TYPE_GRID) {
                     itemAdapter = (BaseAdapter) ((GridViewWithHeaderAndFooter) absListView).getOriginalAdapter();
                 }
-                SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
+                final SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
 
-                final GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener;
-                if (viewItem.getWrapperViewResId() > 0) {
-                    getDataTaskFinishedListener = new GetDataTask.GetDataTaskFinishedListener() {
-                        @Override
-                        public void onGetDataTaskFinished(ViewNode model) {
-                            if(model.getWrapperViewResId()>0) {
-                                model.updateWrapperView((ViewNode.WrapperViewHolder) absListView.getTag());
-                            }
-                        }
-                    };
-                } else {
-                    getDataTaskFinishedListener = null;
-                }
+                viewItem.load(1, new ViewNode.Callback<List<ViewNode>>() {
+                    @Override
+                    public void onSuccess(List<ViewNode> result) {
+//                        if(model.getWrapperViewResId()>0) {
+//                            model.updateWrapperView((ViewNode.WrapperViewHolder) absListView.getTag());
+//                        }
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
 
-                new GetDataTask(viewItem, swipeRefreshLayout, itemAdapter, null, getDataTaskFinishedListener, true);
+                    @Override
+                    public void onFailure(int errCode, String errMsg) {
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+                });
 
             } else if (viewType == ViewNode.VIEW_TYPE_IMAGE) {
                 View contentView = pager.findViewWithTag(pager.getCurrentItem());
                 ImageView imageView = (ImageView) contentView.findViewById(R.id.image);
                 SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) contentView.findViewById(R.id.ic_swiperefresh);
                 if (null == imageView.getDrawable()) {
-                    loadImage(viewItem, imageView, swipeRefreshLayout);
+                    loadImage(viewItem.getImageUrl(), imageView, swipeRefreshLayout);
                 } else {
                     // to avoid interfere with image zoom
                     swipeRefreshLayout.setEnabled(false);
@@ -402,11 +421,8 @@ public class ViewItemPagerActivity extends BaseActivity {
 			View contentView = null;
             final SwipeRefreshLayout swipeRefreshLayout;
             final ImageView imageView;
-			AbsListView absListView = null;
-            final List<EndlessScrollListener> onScrollListeners = new ArrayList<>();
-			final BaseAdapter itemAdapter;
-            final RecyclerView.Adapter recyclerViewAdapter;
-            final GetDataTask.GetDataTaskFinishedListener getDataTaskFinishedListener;
+			final AbsListView absListView;
+            final BaseAdapter itemAdapter;
 
 			switch (viewType) {
             case ViewNode.VIEW_TYPE_IMAGE:
@@ -430,16 +446,14 @@ public class ViewItemPagerActivity extends BaseActivity {
                         return true;
                     }
                 });
+                absListView = null;
                 itemAdapter = null;
-                recyclerViewAdapter = null;
-                getDataTaskFinishedListener = null;
                 break;
 			case ViewNode.VIEW_TYPE_LIST:
 				contentView = layoutInflater.inflate(R.layout.ac_image_list, view, false);
                 imageView = null;
                 absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
-				itemAdapter = new ListItemAdapter(child, (ListView) absListView, layoutInflater);
-                recyclerViewAdapter = null;
+				itemAdapter = new ListItemAdapter((ListView) absListView, layoutInflater);
                 if (child.getWrapperViewResId() > 0) {
                     final ViewNode.WrapperViewHolder wrapperViewHolder = child.createWrapperView(
                             layoutInflater.inflate(child.getWrapperViewResId(), view, false)
@@ -456,17 +470,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                     removeViewFromParent(footer);
                     footer.setLayoutParams(new ListView.LayoutParams(ListView.LayoutParams.MATCH_PARENT, 50));
                     ((ListView) absListView).addFooterView(footer);
-
-                    getDataTaskFinishedListener = new GetDataTask.GetDataTaskFinishedListener() {
-                        @Override
-                        public void onGetDataTaskFinished(ViewNode model) {
-                            if(model.getWrapperViewResId()>0) {
-                                model.updateWrapperView(wrapperViewHolder);
-                            }
-                        }
-                    };
-                } else {
-                    getDataTaskFinishedListener = null;
                 }
                 ((ListView) absListView).setAdapter(itemAdapter);
                 ((ListView) absListView).setDividerHeight(0);
@@ -475,8 +478,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 				contentView = layoutInflater.inflate(R.layout.ac_image_grid, view, false);
                 imageView = null;
                 absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
-				itemAdapter = new GridItemAdapter(child, (GridView) absListView, layoutInflater);
-                recyclerViewAdapter = null;
+				itemAdapter = new GridItemAdapter((GridView) absListView, layoutInflater);
                 if (child.getWrapperViewResId() > 0) {
                     final ViewNode.WrapperViewHolder wrapperViewHolder = child.createWrapperView(
                             layoutInflater.inflate(child.getWrapperViewResId(), view, false)
@@ -491,27 +493,14 @@ public class ViewItemPagerActivity extends BaseActivity {
                     View footer = wrapperViewHolder.wrapperView.findViewById(R.id.footer);
                     removeViewFromParent(footer);
                     ((GridViewWithHeaderAndFooter) absListView).addFooterView(footer);
-
-                    getDataTaskFinishedListener = new GetDataTask.GetDataTaskFinishedListener() {
-                        @Override
-                        public void onGetDataTaskFinished(ViewNode model) {
-                            if(model.getWrapperViewResId()>0) {
-                                model.updateWrapperView(wrapperViewHolder);
-                            }
-                        }
-                    };
-                } else {
-                    getDataTaskFinishedListener = null;
                 }
-
                 ((GridView) absListView).setAdapter(itemAdapter);
                 ((GridView) absListView).setNumColumns(pager.getWidth()/200);
 				break;
 			default:
                 imageView = null;
+                absListView = null;
                 itemAdapter = null;
-                recyclerViewAdapter = null;
-                getDataTaskFinishedListener = null;
 				break;
 			}
 			
@@ -524,25 +513,34 @@ public class ViewItemPagerActivity extends BaseActivity {
 			
 			contentView.setTag(position);
 
-			swipeRefreshLayout.setEnabled(false);
-            if (child.supportReloading()){
-                if (null != imageView) {
-                    swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
-                        @Override
-                        public void onRefresh() {
-                            loadImage(child, imageView, swipeRefreshLayout);
-                        }
-                    });
-                    swipeRefreshLayout.setEnabled(true);
-                } else if(null != itemAdapter) {
-                    swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
-                        @Override
-                        public void onRefresh() {
-                            new GetDataTask(child, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, getDataTaskFinishedListener, true);
-                        }
-                    });
-                    swipeRefreshLayout.setEnabled(true);
-                }
+			swipeRefreshLayout.setEnabled(child.supportReloading());
+            if (null != imageView) {
+                swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        loadImage(child.getImageUrl(), imageView, swipeRefreshLayout);
+                    }
+                });
+            } else if(null != itemAdapter) {
+                swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        child.load(1, new ViewNode.Callback<List<ViewNode>>() {
+                            @Override
+                            public void onSuccess(List<ViewNode> result) {
+                                ((MyAdapter) itemAdapter).clear();
+                                ((MyAdapter) itemAdapter).addViewNodes(result);
+                                itemAdapter.notifyDataSetChanged();
+                                swipeRefreshLayout.setRefreshing(false);
+                            }
+
+                            @Override
+                            public void onFailure(int errCode, String errMsg) {
+                                swipeRefreshLayout.setRefreshing(false);
+                            }
+                        });
+                    }
+                });
             }
 			// Configure the refreshing colors
 //			swipeRefreshLayout.setColorScheme(android.R.color.holo_blue_bright,
@@ -551,20 +549,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 //	                android.R.color.holo_red_light);
 
 			if (child.supportPaging()) {
-                if (null != itemAdapter) {
-                    onScrollListeners.add(new EndlessScrollListener() {
-                        @Override
-                        public void onLoadMore(int page, int totalItemsCount) {
-                            new GetDataTask(child, swipeRefreshLayout, itemAdapter, recyclerViewAdapter, new GetDataTask.GetDataTaskFinishedListener() {
-
-                                @Override
-                                public void onGetDataTaskFinished(ViewNode model) {
-                                    setLoading(false);
-                                }
-                            }, false);
-                        }
-                    });
-                }
+                // TODO add load more button
 			}
 
             if (null != absListView) {
@@ -585,29 +570,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                         return true;
                     }
                 });
-
-                absListView.setOnScrollListener(
-                        new AbsListView.OnScrollListener() {
-
-                            @Override
-                            public void onScrollStateChanged(AbsListView view, int scrollState) {
-                                if (null != onScrollListeners) {
-                                    for (AbsListView.OnScrollListener onScrollListener : onScrollListeners) {
-                                        onScrollListener.onScrollStateChanged(view, scrollState);
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                                if (null != onScrollListeners) {
-                                    for (AbsListView.OnScrollListener onScrollListener : onScrollListeners) {
-                                        onScrollListener.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
-                                    }
-                                }
-                            }
-                        }
-                );
             }
 
             view.addView(contentView);
@@ -648,26 +610,45 @@ public class ViewItemPagerActivity extends BaseActivity {
         }
 	}
 	
-	private static class GridItemAdapter extends BaseAdapter {
+	private static class GridItemAdapter extends BaseAdapter implements MyAdapter {
+
+		private final GridView gridView;
+        private final LayoutInflater layoutInflater;
+        private final List<ViewNode> nodes;
+        private int nextPage;
 		
-		private ViewNode model;
-		private GridView gridView;
-        private LayoutInflater layoutInflater;
-		
-		public GridItemAdapter(ViewNode model, GridView gridView, LayoutInflater layoutInflater) {
-			this.model = model;
+		public GridItemAdapter(GridView gridView, LayoutInflater layoutInflater) {
 			this.gridView = gridView;
             this.layoutInflater = layoutInflater;
-		}
+            this.nodes = new ArrayList<>();
+            this.nextPage = 1;
+        }
+
+        public void addViewNodes(List<ViewNode> nodes) {
+            if (nodes.isEmpty()) {
+                return;
+            }
+            this.nodes.addAll(nodes);
+            ++nextPage;
+        }
+
+        public void clear() {
+            nodes.clear();
+            nextPage = 1;
+        }
+
+        public int getNextPage() {
+            return nextPage;
+        }
 		
 		@Override
 		public int getCount() {
-			return model.getChildren().size();
+			return nodes.size();
 		}
 
 		@Override
 		public Object getItem(int position) {
-			return model.getChildren().get(position);
+			return nodes.get(position);
 		}
 
 		@Override
@@ -707,7 +688,6 @@ public class ViewItemPagerActivity extends BaseActivity {
         View itemView;
 		TextView text;
 		ImageView image;
-		TwoWayView spannableGrid;
 
         ViewNode.WrapperViewHolder wrapperViewHolder;
 
@@ -716,17 +696,36 @@ public class ViewItemPagerActivity extends BaseActivity {
         }
     }
 	
-	private class ListItemAdapter extends BaseAdapter {
+	private class ListItemAdapter extends BaseAdapter implements MyAdapter {
 
-		private ViewNode model;
-        private ListView listView;
-        private LayoutInflater layoutInflater;
+        private final ListView listView;
+        private final LayoutInflater layoutInflater;
+        private final List<ViewNode> nodes;
+        private int nextPage;
 
-		public ListItemAdapter(ViewNode model, ListView listView, LayoutInflater layoutInflater) {
-            this.model = model;
+		public ListItemAdapter(ListView listView, LayoutInflater layoutInflater) {
             this.listView = listView;
             this.layoutInflater = layoutInflater;
-		}
+            this.nodes = new ArrayList<>();
+            this.nextPage = 1;
+        }
+
+        public void addViewNodes(List<ViewNode> nodes) {
+            if (nodes.isEmpty()) {
+                return;
+            }
+            this.nodes.addAll(nodes);
+            ++nextPage;
+        }
+
+        public void clear() {
+            nodes.clear();
+            nextPage = 1;
+        }
+
+        public int getNextPage() {
+            return nextPage;
+        }
 
         @Override
         public int getViewTypeCount() {
@@ -740,12 +739,12 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		@Override
 		public int getCount() {
-			return model.getChildren().size();
+			return nodes.size();
 		}
 
 		@Override
 		public Object getItem(int position) {
-            return model.getChildren().get(position);
+            return nodes.get(position);
 		}
 
 		@Override
@@ -778,27 +777,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                     view.setLayoutParams(new AbsListView.LayoutParams(
                             AbsListView.LayoutParams.MATCH_PARENT, AbsListView.LayoutParams.WRAP_CONTENT
                     ));
-                    break;
-
-                case ViewNode.VIEW_TYPE_TILE:
-                    view = layoutInflater.inflate(R.layout.item_spannable_grid, parent, false);
-                    holder = new ListItemViewHolder(view);
-                    holder.spannableGrid = (TwoWayView) view.findViewById(R.id.ic_spannable_grid);
-                    holder.spannableGrid.setHasFixedSize(true);
-                    view.setLayoutParams(new AbsListView.LayoutParams(
-                            AbsListView.LayoutParams.MATCH_PARENT, listView.getWidth()
-                    ));
-
-                    if (child.getWrapperViewResId() > 0) {
-                        holder.wrapperViewHolder = child.createWrapperView(
-                                layoutInflater.inflate(child.getWrapperViewResId(), parent, false)
-                        );
-
-                        removeViewFromParent(view);
-                        holder.wrapperViewHolder.body.addView(view);
-
-                        view = holder.wrapperViewHolder.wrapperView;
-                    }
                     break;
 
                 default:
@@ -897,7 +875,7 @@ public class ViewItemPagerActivity extends BaseActivity {
 //	     */
 	}
 
-    private static void loadImage(ViewNode viewNode, ImageView imageView, final SwipeRefreshLayout swipeRefreshLayout) {
+    private static void loadImage(String url, ImageView imageView, final SwipeRefreshLayout swipeRefreshLayout) {
         swipeRefreshLayout.setRefreshing(true);
         final ImageLoader.ImageListener mixin = ImageLoader.getImageListener(imageView,
                 R.drawable.ic_stub,
@@ -924,7 +902,7 @@ public class ViewItemPagerActivity extends BaseActivity {
             }
         };
 
-        MyVolley.getImageLoader().get(viewNode.getImageUrl(), imageListener);
+        MyVolley.getImageLoader().get(url, imageListener);
     }
 
     private static void updateGridItemView(ViewNode viewItem, GridItemViewHolder holder) {

@@ -22,8 +22,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:21.0.0'
     compile 'com.android.support:recyclerview-v7:21.0.0'
     compile 'org.jsoup:jsoup:1.8.2'
-    compile 'org.lucasr.twowayview:core:1.0.0-SNAPSHOT@aar'
-    compile 'org.lucasr.twowayview:layouts:1.0.0-SNAPSHOT@aar'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'dev.dworks.libs:volleyplus:+'
     compile 'in.srain.cube:grid-view-with-header-footer:1.0.12'
