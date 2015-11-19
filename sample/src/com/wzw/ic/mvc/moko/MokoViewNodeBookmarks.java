@@ -2,6 +2,7 @@ package com.wzw.ic.mvc.moko;
 
 import com.wzw.ic.mvc.ViewNode;
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -17,14 +18,15 @@ public class MokoViewNodeBookmarks extends MokoViewNode {
 	}
 
     @Override
-    protected List<ViewNode> extractViewItemsFromPage(Document page) {
+    protected List<ViewNode> extractViewNodesFromPage(int pageNo, String pageStr) {
+        Document page = Jsoup.parse(pageStr);
         List<ViewNode> viewItems = null;
         Elements imgElems = page.select(".favorite img");
         Elements aElems = page.select(".favorite a.imgBorder");
         if (null != imgElems && imgElems.size() > 0 &&
                 null != aElems && aElems.size() > 0 &&
                 imgElems.size() == aElems.size()) {
-            viewItems = new ArrayList<ViewNode>();
+            viewItems = new ArrayList<>();
             for (int i = 0; i < imgElems.size(); ++i) {
                 Element img = imgElems.get(i);
                 Element a = aElems.get(i);

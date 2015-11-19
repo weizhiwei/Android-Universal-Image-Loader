@@ -23,17 +23,16 @@ public class ViewNode extends IcObject {
     public static final int VIEW_TYPE_LIST = 1;
     public static final int VIEW_TYPE_GRID = 2;
     public static final int VIEW_TYPE_IMAGE = 3;
-    public static final int VIEW_TYPE_WEBVIEW = 4;
-    public static final int VIEW_TYPE_SIMPLE = 5;
-    public static final int VIEW_TYPE_TILE = 6;
-    public static final int VIEW_TYPE_COUNT = 7;
+    public static final int VIEW_TYPE_SIMPLE = 4;
+    public static final int VIEW_TYPE_COUNT = 5;
 
     public static final int VIEW_ITEM_TYPE_COLOR = 1;
     public static final int VIEW_ITEM_TYPE_IMAGE_RES = 2;
     public static final int VIEW_ITEM_TYPE_IMAGE_URL = 3;
 
-    public static interface LoadListener {
-        public void onLoadDone(ViewNode model);
+    public static interface Callback<T> {
+        public void onSuccess(T result);
+        public void onFailure(int errCode, String errMsg);
     }
 
     public static class WrapperViewHolder {
@@ -62,46 +61,21 @@ public class ViewNode extends IcObject {
 
     // graph
     protected ViewNode parent;
-	protected List<ViewNode> children, viewItemsCopy;
     protected ViewNode author;
 
     protected boolean isDetached = false;
 	
 	public ViewNode(ViewNode parent) {
         this.parent = parent;
-		this.children = new ArrayList<ViewNode>();
-	}
-	
-	public void detach() {
-		viewItemsCopy = new ArrayList<ViewNode>(children.size());
-		viewItemsCopy.addAll(children);
-        isDetached = true;
-	}
-
-	public void attach() {
-		isDetached = false;
-		viewItemsCopy = null;
 	}
 
     public ViewNode getParent() { return parent; }
-
-    public int getSiblingCount() {
-        return null == parent ? 0 : parent.getChildren().size();
-    }
-
-    public ViewNode getSibling(int i) {
-        return parent.getChildren().get(i);
-    }
-
-	public List<ViewNode> getChildren() {
-		return isDetached ? viewItemsCopy : children;
-	}
 
     public boolean supportReloading() {
 		return false;
 	}
 	
-	public void load(boolean reload, LoadListener loadListener) {
+	public void load(int page, Callback<List<ViewNode>> callback) {
 	}
 	
 	public boolean supportPaging() {
@@ -120,9 +94,10 @@ public class ViewNode extends IcObject {
         holder.textView.setVisibility(View.INVISIBLE);
         String authorName = (author == null ? null : author.getTitle());
         if (!TextUtils.isEmpty(authorName)) {
+            int postCount = 3;
             String posted = TextUtils.isEmpty(title) ?
-                    String.format("%d %s", children.size(), children.size() > 1 ? "pictures" : "picture") :
-                    String.format("<u>%s</u> (%dP)", title, children.size());
+                    String.format("%d %s", postCount, postCount > 1 ? "pictures" : "picture") :
+                    String.format("<u>%s</u> (%dP)", title, postCount);
             String caption = String.format(
                     "<b>%s</b> posted %s", authorName, posted);
             holder.textView.setVisibility(View.VISIBLE);

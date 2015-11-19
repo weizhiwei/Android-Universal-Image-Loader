@@ -4,6 +4,7 @@ import android.graphics.Color;
 
 import com.wzw.ic.mvc.ViewNode;
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -19,11 +20,12 @@ public class MokoViewNodeRoot extends MokoViewNode {
 	}
 
 	@Override
-	protected List<ViewNode> extractViewItemsFromPage(Document page) {
+	protected List<ViewNode> extractViewNodesFromPage(int pageNo, String pageStr) {
+        Document page = Jsoup.parse(pageStr);
 		List<ViewNode> viewItems = null;
 		Elements aElems = page.select("a.mark");
 		if (null != aElems && aElems.size() > 0) {
-			viewItems = new ArrayList<ViewNode>();
+			viewItems = new ArrayList<>();
 			for (int i = 0; i < aElems.size(); ++i) {
 				Element a = aElems.get(i);
                 String url = null;

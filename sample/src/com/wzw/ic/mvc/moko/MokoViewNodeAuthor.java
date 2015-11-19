@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -26,7 +27,8 @@ public class MokoViewNodeAuthor extends MokoViewNode {
 	}
 	
 	@Override
-	protected List<ViewNode> extractViewItemsFromPage(Document page) {
+	protected List<ViewNode> extractViewNodesFromPage(int pageNo, String pageStr) {
+        Document page = Jsoup.parse(pageStr);
 		List<ViewNode> viewItems = null;
 		Elements imgElems = page.select("div.coverbox img.cover");
 		Elements aElems = page.select("div.coverbox a.coverBg");
@@ -34,7 +36,7 @@ public class MokoViewNodeAuthor extends MokoViewNode {
 		if (null != imgElems && imgElems.size() > 0 &&
 			null != aElems && imgElems.size() == aElems.size() &&
 			null != dateElems && imgElems.size() == dateElems.size()) {
-			viewItems = new ArrayList<ViewNode>();
+			viewItems = new ArrayList<>();
 			for (int i = 0; i < imgElems.size(); ++i) {
 				Element img = imgElems.get(i);
 				Element a = aElems.get(i);
@@ -50,7 +52,7 @@ public class MokoViewNodeAuthor extends MokoViewNode {
                             Integer.parseInt(dateStrs[2]));
 					viewNode.setPostedDate(date);
 
-                    if (null == postedDate && 0 == i && 1 == newPageNo) {
+                    if (null == postedDate && 0 == i && 1 == pageNo) {
                         postedDate = date;
                     }
 

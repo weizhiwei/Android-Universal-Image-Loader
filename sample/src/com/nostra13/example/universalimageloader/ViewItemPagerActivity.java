@@ -239,24 +239,43 @@ public class ViewItemPagerActivity extends BaseActivity {
 
     private static class CoverFlowAdapter extends FancyCoverFlowAdapter {
 
-        private ViewNode model;
-        private LayoutInflater layoutInflater;
-        private FancyCoverFlow coverFlow;
+        private final LayoutInflater layoutInflater;
+        private final FancyCoverFlow coverFlow;
+        private final List<ViewNode> nodes;
+        private int nextPage;
 
-        CoverFlowAdapter(ViewNode model, FancyCoverFlow coverFlow, LayoutInflater layoutInflater) {
-            this.model = model;
+        CoverFlowAdapter(FancyCoverFlow coverFlow, LayoutInflater layoutInflater) {
             this.coverFlow = coverFlow;
             this.layoutInflater = layoutInflater;
+            this.nodes = new ArrayList<>();
+            this.nextPage = 1;
+        }
+
+        public void addViewNodes(List<ViewNode> nodes) {
+            if (nodes.isEmpty()) {
+                return;
+            }
+            this.nodes.addAll(nodes);
+            ++nextPage;
+        }
+
+        public void clear() {
+            nodes.clear();
+            nextPage = 1;
+        }
+
+        public int getNextPage() {
+            return nextPage;
         }
 
         @Override
         public int getCount() {
-            return model.getChildren().size();
+            return nodes.size();
         }
 
         @Override
         public Object getItem(int i) {
-            return model.getChildren().get(i);
+            return nodes.get(i);
         }
 
         @Override
@@ -287,16 +306,17 @@ public class ViewItemPagerActivity extends BaseActivity {
         }
     }
 
-	public class ViewItemPagerAdapter extends PagerAdapter {
+	public static class ViewItemPagerAdapter extends PagerAdapter {
 
-        private ViewNode model;
-        private LayoutInflater layoutInflater;
-        private ViewPager pager;
+        private final LayoutInflater layoutInflater;
+        private final ViewPager pager;
+        private final List<ViewNode> nodes;
+        private int nextPage;
 
         private int lastPosition = -1;
 
-		ViewItemPagerAdapter(ViewNode model, LayoutInflater layoutInflater, ViewPager pager) {
-            this.model = model;
+		ViewItemPagerAdapter(LayoutInflater layoutInflater, ViewPager pager) {
+            this.nodes = new ArrayList<>();
             this.layoutInflater = layoutInflater;
             this.pager = pager;
 		}
@@ -315,7 +335,7 @@ public class ViewItemPagerActivity extends BaseActivity {
             int viewType = viewItem.getViewType(ViewNode.VIEW_TYPE_PAGER);
 
             if ((viewType == ViewNode.VIEW_TYPE_LIST || viewType == ViewNode.VIEW_TYPE_GRID) &&
-                viewItem.getChildren().isEmpty()) {
+                nodes.isEmpty()) {
                 View contentView = pager.findViewWithTag(pager.getCurrentItem());
                 final AbsListView absListView = (AbsListView) contentView.findViewById(R.id.ic_listview);
                 BaseAdapter itemAdapter = null;
@@ -366,12 +386,12 @@ public class ViewItemPagerActivity extends BaseActivity {
 
 		@Override
 		public int getCount() {
-			return model.getChildren().size();
+			return nodes.size();
 		}
 
         /* @Override */
         public Object getItem(int position) {
-            return model.getChildren().get(position);
+            return nodes.get(position);
         }
 
 		@Override
@@ -487,24 +507,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                 ((GridView) absListView).setAdapter(itemAdapter);
                 ((GridView) absListView).setNumColumns(pager.getWidth()/200);
 				break;
-            case ViewNode.VIEW_TYPE_WEBVIEW:
-                contentView = layoutInflater.inflate(R.layout.ac_web_view, view, false);
-                imageView = null;
-                itemAdapter = null;
-                recyclerViewAdapter = null;
-                final WebView webView = (WebView) contentView.findViewById(R.id.ic_webview);
-                webView.setWebViewClient(new WebViewClient());
-                getDataTaskFinishedListener = new GetDataTask.GetDataTaskFinishedListener () {
-
-                    @Override
-                    public void onGetDataTaskFinished(ViewNode model) {
-                        List<ViewNode> viewItems = model.getChildren();
-                        if (null != viewItems && !viewItems.isEmpty()) {
-                            webView.loadUrl(viewItems.get(0).getWebPageUrl());
-                        }
-                    }
-                };
-                break;
 			default:
                 imageView = null;
                 itemAdapter = null;
@@ -837,38 +839,6 @@ public class ViewItemPagerActivity extends BaseActivity {
                             break;
                     }
                     break;
-
-                case ViewNode.VIEW_TYPE_TILE:
-
-                    view.setBackgroundColor(randomColorForHeader(Math.abs(child.hashCode())));
-
-                    RecyclerViewAdapter adapter = new RecyclerViewAdapter(child, layoutInflater);
-                    holder.spannableGrid.setAdapter(adapter);
-
-                    GetDataTask.GetDataTaskFinishedListener updateWrapperView = new GetDataTask.GetDataTaskFinishedListener() {
-                        @Override
-                        public void onGetDataTaskFinished(ViewNode model) {
-                            if(model.getWrapperViewResId()>0) {
-                                model.updateWrapperView(holder.wrapperViewHolder);
-                            }
-                        }
-                    };
-
-                    updateWrapperView.onGetDataTaskFinished(child);
-                    if (child.getChildren().size() > 0) {
-                        adapter.notifyDataSetChanged();
-                    } else {
-                        new GetDataTask(child, null, null, adapter, updateWrapperView, true);
-                    }
-
-                    ItemClickSupport.addTo(holder.spannableGrid).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(RecyclerView parent, View view, int position, long id) {
-                            // drill down
-                            startViewItemActivity(child);
-                        }
-                    });
-                    break;
                 default:
                     break;
             }
@@ -876,57 +846,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 			return view;
 		}
 	}
-
-    private static class RecyclerViewAdapter extends RecyclerView.Adapter<GridItemViewHolder> {
-
-        private ViewNode model;
-        private LayoutInflater layoutInflater;
-
-        public RecyclerViewAdapter(ViewNode model, LayoutInflater layoutInflater) {
-            this.model = model;
-            this.layoutInflater = layoutInflater;
-        }
-
-        @Override
-        public int getItemCount() {
-            if (model.getChildren().size() > 0) {
-                return calcAlbumPicCountForHeader(model.getChildren().size(), Math.abs(model.getChildren().get(0).hashCode()));
-            } else {
-                return 0;
-            }
-        }
-
-        /* @Override */
-        public Object getItem(int position) {
-            return model.getChildren().get(position);
-        }
-
-
-        @Override
-        public void onBindViewHolder(final GridItemViewHolder holder, int position) {
-            final View itemView = holder.itemView;
-            final SpannableGridLayoutManager.LayoutParams lp =
-                    (SpannableGridLayoutManager.LayoutParams) itemView.getLayoutParams();
-
-            final int[] SPANS = generateColRowSpans(getItemCount(), Math.abs(model.getChildren().get(0).hashCode()));
-
-            int colSpan = SPANS[position*2];
-            int rowSpan = SPANS[position*2+1];
-
-            lp.rowSpan = rowSpan;
-            lp.colSpan = colSpan;
-            itemView.setLayoutParams(lp);
-
-            final ViewNode child = (ViewNode)getItem(position);
-            updateGridItemView(child, holder);
-        }
-
-        @Override
-        public GridItemViewHolder onCreateViewHolder(ViewGroup parent, int arg1) {
-            final View view = layoutInflater.inflate(R.layout.item_grid_image, parent, false);
-            return new GridItemViewHolder(view);
-        }
-    };
 
 //	@Override
 //	public void onResume() {
@@ -977,65 +896,6 @@ public class ViewItemPagerActivity extends BaseActivity {
 //shareIntent.setType("image/*");
 //	     */
 	}
-
-    private static final int[] generateColRowSpans(int itemCount, int hash) {
-        final int[][][] SPANS = {
-                {}, // 0
-                {
-                        {6, 6}
-                }, // 1
-                {
-                        {6, 3, 6, 3}, {3, 6, 3, 6}
-                }, // 2
-                {
-                        {6, 3, 3, 3, 3, 3}, {3, 6, 3, 3, 3, 3}
-                }, // 3
-                {
-                        {3, 3, 3, 3, 3, 3, 3, 3}, {6, 4, 2, 2, 2, 2, 2, 2}, {4, 6, 2, 2, 2, 2, 2, 2},
-                        {4, 4, 2, 4, 4, 2, 2, 2}
-                }, // 4
-                {
-                        {4, 2, 2, 4, 2, 4, 2, 2, 4, 2}
-                }, // 5
-                {
-                        {4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, {2, 2, 4, 4, 2, 2, 2, 2, 2, 2, 2, 2},
-                        {2, 2, 2, 2, 2, 2, 4, 4, 2, 2, 2, 2}, {2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 2, 2}
-                }, // 6
-                {}, // 7
-                {}, // 8
-                {
-                        {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}
-                }, // 9
-        };
-        return SPANS[itemCount][hash%SPANS[itemCount].length];
-    }
-
-    private static int randomColorForHeader(int header) {
-        final int[] COLORS = {0xFF3D3629, 0xFF5C483D, 0xFF5C583D, 0xFF2C3D29, 0xFF3D5C3D, 0xFF6A7A52, 0xFFB8B37A, 0xFFD6D68F};
-        return COLORS[header%COLORS.length];
-    }
-
-    private static int calcAlbumPicCountForHeader(int albumPicCount, int hash) {
-        final int[] ITEM_COUNT_FOR_LARGE_ALBUMS = {4, 5, 6, 9};
-        switch (albumPicCount) {
-            case 1:
-                return 1;
-            case 2:
-                return 2;
-            case 3:
-                return 3;
-            case 4:
-                return 4;
-            case 5:
-                return 5;
-            case 6:
-            case 7:
-            case 8:
-                return 6;
-            default:
-                return ITEM_COUNT_FOR_LARGE_ALBUMS[hash%ITEM_COUNT_FOR_LARGE_ALBUMS.length];
-        }
-    }
 
     private static void loadImage(ViewNode viewNode, ImageView imageView, final SwipeRefreshLayout swipeRefreshLayout) {
         swipeRefreshLayout.setRefreshing(true);

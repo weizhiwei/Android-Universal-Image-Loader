@@ -33,7 +33,7 @@ public class FeedsViewNode extends ViewNode {
 	}
 
 	@Override
-    public void load(final boolean reload, final LoadListener loadListener) {
+    public void load(int pageNo, final LoadListener loadListener) {
         new AsyncTask<Void, Void, Void> () {
             @Override
             protected Void doInBackground(Void... params) {

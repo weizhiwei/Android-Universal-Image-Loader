@@ -3,6 +3,7 @@ package com.wzw.ic.mvc.moko;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -21,7 +22,8 @@ public class MokoViewNodePost extends MokoViewNode {
 	}
 
 	@Override
-	protected List<ViewNode> extractViewItemsFromPage(Document page) {
+	protected List<ViewNode> extractViewNodesFromPage(int pageNo, String pageStr) {
+        Document page = Jsoup.parse(pageStr);
 		if (null == author) {
 			Elements a = page.select("a#workNickName");
 			if (null != a && a.size() > 0) {
@@ -55,7 +57,7 @@ public class MokoViewNodePost extends MokoViewNode {
 		List<ViewNode> viewItems = null;
 		Elements imgElems = page.select("p.picbox img");
 		if (null != imgElems && imgElems.size() > 0) {
-			viewItems = new ArrayList<ViewNode>();
+			viewItems = new ArrayList<>();
 			for (int i = 0; i < imgElems.size(); ++i) {
 				Element img = imgElems.get(i);
 				ViewNode viewNode = new PictureViewNode(this, img.attr("src2"));
