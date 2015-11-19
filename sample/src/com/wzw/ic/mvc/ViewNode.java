@@ -194,14 +194,6 @@ public class ViewNode extends IcObject {
         this.story = story;
     }
 
-    public boolean isHeartsOn() {
-        return heartsOn;
-    }
-
-    public void setHeartsOn(boolean heartsOn) {
-        this.heartsOn = heartsOn;
-    }
-
     public int getViewType(int container) {
         switch (container) {
             case VIEW_TYPE_PAGER:

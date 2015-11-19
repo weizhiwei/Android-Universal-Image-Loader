@@ -51,8 +51,6 @@ public class UILApplication extends Application {
 
 		super.onCreate();
 
-		IcDatabase.getInstance().open(getApplicationContext());
-
         MyVolley.init(getApplicationContext());
 
         AccountManager.checkSession(getApplicationContext());
